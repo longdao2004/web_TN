@@ -1,0 +1,221 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  FARMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PACKING
+  SHIPPING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  COD
+  VNPAY
+  MOMO
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  phone     String?  @unique
+  address   String?
+  avatarUrl String?
+  role      Role     @default(CUSTOMER)
+
+  store      Store?
+  cart       Cart?
+  orders     Order[]
+  reviews    Review[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Store {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  logoUrl     String?
+
+  ownerId String @unique
+  owner   User   @relation(fields: [ownerId], references: [id])
+
+  products Product[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  
+  products Product[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  imageUrl    String?
+
+  origin      String?
+  unit        String?
+  soldCount   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  batches      ProductBatch[]
+  certificates Certificate[]
+  reviews      Review[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model ProductBatch {
+  id          String   @id @default(uuid())
+  harvestDate DateTime
+  expiryDate  DateTime
+  quantity    Int
+  price       Float
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Certificate {
+  id        String   @id @default(uuid())
+  name      String
+  imageUrl  String
+  issueDate DateTime
+
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Cart {
+  id     String @id @default(uuid())
+  
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+}
+
+model CartItem {
+  id       String @id @default(uuid())
+  quantity Int
+
+  cartId String
+  cart   Cart   @relation(fields: [cartId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  totalAmount     Float
+  shippingAddress String
+  status          OrderStatus @default(PENDING)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  items   OrderItem[]
+  payment Payment?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id              String @id @default(uuid())
+  quantity        Int
+  priceAtPurchase Float
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  // Nút thắt đã được gỡ: Liên kết thẳng với Lô hàng cụ thể
+  productBatchId String
+  batch          ProductBatch @relation(fields: [productBatchId], references: [id])
+}
+
+model Payment {
+  id            String          @id @default(uuid())
+  transactionId String?
+  provider      PaymentProvider
+  amount        Float
+  isSuccess     Boolean         @default(false)
+  paymentDate   DateTime?
+  
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id      String  @id @default(uuid())
+  rating  Int
+  comment String?
+  
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+}
