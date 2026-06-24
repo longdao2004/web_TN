@@ -10,6 +10,7 @@ async function bootstrap() {
     .setTitle('API Nông Sản')
     .setDescription('Tài liệu hệ thống API cho Website Thương mại điện tử Nông sản')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document); // Đường dẫn để xem tài liệu
