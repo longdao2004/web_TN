@@ -45,7 +45,7 @@ export class OrderService {
           totalAmount,
           status: 'PENDING',
           shippingAddress: dto.shippingAddress,
-          phone: dto.phone,
+
           items: {
             create: cart.items.map(item => {
               const latestBatch = item.product.batches[0];

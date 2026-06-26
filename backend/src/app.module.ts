@@ -9,9 +9,10 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [PrismaModule, CategoriesModule, ProductsModule, AuthModule, CloudinaryModule, CartModule, OrderModule, StatisticsModule],
+  imports: [PrismaModule, CategoriesModule, ProductsModule, AuthModule, CloudinaryModule, CartModule, OrderModule, StatisticsModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })
