@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { OrderStatus } from '@prisma/client';
 import { CreateOrderDto } from './dto/order.dto';
 
 @Injectable()
@@ -83,6 +84,55 @@ export class OrderService {
         orderId: order.id,
         totalAmount: totalAmount 
       };
+    });
+  }
+
+  /**
+   * LẤY LỊCH SỬ ĐƠN HÀNG CỦA KHÁCH HÀNG
+   */
+  async getUserOrders(userId: string) {
+    const orders = await this.prisma.order.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' }, // Sắp xếp: Đơn mới nhất lên đầu
+      include: {
+        items: {
+          include: {
+            // Chỉ lấy tên và ảnh của sản phẩm cho nhẹ dữ liệu trả về
+            product: {
+              select: { 
+                name: true, 
+                imageUrl: true 
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!orders || orders.length === 0) {
+      throw new NotFoundException('Bạn chưa có đơn hàng nào!');
+    }
+
+    return orders;
+  }
+
+  /**
+   * CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (Dành cho SELLER hoặc ADMIN)
+   */
+  async updateOrderStatus(orderId: string, status: string) {
+    // 1. Kiểm tra xem đơn hàng có tồn tại không
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng này!');
+    }
+
+    // 2. Cập nhật trạng thái
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: status as OrderStatus }
     });
   }
 }

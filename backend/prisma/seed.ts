@@ -66,7 +66,7 @@ async function main() {
         phone: data.user.phone,
         address: data.user.address,
         avatarUrl: `https://ui-avatars.com/api/?name=${data.user.fullName.replace(/ /g, '+')}&background=random`,
-        role: 'FARMER',
+        role: 'SELLER',
       }
     });
 

@@ -33,7 +33,7 @@ export class AuthService {
         email: registerDto.email,
         password: hashedPassword,
         fullName: registerDto.fullName,
-        role: 'CUSTOMER', // Mặc định là Khách hàng
+        role: 'BUYER', // Mặc định là Người mua
       },
     });
 

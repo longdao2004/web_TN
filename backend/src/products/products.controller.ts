@@ -1,6 +1,6 @@
 import { 
   Controller, Get, Post, Body, Patch, Param, Delete, 
-  UseGuards, UseInterceptors, UploadedFile 
+  UseGuards, UseInterceptors, UploadedFile, Req 
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
@@ -9,6 +9,8 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { checkRole } from '../auth/auth.helper';
+import { Role } from '../auth/role.enum';
 
 @ApiBearerAuth() // Hiện ổ khóa bảo mật cho tất cả các API trong file này
 @Controller('products')
@@ -47,9 +49,11 @@ export class ProductsController {
     },
   })
   async create(
+    @Req() req: any,
     @Body() createProductDto: CreateProductDto,
     @UploadedFile() file: any 
   ) {
+    checkRole(req, [Role.SELLER, Role.ADMIN]);
     if (file) {
       // Bơm ảnh lên Cloudinary và lấy link gắn vào DTO
       const uploadResult = await this.cloudinaryService.uploadImage(file);

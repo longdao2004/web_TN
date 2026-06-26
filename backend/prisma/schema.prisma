@@ -14,8 +14,8 @@ datasource db {
 }
 
 enum Role {
-  CUSTOMER
-  FARMER
+  BUYER
+  SELLER
   ADMIN
 }
 
@@ -34,19 +34,19 @@ enum PaymentProvider {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String  @id @default(uuid())
+  email     String  @unique
   password  String
   fullName  String
-  phone     String?  @unique
+  phone     String? @unique
   address   String?
   avatarUrl String?
-  role      Role     @default(CUSTOMER)
+  role      Role    @default(BUYER)
 
-  store      Store?
-  cart       Cart?
-  orders     Order[]
-  reviews    Review[]
+  store   Store?
+  cart    Cart?
+  orders  Order[]
+  reviews Review[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -73,7 +73,7 @@ model Category {
   id          String  @id @default(uuid())
   name        String
   description String?
-  
+
   products Product[]
 
   createdAt DateTime  @default(now())
@@ -87,10 +87,12 @@ model Product {
   description String?
   imageUrl    String?
 
-  origin      String?
-  unit        String?
-  soldCount   Int     @default(0)
-  isActive    Boolean @default(true)
+  origin        String?
+  farmerName    String?
+  farmerAddress String?
+  unit          String?
+  soldCount     Int     @default(0)
+  isActive      Boolean @default(true)
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
@@ -118,7 +120,7 @@ model ProductBatch {
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
-  
+
   orderItems OrderItem[]
 
   createdAt DateTime @default(now())
@@ -132,14 +134,14 @@ model Certificate {
   issueDate DateTime
 
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model Cart {
-  id     String @id @default(uuid())
-  
+  id String @id @default(uuid())
+
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 
@@ -170,7 +172,7 @@ model Order {
 
   items   OrderItem[]
   payment Payment?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -185,7 +187,7 @@ model OrderItem {
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
-  
+
   // Nút thắt đã được gỡ: Liên kết thẳng với Lô hàng cụ thể
   productBatchId String
   batch          ProductBatch @relation(fields: [productBatchId], references: [id])
@@ -198,7 +200,7 @@ model Payment {
   amount        Float
   isSuccess     Boolean         @default(false)
   paymentDate   DateTime?
-  
+
   orderId String @unique
   order   Order  @relation(fields: [orderId], references: [id])
 
@@ -209,7 +211,7 @@ model Review {
   id      String  @id @default(uuid())
   rating  Int
   comment String?
-  
+
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
