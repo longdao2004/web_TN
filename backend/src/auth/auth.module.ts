@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtStrategy } from './jwt.strategy';
+import { GoogleStrategy } from './google.strategy';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { JwtStrategy } from './jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtStrategy], // Nhúng PrismaService và JwtStrategy để gọi Database và xử lý Token
+  providers: [AuthService, PrismaService, JwtStrategy, GoogleStrategy], // Nhúng PrismaService và các Strategy
 })
 export class AuthModule {}

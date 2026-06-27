@@ -36,12 +36,17 @@ enum PaymentProvider {
 model User {
   id        String  @id @default(uuid())
   email     String  @unique
-  password  String
+  password  String?
   fullName  String
   phone     String? @unique
   address   String?
   avatarUrl String?
   role      Role    @default(BUYER)
+
+  // Auth fields
+  googleId             String?   @unique
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
 
   store   Store?
   cart    Cart?

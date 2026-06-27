@@ -10,9 +10,11 @@ import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { UsersModule } from './users/users.module';
+import { StoresModule } from './stores/stores.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
-  imports: [PrismaModule, CategoriesModule, ProductsModule, AuthModule, CloudinaryModule, CartModule, OrderModule, StatisticsModule, UsersModule],
+  imports: [PrismaModule, CategoriesModule, ProductsModule, AuthModule, CloudinaryModule, CartModule, OrderModule, StatisticsModule, UsersModule, StoresModule, MailModule],
   controllers: [AppController],
   providers: [AppService],
 })
