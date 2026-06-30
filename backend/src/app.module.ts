@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -13,9 +14,14 @@ import { UsersModule } from './users/users.module';
 import { StoresModule } from './stores/stores.module';
 import { MailModule } from './mail/mail.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { ProductBatchesModule } from './product-batches/product-batches.module';
+import { CertificatesModule } from './certificates/certificates.module';
 
 @Module({
-  imports: [PrismaModule, CategoriesModule, ProductsModule, AuthModule, CloudinaryModule, CartModule, OrderModule, StatisticsModule, UsersModule, StoresModule, MailModule, ReviewsModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }), // Load biến môi trường từ .env
+    PrismaModule, CategoriesModule, ProductsModule, AuthModule, CloudinaryModule, CartModule, OrderModule, StatisticsModule, UsersModule, StoresModule, MailModule, ReviewsModule, ProductBatchesModule, CertificatesModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
