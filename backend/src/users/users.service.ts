@@ -30,7 +30,9 @@ export class UsersService {
   }
 
   async updateProfile(userId: string, updateUserDto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId, deletedAt: null } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
+    });
     if (!user) {
       throw new NotFoundException('Không tìm thấy người dùng');
     }
@@ -66,7 +68,9 @@ export class UsersService {
   }
 
   async updateRole(id: string, updateRoleDto: UpdateRoleDto) {
-    const user = await this.prisma.user.findUnique({ where: { id, deletedAt: null } });
+    const user = await this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!user) {
       throw new NotFoundException('Không tìm thấy người dùng');
     }
@@ -84,7 +88,9 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id, deletedAt: null } });
+    const user = await this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!user) {
       throw new NotFoundException('Không tìm thấy người dùng');
     }

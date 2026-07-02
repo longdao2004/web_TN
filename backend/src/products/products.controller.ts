@@ -1,6 +1,15 @@
-import { 
-  Controller, Get, Post, Body, Patch, Param, Delete, 
-  UseGuards, UseInterceptors, UploadedFile, Req 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
@@ -17,14 +26,15 @@ import { Role } from '../auth/role.enum';
 export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  @UseGuards(AuthGuard('jwt')) 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes('multipart/form-data') // 1. Báo cho Swagger biết đây là dạng gửi File (Form Data)
-  @ApiBody({ // 2. Vẽ giao diện Form cho Swagger
+  @ApiBody({
+    // 2. Vẽ giao diện Form cho Swagger
     schema: {
       type: 'object',
       properties: {
@@ -36,12 +46,18 @@ export class ProductsController {
         },
         // Các trường dữ liệu đi kèm
         name: { type: 'string', example: 'Cà chua hữu cơ Mộc Châu' },
-        description: { type: 'string', example: 'Cà chua hái tại vườn, tươi ngon' },
+        description: {
+          type: 'string',
+          example: 'Cà chua hái tại vườn, tươi ngon',
+        },
         origin: { type: 'string', example: 'Mộc Châu, Sơn La' },
         unit: { type: 'string', example: 'kg' },
         price: { type: 'number', example: 35000 },
         quantity: { type: 'number', example: 50 },
-        categoryId: { type: 'string', description: 'Dán ID của Category vào đây' },
+        categoryId: {
+          type: 'string',
+          description: 'Dán ID của Category vào đây',
+        },
         storeId: { type: 'string', description: 'Dán ID của Store vào đây' },
         harvestDate: { type: 'string', example: '2026-06-25T00:00:00Z' },
         expiryDate: { type: 'string', example: '2026-06-30T00:00:00Z' },
@@ -51,7 +67,7 @@ export class ProductsController {
   async create(
     @Req() req: any,
     @Body() createProductDto: CreateProductDto,
-    @UploadedFile() file: any 
+    @UploadedFile() file: any,
   ) {
     checkRole(req, [Role.SELLER, Role.ADMIN]);
     if (file) {

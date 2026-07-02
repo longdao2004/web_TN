@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrderStatus } from '@prisma/client';
 import { CreateOrderDto } from './dto/order.dto';
@@ -12,16 +16,16 @@ export class OrderService {
     const cart = await this.prisma.cart.findUnique({
       where: { userId },
       include: {
-        items: { 
-          include: { 
-            product: { 
-              include: { 
-                batches: { orderBy: { createdAt: 'desc' } } 
-              } 
-            } 
-          } 
-        }
-      }
+        items: {
+          include: {
+            product: {
+              include: {
+                batches: { orderBy: { createdAt: 'desc' } },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!cart || cart.items.length === 0) {
@@ -30,7 +34,7 @@ export class OrderService {
 
     // 2. Tính toán tổng tiền trước
     let totalAmount = 0;
-    cart.items.forEach(item => {
+    cart.items.forEach((item) => {
       const latestBatch = item.product.batches[0];
       const price = latestBatch ? latestBatch.price : 0;
       totalAmount += price * item.quantity;
@@ -47,19 +51,19 @@ export class OrderService {
           shippingAddress: dto.shippingAddress,
 
           items: {
-            create: cart.items.map(item => {
+            create: cart.items.map((item) => {
               const latestBatch = item.product.batches[0];
               const price = latestBatch ? latestBatch.price : 0;
-              
+
               return {
                 productId: item.productId,
                 productBatchId: latestBatch?.id,
                 quantity: item.quantity,
-                priceAtPurchase: price
+                priceAtPurchase: price,
               };
-            })
-          }
-        }
+            }),
+          },
+        },
       });
 
       // 3b. Trừ số lượng tồn kho trong Lô hàng (Batch)
@@ -67,11 +71,13 @@ export class OrderService {
         const latestBatch = item.product.batches[0];
         if (latestBatch) {
           if (latestBatch.quantity < item.quantity) {
-            throw new BadRequestException(`Sản phẩm ${item.product.name} không đủ số lượng trong kho!`);
+            throw new BadRequestException(
+              `Sản phẩm ${item.product.name} không đủ số lượng trong kho!`,
+            );
           }
           await tx.productBatch.update({
             where: { id: latestBatch.id },
-            data: { quantity: latestBatch.quantity - item.quantity }
+            data: { quantity: latestBatch.quantity - item.quantity },
           });
         }
       }
@@ -79,10 +85,10 @@ export class OrderService {
       // 3c. Làm sạch giỏ hàng sau khi chốt đơn
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
-      return { 
-        message: 'Đặt hàng thành công!', 
+      return {
+        message: 'Đặt hàng thành công!',
         orderId: order.id,
-        totalAmount: totalAmount 
+        totalAmount: totalAmount,
       };
     });
   }
@@ -99,14 +105,14 @@ export class OrderService {
           include: {
             // Chỉ lấy tên và ảnh của sản phẩm cho nhẹ dữ liệu trả về
             product: {
-              select: { 
-                name: true, 
-                imageUrl: true 
-              }
-            }
-          }
-        }
-      }
+              select: {
+                name: true,
+                imageUrl: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!orders || orders.length === 0) {
@@ -122,7 +128,7 @@ export class OrderService {
   async updateOrderStatus(orderId: string, status: string) {
     // 1. Kiểm tra xem đơn hàng có tồn tại không
     const order = await this.prisma.order.findUnique({
-      where: { id: orderId }
+      where: { id: orderId },
     });
 
     if (!order) {
@@ -132,7 +138,7 @@ export class OrderService {
     // 2. Cập nhật trạng thái
     return this.prisma.order.update({
       where: { id: orderId },
-      data: { status: status as OrderStatus }
+      data: { status: status as OrderStatus },
     });
   }
 }

@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { CertificatesService } from './certificates.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
@@ -19,7 +29,10 @@ export class CertificatesController {
   @Post()
   @ApiOperation({ summary: 'Chủ cửa hàng thêm chứng nhận cho sản phẩm' })
   create(@Req() req: any, @Body() createCertificateDto: CreateCertificateDto) {
-    return this.certificatesService.create(req.user.userId, createCertificateDto);
+    return this.certificatesService.create(
+      req.user.userId,
+      createCertificateDto,
+    );
   }
 
   // API Public
@@ -34,8 +47,16 @@ export class CertificatesController {
   @Roles(Role.SELLER, Role.ADMIN)
   @Patch(':id')
   @ApiOperation({ summary: 'Chủ cửa hàng cập nhật chứng nhận' })
-  update(@Req() req: any, @Param('id') id: string, @Body() updateCertificateDto: UpdateCertificateDto) {
-    return this.certificatesService.update(req.user.userId, id, updateCertificateDto);
+  update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() updateCertificateDto: UpdateCertificateDto,
+  ) {
+    return this.certificatesService.update(
+      req.user.userId,
+      id,
+      updateCertificateDto,
+    );
   }
 
   @ApiBearerAuth()

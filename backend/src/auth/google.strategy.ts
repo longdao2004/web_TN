@@ -8,14 +8,21 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientID: process.env.GOOGLE_CLIENT_ID || 'fake-client-id',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'fake-client-secret',
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback',
+      callbackURL:
+        process.env.GOOGLE_CALLBACK_URL ||
+        'http://localhost:3000/auth/google/callback',
       scope: ['email', 'profile'],
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: VerifyCallback,
+  ): Promise<any> {
     const { name, emails, id, photos } = profile;
-    
+
     // Đóng gói dữ liệu lấy từ Google
     const user = {
       googleId: id,
@@ -23,7 +30,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       fullName: `${name.familyName || ''} ${name.givenName || ''}`.trim(),
       avatarUrl: photos[0]?.value,
     };
-    
+
     // Chuyển dữ liệu này xuống req.user trong Controller
     done(null, user);
   }

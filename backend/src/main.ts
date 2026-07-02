@@ -8,7 +8,9 @@ async function bootstrap() {
   // Cấu hình Swagger
   const config = new DocumentBuilder()
     .setTitle('API Nông Sản')
-    .setDescription('Tài liệu hệ thống API cho Website Thương mại điện tử Nông sản')
+    .setDescription(
+      'Tài liệu hệ thống API cho Website Thương mại điện tử Nông sản',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();

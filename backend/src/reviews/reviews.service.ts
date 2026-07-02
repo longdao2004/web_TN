@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -10,7 +15,7 @@ export class ReviewsService {
 
   /**
    * Tạo đánh giá mới cho sản phẩm.
-   * Logic quan trọng: 
+   * Logic quan trọng:
    * - Phải đảm bảo sản phẩm tồn tại trước khi cho phép đánh giá.
    * - (Tùy chọn mở rộng sau này: Có thể query bảng Order/OrderItem để kiểm tra user đã thực sự mua hàng chưa).
    */
@@ -37,7 +42,7 @@ export class ReviewsService {
   /**
    * Lấy toàn bộ đánh giá của 1 sản phẩm cụ thể.
    * Logic quan trọng:
-   * - Khi trả về dữ liệu, phải include bảng User nhưng CẦN ẨN thông tin nhạy cảm (email, password), 
+   * - Khi trả về dữ liệu, phải include bảng User nhưng CẦN ẨN thông tin nhạy cảm (email, password),
    *   chỉ lấy fullName và avatarUrl để hiển thị lên UI.
    */
   async findByProduct(productId: string) {
@@ -56,9 +61,15 @@ export class ReviewsService {
    * Người dùng tự sửa đánh giá của mình.
    * Logic quan trọng: Phải kiểm tra quyền sở hữu (userId của token == userId của review).
    */
-  async update(userId: string, reviewId: string, updateReviewDto: UpdateReviewDto) {
-    const review = await this.prisma.review.findUnique({ where: { id: reviewId, deletedAt: null } });
-    
+  async update(
+    userId: string,
+    reviewId: string,
+    updateReviewDto: UpdateReviewDto,
+  ) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId, deletedAt: null },
+    });
+
     if (!review) {
       throw new NotFoundException('Không tìm thấy đánh giá');
     }
@@ -79,8 +90,10 @@ export class ReviewsService {
    * Logic quan trọng: Cho phép chính người viết xóa HOẶC Admin xóa nếu nội dung vi phạm.
    */
   async remove(userId: string, userRole: string, reviewId: string) {
-    const review = await this.prisma.review.findUnique({ where: { id: reviewId, deletedAt: null } });
-    
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId, deletedAt: null },
+    });
+
     if (!review) {
       throw new NotFoundException('Không tìm thấy đánh giá');
     }

@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  // Hàm này tự động chạy nếu Token hợp lệ. 
+  // Hàm này tự động chạy nếu Token hợp lệ.
   // Kết quả return ở đây sẽ được gắn vào biến `req.user` ở các API.
   async validate(payload: any) {
     return { userId: payload.sub, email: payload.email, role: payload.role };

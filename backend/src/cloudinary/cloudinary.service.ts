@@ -6,7 +6,6 @@ const toStream = require('buffer-to-stream');
 
 @Injectable()
 export class CloudinaryService {
-  
   // Hàm nhận file từ người dùng và đẩy lên Cloudinary
   async uploadImage(file: any): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -17,7 +16,7 @@ export class CloudinaryService {
           resolve(result); // Trả về toàn bộ thông tin ảnh (bao gồm link URL)
         },
       );
-      
+
       // Chuyển đổi dữ liệu thô (buffer) thành stream để đẩy đi
       toStream(file.buffer).pipe(upload);
     });

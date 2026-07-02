@@ -1,6 +1,16 @@
-import { Controller, Post, Body, Request, UseGuards, Get, Patch, Param, Delete } from '@nestjs/common'; // <-- Đã thêm Patch, Param, Delete vào đây
+import {
+  Controller,
+  Post,
+  Body,
+  Request,
+  UseGuards,
+  Get,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common'; // <-- Đã thêm Patch, Param, Delete vào đây
 import { CartService } from './cart.service';
-import { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto'; 
+import { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -13,7 +23,7 @@ export class CartController {
 
   @Post('items')
   addToCart(@Request() req: any, @Body() dto: AddToCartDto) {
-    const userId = req.user.userId; 
+    const userId = req.user.userId;
     return this.cartService.addToCart(userId, dto);
   }
 
@@ -25,19 +35,16 @@ export class CartController {
 
   @Patch('items/:id')
   updateCartItem(
-    @Request() req: any, 
-    @Param('id') cartItemId: string, 
-    @Body() dto: UpdateCartItemDto
+    @Request() req: any,
+    @Param('id') cartItemId: string,
+    @Body() dto: UpdateCartItemDto,
   ) {
     const userId = req.user.userId;
     return this.cartService.updateCartItem(userId, cartItemId, dto.quantity);
   }
 
   @Delete('items/:id')
-  removeCartItem(
-    @Request() req: any, 
-    @Param('id') cartItemId: string
-  ) {
+  removeCartItem(@Request() req: any, @Param('id') cartItemId: string) {
     const userId = req.user.userId;
     return this.cartService.removeCartItem(userId, cartItemId);
   }

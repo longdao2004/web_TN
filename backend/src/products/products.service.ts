@@ -9,7 +9,15 @@ export class ProductsService {
 
   create(createProductDto: CreateProductDto) {
     // Bóc tách dữ liệu lô hàng ra khỏi thông tin chung của sản phẩm
-    const { harvestDate, expiryDate, quantity, price, categoryId, storeId, ...productData } = createProductDto;
+    const {
+      harvestDate,
+      expiryDate,
+      quantity,
+      price,
+      categoryId,
+      storeId,
+      ...productData
+    } = createProductDto;
 
     // Prisma Nested Writes: Tạo Product và ProductBatch trong cùng một Transaction
     return this.prisma.product.create({
@@ -45,9 +53,9 @@ export class ProductsService {
         // Chỉ lấy những lô hàng còn hạn sử dụng (expiryDate lớn hơn ngày hiện tại)
         batches: {
           where: {
-            expiryDate: { gt: new Date() }
-          }
-        }
+            expiryDate: { gt: new Date() },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

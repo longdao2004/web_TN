@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -30,7 +40,11 @@ export class ReviewsController {
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   @ApiOperation({ summary: 'Khách hàng tự sửa đánh giá của mình' })
-  update(@Req() req: any, @Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
+  update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() updateReviewDto: UpdateReviewDto,
+  ) {
     return this.reviewsService.update(req.user.userId, id, updateReviewDto);
   }
 

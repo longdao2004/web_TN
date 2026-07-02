@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -51,13 +55,16 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
     });
-    
+
     // Nếu user đăng ký bằng Google (password = null) mà cố login thường sẽ bị từ chối
     if (!user || !user.password) {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác!');
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác!');
     }
@@ -68,7 +75,12 @@ export class AuthService {
     return {
       message: 'Đăng nhập thành công!',
       accessToken: accessToken,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role }
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      },
     };
   }
 
@@ -113,7 +125,12 @@ export class AuthService {
     return {
       message: 'Đăng nhập Google thành công!',
       accessToken: accessToken,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role }
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      },
     };
   }
 
@@ -127,7 +144,10 @@ export class AuthService {
 
     if (!user) {
       // Vì lý do bảo mật, không trả về lỗi "không tìm thấy email" để tránh bị dò quét email
-      return { message: 'Nếu email tồn tại, link khôi phục mật khẩu sẽ được gửi đến hộp thư của bạn.' };
+      return {
+        message:
+          'Nếu email tồn tại, link khôi phục mật khẩu sẽ được gửi đến hộp thư của bạn.',
+      };
     }
 
     // Tạo chuỗi token ngẫu nhiên và lưu vào Database
@@ -145,7 +165,10 @@ export class AuthService {
     // Bổ sung: Gửi email chứa token khôi phục
     await this.mailService.sendForgotPasswordEmail(user.email, resetToken);
 
-    return { message: 'Nếu email tồn tại, link khôi phục mật khẩu sẽ được gửi đến hộp thư của bạn.' };
+    return {
+      message:
+        'Nếu email tồn tại, link khôi phục mật khẩu sẽ được gửi đến hộp thư của bạn.',
+    };
   }
 
   /**
@@ -161,12 +184,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BadRequestException('Token khôi phục mật khẩu không hợp lệ hoặc đã hết hạn.');
+      throw new BadRequestException(
+        'Token khôi phục mật khẩu không hợp lệ hoặc đã hết hạn.',
+      );
     }
 
     // Mã hóa mật khẩu mới và cập nhật DB, đồng thời xóa token
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(resetPasswordDto.newPassword, saltRounds);
+    const hashedPassword = await bcrypt.hash(
+      resetPasswordDto.newPassword,
+      saltRounds,
+    );
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -177,6 +205,9 @@ export class AuthService {
       },
     });
 
-    return { message: 'Cập nhật mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.' };
+    return {
+      message:
+        'Cập nhật mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.',
+    };
   }
 }

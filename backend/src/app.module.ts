@@ -16,11 +16,26 @@ import { MailModule } from './mail/mail.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ProductBatchesModule } from './product-batches/product-batches.module';
 import { CertificatesModule } from './certificates/certificates.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // Load biến môi trường từ .env
-    PrismaModule, CategoriesModule, ProductsModule, AuthModule, CloudinaryModule, CartModule, OrderModule, StatisticsModule, UsersModule, StoresModule, MailModule, ReviewsModule, ProductBatchesModule, CertificatesModule
+    PrismaModule,
+    CategoriesModule,
+    ProductsModule,
+    AuthModule,
+    CloudinaryModule,
+    CartModule,
+    OrderModule,
+    StatisticsModule,
+    UsersModule,
+    StoresModule,
+    MailModule,
+    ReviewsModule,
+    ProductBatchesModule,
+    CertificatesModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

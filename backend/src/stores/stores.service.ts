@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -42,9 +46,9 @@ export class StoresService {
       where: { ownerId: userId, deletedAt: null },
       include: {
         _count: {
-          select: { products: true }
-        }
-      }
+          select: { products: true },
+        },
+      },
     });
 
     if (!store) {
@@ -67,11 +71,11 @@ export class StoresService {
       where: { deletedAt: null },
       include: {
         owner: {
-          select: { fullName: true, email: true }
+          select: { fullName: true, email: true },
         },
         _count: {
-          select: { products: true }
-        }
+          select: { products: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
