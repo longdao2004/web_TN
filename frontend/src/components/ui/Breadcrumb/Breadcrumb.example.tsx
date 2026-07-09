@@ -1,11 +1,40 @@
-﻿import React from 'react';
-import { Breadcrumb } from './Breadcrumb';
+import React from 'react';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+  BreadcrumbEllipsis
+} from './Breadcrumb';
 
 export const BreadcrumbExample = () => {
   return (
-    <div className="p-4 border rounded-md">
-      <h3 className="text-lg font-bold mb-4">Breadcrumb Example</h3>
-      <Breadcrumb />
+    <div className="p-8 bg-white">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          
+          <BreadcrumbItem>
+            <BreadcrumbEllipsis />
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/products">Trái cây</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/products/apple" isCurrentPage>
+              Táo nhập khẩu
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
     </div>
   );
 };

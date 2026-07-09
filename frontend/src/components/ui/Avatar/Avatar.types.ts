@@ -1,5 +1,14 @@
-﻿import { HTMLAttributes } from 'react';
+import { ImgHTMLAttributes } from 'react';
 
-export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
-  // TODO: Add specific props for Avatar
+export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
+
+export interface AvatarProps extends ImgHTMLAttributes<HTMLImageElement> {
+  /** Đường dẫn ảnh thật */
+  src?: string;
+  /** Tên dùng để tạo chữ cái viết tắt nếu ảnh lỗi hoặc không có ảnh */
+  fallback?: string;
+  /** Kích thước Avatar */
+  size?: AvatarSize;
+  /** Có bo tròn hoàn toàn không (mặc định true) */
+  rounded?: boolean;
 }

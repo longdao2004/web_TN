@@ -1,13 +1,15 @@
-﻿import React, { forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import { cn } from '@/utils/cn';
 import { SkeletonProps } from './Skeleton.types';
 
 export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, ...props }, ref) => {
     return (
-      <div ref={ref} className={cn('Skeleton-boilerplate', className)} {...props}>
-        {children || 'Skeleton Component Boilerplate'}
-      </div>
+      <div
+        ref={ref}
+        className={cn('animate-pulse rounded-md bg-gray-200/80', className)}
+        {...props}
+      />
     );
   }
 );

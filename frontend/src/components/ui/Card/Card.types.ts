@@ -1,5 +1,5 @@
-﻿import { HTMLAttributes } from 'react';
+import { HTMLAttributes, ReactNode } from 'react';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  // TODO: Add specific props for Card
+  children: ReactNode;
 }
