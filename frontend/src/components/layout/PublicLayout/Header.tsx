@@ -1,17 +1,23 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, Bell, Menu } from "lucide-react";
 import { PageContainer } from "../core";
 import { SearchBox, Button, Avatar, Dropdown } from "@/components/ui";
 
 export const Header = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-white/80 backdrop-blur-md">
       <PageContainer>
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo & Mobile Menu */}
           <div className="flex items-center gap-4">
-            <button className="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900">
+            <button 
+              className="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
               <Menu className="h-6 w-6" />
             </button>
             <Link href="/" className="flex items-center gap-2">
@@ -98,6 +104,35 @@ export const Header = () => {
           </div>
         </div>
       </PageContainer>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden absolute top-16 left-0 w-full bg-white border-b border-[var(--color-border)] shadow-lg animate-in slide-in-from-top-2">
+          <nav className="flex flex-col p-4 space-y-4 text-sm font-medium text-[var(--color-text-secondary)]">
+            <Link href="/products" className="hover:text-[var(--color-primary)] transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+              Sản phẩm
+            </Link>
+            <Link href="/stores" className="hover:text-[var(--color-primary)] transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+              Cửa hàng
+            </Link>
+            <Link href="/about" className="hover:text-[var(--color-primary)] transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+              Giới thiệu
+            </Link>
+            <Link href="/contact" className="hover:text-[var(--color-primary)] transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+              Liên hệ
+            </Link>
+            <div className="pt-4 border-t border-[var(--color-border)] flex flex-col space-y-4">
+              <Link href="/login" className="hover:text-[var(--color-primary)] transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                Đăng nhập
+              </Link>
+              <Link href="/register" className="text-[var(--color-primary)] transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                Đăng ký
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
+

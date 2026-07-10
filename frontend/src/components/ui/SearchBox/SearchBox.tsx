@@ -1,3 +1,4 @@
+"use client";
 import React, { forwardRef, useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -81,3 +82,4 @@ export const SearchBox = forwardRef<HTMLInputElement, SearchBoxProps>(
 );
 
 SearchBox.displayName = 'SearchBox';
+

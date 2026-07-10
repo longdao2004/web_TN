@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, ReactNode } from "react";
 import { Sidebar, SidebarItemProps } from "./Sidebar";
 import { Topbar } from "./Topbar";
@@ -48,3 +49,4 @@ export const BaseDashboardLayout = ({
     </div>
   );
 };
+

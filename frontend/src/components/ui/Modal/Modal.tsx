@@ -1,3 +1,4 @@
+"use client";
 import React, { forwardRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -115,3 +116,4 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
 );
 
 Modal.displayName = 'Modal';
+

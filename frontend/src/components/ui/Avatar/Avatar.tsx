@@ -1,3 +1,4 @@
+"use client";
 import React, { forwardRef, useState } from 'react';
 import { User } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -62,3 +63,4 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
 );
 
 Avatar.displayName = 'Avatar';
+

@@ -1,3 +1,4 @@
+"use client";
 import React, { forwardRef, useState } from 'react';
 import { cn } from '@/utils/cn';
 import { TabsProps } from './Tabs.types';
@@ -63,3 +64,4 @@ export const Tabs = forwardRef<HTMLDivElement, TabsProps>(
 );
 
 Tabs.displayName = 'Tabs';
+

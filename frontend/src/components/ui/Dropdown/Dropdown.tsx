@@ -1,3 +1,4 @@
+"use client";
 import React, { forwardRef, useState, useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 import { DropdownProps } from './Dropdown.types';
@@ -88,3 +89,4 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
 );
 
 Dropdown.displayName = 'Dropdown';
+

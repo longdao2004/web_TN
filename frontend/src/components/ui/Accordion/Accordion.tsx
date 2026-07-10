@@ -1,3 +1,4 @@
+"use client";
 import React, { forwardRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -56,3 +57,4 @@ export const Accordion = forwardRef<HTMLDivElement, AccordionProps>(
 );
 
 Accordion.displayName = 'Accordion';
+

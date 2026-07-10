@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Menu, Bell } from "lucide-react";
 import {
@@ -89,3 +90,4 @@ export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
     </header>
   );
 };
+
