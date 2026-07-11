@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { PageContainer } from '@/components/layout/core';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
@@ -30,14 +31,18 @@ export const HeroSection = () => {
             </p>
             
             <div className="flex flex-wrap items-center gap-4 pt-4">
-              <Button size="lg" className="h-14 px-8 text-base">
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Mua sắm ngay
-              </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-base bg-white">
-                Khám phá thêm
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link href="/san-pham">
+                <Button size="lg" className="h-14 px-8 text-base">
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Mua sắm ngay
+                </Button>
+              </Link>
+              <Link href="/san-pham">
+                <Button size="lg" variant="outline" className="h-14 px-8 text-base bg-white">
+                  Khám phá thêm
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
             </div>
             
             <div className="flex items-center gap-6 pt-6 text-sm font-medium text-gray-500">

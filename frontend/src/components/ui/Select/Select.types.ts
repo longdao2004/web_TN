@@ -13,6 +13,8 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   helperText?: string;
   /** Thông báo lỗi */
   error?: string;
+  /** Placeholder */
+  placeholder?: string;
   /** Mảng dữ liệu options */
   options: SelectOption[];
   /** Chiều rộng 100% */

@@ -14,7 +14,7 @@ export const FeaturedProductsSection = () => {
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Sản phẩm nổi bật</h2>
             <p className="mt-2 text-sm text-gray-500">Được khách hàng đánh giá cao nhất trong tuần</p>
           </div>
-          <Link href="/products">
+          <Link href="/san-pham">
             <Button variant="outline">Xem tất cả</Button>
           </Link>
         </div>

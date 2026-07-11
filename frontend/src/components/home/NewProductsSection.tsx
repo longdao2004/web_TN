@@ -17,7 +17,7 @@ export const NewProductsSection = () => {
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Sản phẩm mới lên kệ</h2>
             <p className="mt-2 text-sm text-gray-500">Nông sản vừa thu hoạch, tươi ngon 100%</p>
           </div>
-          <Link href="/products?sort=newest">
+          <Link href="/san-pham?sort=newest">
             <Button variant="outline">Khám phá thêm</Button>
           </Link>
         </div>

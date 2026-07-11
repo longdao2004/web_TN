@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, HTMLAttributes } from 'react';
 import { ChevronRight, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import {
