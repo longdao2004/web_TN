@@ -27,7 +27,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white transition-all hover:shadow-lg hover:-translate-y-1">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/san-pham/${product.id}`}>
           <img 
             src={product.image} 
             alt={product.name} 
@@ -53,7 +53,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           {product.store}
         </Link>
         
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/san-pham/${product.id}`}>
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)] line-clamp-2 hover:text-[var(--color-primary)] transition-colors h-10">
             {product.name}
           </h3>

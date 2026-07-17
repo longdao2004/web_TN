@@ -20,7 +20,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/san-pham/${product.slug || product.id}`}>
           <img
             src={product.image}
             alt={product.name}
@@ -74,7 +74,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
         </div>
 
         {/* Title */}
-        <Link href={`/product/${product.id}`}>
+        <Link href={`/san-pham/${product.slug || product.id}`}>
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)] line-clamp-2 hover:text-[var(--color-primary)] transition-colors h-10">
             {product.name}
           </h3>
@@ -112,9 +112,11 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           </div>
 
           <div className="flex items-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
-            <Button className="flex-1 h-9 text-xs" variant="primary">
-              Mua ngay
-            </Button>
+            <Link href={`/san-pham/${product.slug || product.id}`} className="flex-1">
+              <Button className="w-full h-9 text-xs" variant="primary">
+                Xem chi tiết
+              </Button>
+            </Link>
             <Button size="icon" variant="outline" className="h-9 w-9 shrink-0">
               <ShoppingCart className="h-4 w-4" />
             </Button>
