@@ -1,19 +1,28 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { QuantitySelector } from "./QuantitySelector";
 import { ActionButtons } from "./ActionButtons";
 
 interface ProductActionsProps {
   stock: number;
+  productName: string;
 }
 
-export const ProductActions = ({ stock }: ProductActionsProps) => {
+export const ProductActions = ({ stock, productName }: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
 
   const handleAddToCart = () => {
-    alert("Đã thêm vào giỏ hàng");
+    toast.success("Đã thêm vào giỏ hàng", {
+      description: `${productName} (x${quantity})`,
+      action: {
+        label: "Xem giỏ hàng",
+        onClick: () => router.push("/gio-hang"),
+      },
+      duration: 4000,
+    });
   };
 
   const handleBuyNow = () => {
@@ -21,11 +30,11 @@ export const ProductActions = ({ stock }: ProductActionsProps) => {
   };
 
   const handleFavorite = () => {
-    alert("Đã thêm vào danh sách yêu thích!");
+    toast.info("Đã thêm vào danh sách yêu thích!");
   };
 
   const handleShare = () => {
-    alert("Đã copy link chia sẻ!");
+    toast.info("Đã copy link chia sẻ!");
   };
 
   return (

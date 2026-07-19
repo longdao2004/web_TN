@@ -4,9 +4,11 @@ import Link from "next/link";
 import { ShoppingCart, Bell, Menu } from "lucide-react";
 import { PageContainer } from "../core";
 import { SearchBox, Button, Avatar, Dropdown } from "@/components/ui";
+import { useCartStore } from "@/store/useCartStore";
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const totalItems = useCartStore((state) => state.totalItems);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-white/80 backdrop-blur-md">
@@ -71,16 +73,18 @@ export const Header = () => {
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
             </Button>
 
-            <Link href="/cart">
+            <Link href="/gio-hang">
               <Button
                 variant="ghost"
                 size="icon"
                 className="relative text-gray-600"
               >
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-primary)] text-[10px] font-bold text-white">
-                  3
-                </span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-primary)] text-[10px] font-bold text-white animate-in zoom-in duration-300">
+                    {totalItems > 99 ? '99+' : totalItems}
+                  </span>
+                )}
               </Button>
             </Link>
 

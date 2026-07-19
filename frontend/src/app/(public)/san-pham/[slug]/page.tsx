@@ -69,7 +69,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
               <div className="w-full h-px bg-gray-100 my-2"></div>
 
-              <ProductActions stock={product.stock} />
+              <ProductActions stock={product.stock} productName={product.name} />
 
               <div className="w-full h-px bg-gray-100 my-2"></div>
 

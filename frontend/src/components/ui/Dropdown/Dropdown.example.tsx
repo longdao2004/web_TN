@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'sonner';
 import { Dropdown } from './Dropdown';
 import { Avatar } from '../Avatar';
 import { User, Settings, LogOut } from 'lucide-react';
@@ -11,7 +12,7 @@ export const DropdownExample = () => {
     { divider: true, label: '' },
     { label: 'Tính năng Pro', disabled: true },
     { divider: true, label: '' },
-    { label: 'Đăng xuất', icon: <LogOut />, danger: true, onClick: () => alert('Đã đăng xuất!') },
+    { label: 'Đăng xuất', icon: <LogOut />, danger: true, onClick: () => toast.success('Đã đăng xuất!') },
   ];
 
   return (

@@ -1,7 +1,11 @@
-import React from 'react';
+"use client";
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ShoppingCart, Star, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge, Button } from '@/components/ui';
+import { useCartStore } from '@/store/useCartStore';
 
 interface ProductCardProps {
   product: {
@@ -19,8 +23,49 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const addItem = useCartStore((state) => state.addItem);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    setTimeout(() => {
+      const isUpdated = addItem({
+        id: product.id,
+        productId: product.id,
+        slug: product.id,
+        name: product.name,
+        category: 'Sản phẩm',
+        image: product.image,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        quantity: 1,
+        maxQuantity: 10,
+        store: { id: 'store-1', name: product.store, slug: product.store },
+      }, 1);
+      
+      if (isUpdated) {
+        toast.success('Đã tăng số lượng trong giỏ hàng', {
+          description: product.name,
+          action: { label: 'Xem giỏ', onClick: () => router.push('/gio-hang') },
+          duration: 4000
+        });
+      } else {
+        toast.success('Đã thêm vào giỏ hàng', {
+          description: product.name,
+          action: { label: 'Xem giỏ', onClick: () => router.push('/gio-hang') },
+          duration: 4000
+        });
+      }
+      setIsLoading(false);
+    }, 400);
   };
 
   return (
@@ -80,8 +125,18 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
           
-          <Button size="icon" className="h-9 w-9 rounded-full shadow-sm">
-            <ShoppingCart className="h-4 w-4" />
+          <Button 
+            size="icon" 
+            className="h-9 w-9 rounded-full shadow-sm group/btn hover:bg-emerald-500 hover:text-white hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden"
+            onClick={handleAddToCart}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-emerald-500 group-hover/btn:text-white" />
+            ) : (
+              <ShoppingCart className="h-4 w-4 transition-transform duration-300 group-active/btn:scale-75 group-active/btn:-translate-y-1" />
+            )}
+            <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-0 group-active/btn:animate-ping"></span>
           </Button>
         </div>
       </div>
