@@ -5,15 +5,19 @@ import { mockCartItems } from '@/mock/cart';
 interface CartState {
   items: CartItem[];
   totalItems: number;
+  buyNowItem: CartItem | null;
   addItem: (item: CartItem, quantity: number) => boolean;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  setBuyNowItem: (item: CartItem) => void;
+  clearBuyNowItem: () => void;
 }
 
 export const useCartStore = create<CartState>((set) => ({
   items: mockCartItems,
   totalItems: mockCartItems.reduce((acc, item) => acc + item.quantity, 0),
+  buyNowItem: null,
 
   addItem: (newItem, quantity) => {
     let isUpdated = false;
@@ -62,5 +66,9 @@ export const useCartStore = create<CartState>((set) => ({
     });
   },
 
-  clearCart: () => set({ items: [], totalItems: 0 })
+  clearCart: () => set({ items: [], totalItems: 0 }),
+  
+  setBuyNowItem: (item) => set({ buyNowItem: item }),
+  
+  clearBuyNowItem: () => set({ buyNowItem: null })
 }));
