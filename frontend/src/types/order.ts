@@ -17,8 +17,20 @@ export interface Order {
     name: string;
     phone: string;
     address: string;
+    note?: string;
   };
   products: OrderProduct[];
+  store?: {
+    id: string;
+    name: string;
+    slug: string;
+    logo?: string;
+    address?: string;
+    phone?: string;
+    rating?: number;
+  };
+  discount?: number;
+  shippingFee?: number;
 }
 
 export interface TimelineStep {
