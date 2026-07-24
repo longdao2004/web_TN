@@ -38,7 +38,7 @@ export const Header = () => {
               Sản phẩm
             </Link>
             <Link
-              href="/stores"
+              href="/cua-hang"
               className="hover:text-[var(--color-primary)] transition-colors"
             >
               Cửa hàng
@@ -121,7 +121,7 @@ export const Header = () => {
               Sản phẩm
             </Link>
             <Link
-              href="/stores"
+              href="/cua-hang"
               className="hover:text-[var(--color-primary)] transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
