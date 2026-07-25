@@ -51,7 +51,7 @@ export const StoreInformation = ({ store }: StoreInformationProps) => {
 
       {/* Action */}
       <div className="w-full sm:w-auto shrink-0 flex justify-center">
-        <Link href={`/cua-hang/${store.id}`}>
+        <Link href={`/cua-hang/${store.slug || store.id}`}>
           <Button
             variant="outline"
             className="w-full sm:w-auto border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary-light)]"

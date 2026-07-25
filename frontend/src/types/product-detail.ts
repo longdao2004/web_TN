@@ -2,6 +2,7 @@ import { Product } from './product';
 
 export interface Store {
   id: string;
+  slug?: string;
   name: string;
   logo: string;
   address: string;

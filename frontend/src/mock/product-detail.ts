@@ -38,6 +38,7 @@ export const mockProductDetail: ProductDetail = {
   },
   store: {
     id: 'store-1',
+    slug: 'nong-trai-da-lat',
     name: 'Nông trại Đà Lạt (DaLat Farm)',
     logo: 'https://images.unsplash.com/photo-1595858603370-d5a230721245?q=80&w=200&auto=format&fit=crop',
     address: 'Xã Xuân Thọ, TP. Đà Lạt, Lâm Đồng',

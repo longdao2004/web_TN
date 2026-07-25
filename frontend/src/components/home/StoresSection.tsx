@@ -27,7 +27,7 @@ export const StoresSection = () => {
           {mockStores.slice(0, 4).map((store) => (
             <Link
               key={store.id}
-              href={`/store/${store.id}`}
+              href={`/cua-hang/${store.slug}`}
               className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white transition-all hover:shadow-lg hover:-translate-y-1"
             >
               {/* Cover Image */}
