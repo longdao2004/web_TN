@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShoppingCart, Bell, Menu } from "lucide-react";
 import { PageContainer } from "../core";
 import { SearchBox, Button, Avatar, Dropdown } from "@/components/ui";
@@ -9,6 +10,7 @@ import { useCartStore } from "@/store/useCartStore";
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const totalItems = useCartStore((state) => state.totalItems);
+  const router = useRouter();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-white/80 backdrop-blur-md">
@@ -59,7 +61,15 @@ export const Header = () => {
 
           {/* Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md mx-4">
-            <SearchBox placeholder="Tìm kiếm nông sản..." fullWidth />
+            <SearchBox 
+              placeholder="Tìm kiếm nông sản..." 
+              fullWidth 
+              onSearch={(val) => {
+                if (val && val.trim()) {
+                  router.push(`/tim-kiem?q=${encodeURIComponent(val.trim())}`);
+                }
+              }}
+            />
           </div>
 
           {/* User Actions */}
