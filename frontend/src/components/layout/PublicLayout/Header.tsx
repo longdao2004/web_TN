@@ -52,7 +52,7 @@ export const Header = () => {
               Giới thiệu
             </Link>
             <Link
-              href="/contact"
+              href="/lien-he"
               className="hover:text-[var(--color-primary)] transition-colors"
             >
               Liên hệ
@@ -61,9 +61,9 @@ export const Header = () => {
 
           {/* Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md mx-4">
-            <SearchBox 
-              placeholder="Tìm kiếm nông sản..." 
-              fullWidth 
+            <SearchBox
+              placeholder="Tìm kiếm nông sản..."
+              fullWidth
               onSearch={(val) => {
                 if (val && val.trim()) {
                   router.push(`/tim-kiem?q=${encodeURIComponent(val.trim())}`);
@@ -92,7 +92,7 @@ export const Header = () => {
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-primary)] text-[10px] font-bold text-white animate-in zoom-in duration-300">
-                    {totalItems > 99 ? '99+' : totalItems}
+                    {totalItems > 99 ? "99+" : totalItems}
                   </span>
                 )}
               </Button>
@@ -145,7 +145,7 @@ export const Header = () => {
               Giới thiệu
             </Link>
             <Link
-              href="/contact"
+              href="/lien-he"
               className="hover:text-[var(--color-primary)] transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
