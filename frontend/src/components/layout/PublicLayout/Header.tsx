@@ -52,6 +52,12 @@ export const Header = () => {
               Giới thiệu
             </Link>
             <Link
+              href="/tin-tuc"
+              className="hover:text-[var(--color-primary)] transition-colors"
+            >
+              Tin tức
+            </Link>
+            <Link
               href="/lien-he"
               className="hover:text-[var(--color-primary)] transition-colors"
             >
@@ -143,6 +149,13 @@ export const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Giới thiệu
+            </Link>
+            <Link
+              href="/tin-tuc"
+              className="hover:text-[var(--color-primary)] transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Tin tức
             </Link>
             <Link
               href="/lien-he"
