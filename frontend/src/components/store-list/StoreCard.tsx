@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Store } from "@/types/store";
 import { Star, Package, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui";
+import Image from "next/image";
 
 interface StoreCardProps {
   store: Store;
@@ -14,10 +15,12 @@ export const StoreCard = ({ store }: StoreCardProps) => {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-emerald-100 transition-all duration-500 overflow-hidden h-full flex flex-col group-hover:-translate-y-1">
         {/* Banner */}
         <div className="relative h-32 w-full bg-gray-100 overflow-hidden">
-          <img
+          <Image
             src={store.banner}
             alt={`Banner ${store.name}`}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            width={500}
+            height={500}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
         </div>
@@ -28,10 +31,12 @@ export const StoreCard = ({ store }: StoreCardProps) => {
           <div className="absolute -top-10 left-5">
             <div className="w-20 h-20 bg-white rounded-xl p-1 shadow-md">
               <div className="w-full h-full rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
-                <img
+                <Image
                   src={store.logo}
                   alt={`Logo ${store.name}`}
                   className="w-full h-full object-cover"
+                  width={500}
+                  height={500}
                 />
               </div>
             </div>

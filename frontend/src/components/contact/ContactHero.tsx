@@ -1,14 +1,17 @@
 import React from "react";
+import Image from "next/image";
 
 export const ContactHero = () => {
   return (
     <section className="relative overflow-hidden bg-emerald-900 py-16 sm:py-24">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1596731998522-8eb129d2b23a?q=80&w=2000&auto=format&fit=crop"
           alt="AgriMarket Support"
           className="h-full w-full object-cover opacity-20"
+          width={500}
+          height={500}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-900/60 to-emerald-900" />
       </div>

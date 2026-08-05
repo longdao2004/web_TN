@@ -9,7 +9,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui";
-import { CartItem as ICartItem, Voucher, CartSummaryData } from "@/types/cart";
+import { Voucher, CartSummaryData } from "@/types/cart";
 import { useCartStore } from "@/store/useCartStore";
 import {
   CartList,

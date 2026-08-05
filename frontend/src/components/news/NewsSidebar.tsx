@@ -1,6 +1,7 @@
-import React from 'react';
-import Link from 'next/link';
-import { mockNews, newsCategories, popularTags } from '@/mock/news';
+import React from "react";
+import Link from "next/link";
+import { mockNews, newsCategories, popularTags } from "@/mock/news";
+import Image from "next/image";
 
 export const NewsSidebar = () => {
   // Lấy 3 bài viết mới nhất
@@ -16,12 +17,18 @@ export const NewsSidebar = () => {
         </h3>
         <div className="space-y-6">
           {recentNews.map((news) => (
-            <Link key={news.id} href={`/tin-tuc/${news.slug}`} className="flex gap-4 group">
+            <Link
+              key={news.id}
+              href={`/tin-tuc/${news.slug}`}
+              className="flex gap-4 group"
+            >
               <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden">
-                <img 
-                  src={news.image} 
-                  alt={news.title} 
+                <Image
+                  src={news.image}
+                  alt={news.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  width={500}
+                  height={500}
                 />
               </div>
               <div>
@@ -42,22 +49,24 @@ export const NewsSidebar = () => {
           Danh mục
         </h3>
         <ul className="space-y-3">
-          {newsCategories.filter(c => c !== 'Tất cả').map((cat) => (
-            <li key={cat}>
-              <Link 
-                href="#" 
-                className="flex items-center justify-between text-gray-600 hover:text-emerald-600 group transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-emerald-500 transition-colors" />
-                  {cat}
-                </span>
-                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
-                  {Math.floor(Math.random() * 10) + 1}
-                </span>
-              </Link>
-            </li>
-          ))}
+          {newsCategories
+            .filter((c) => c !== "Tất cả")
+            .map((cat) => (
+              <li key={cat}>
+                <Link
+                  href="#"
+                  className="flex items-center justify-between text-gray-600 hover:text-emerald-600 group transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-emerald-500 transition-colors" />
+                    {cat}
+                  </span>
+                  <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
+                    {idx + 5}
+                  </span>
+                </Link>
+              </li>
+            ))}
         </ul>
       </div>
 
@@ -69,8 +78,8 @@ export const NewsSidebar = () => {
         </h3>
         <div className="flex flex-wrap gap-2">
           {popularTags.map((tag) => (
-            <Link 
-              key={tag} 
+            <Link
+              key={tag}
               href="#"
               className="px-3 py-1.5 bg-gray-100 hover:bg-emerald-600 text-gray-600 hover:text-white text-xs font-medium rounded-lg transition-colors"
             >

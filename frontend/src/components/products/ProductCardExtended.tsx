@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Badge, Button } from "@/components/ui";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
+import Image from "next/image";
 
 interface ProductCardExtendedProps {
   product: Product;
@@ -27,34 +28,41 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isLoading) return;
-    
+
     setIsLoading(true);
     setTimeout(() => {
-      const isUpdated = addItem({
-        id: product.id,
-        productId: product.id,
-        slug: product.slug || product.id,
-        name: product.name,
-        category: 'Nông sản',
-        image: product.image,
-        price: product.salePrice || product.price,
-        originalPrice: product.salePrice ? product.price : undefined,
-        quantity: 1,
-        maxQuantity: 10,
-        store: { id: 'store-1', name: product.storeName || 'Cửa hàng', slug: 'store-1' },
-      }, 1);
-      
+      const isUpdated = addItem(
+        {
+          id: product.id,
+          productId: product.id,
+          slug: product.slug || product.id,
+          name: product.name,
+          category: "Nông sản",
+          image: product.image,
+          price: product.salePrice || product.price,
+          originalPrice: product.salePrice ? product.price : undefined,
+          quantity: 1,
+          maxQuantity: 10,
+          store: {
+            id: "store-1",
+            name: product.storeName || "Cửa hàng",
+            slug: "store-1",
+          },
+        },
+        1,
+      );
+
       if (isUpdated) {
-        toast.success('Đã tăng số lượng trong giỏ hàng', {
+        toast.success("Đã tăng số lượng trong giỏ hàng", {
           description: product.name,
-          action: { label: 'Xem giỏ', onClick: () => router.push('/gio-hang') },
-          duration: 4000
+          action: { label: "Xem giỏ", onClick: () => router.push("/gio-hang") },
+          duration: 4000,
         });
       } else {
-        toast.success('Đã thêm vào giỏ hàng', {
+        toast.success("Đã thêm vào giỏ hàng", {
           description: product.name,
-          action: { label: 'Xem giỏ', onClick: () => router.push('/gio-hang') },
-          duration: 4000
+          action: { label: "Xem giỏ", onClick: () => router.push("/gio-hang") },
+          duration: 4000,
         });
       }
       setIsLoading(false);
@@ -66,11 +74,13 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
         <Link href={`/san-pham/${product.slug || product.id}`}>
-          <img
+          <Image
             src={product.image}
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             loading="lazy"
+            width={500}
+            height={500}
           />
         </Link>
 
@@ -157,14 +167,17 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           </div>
 
           <div className="flex items-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
-            <Link href={`/san-pham/${product.slug || product.id}`} className="flex-1">
+            <Link
+              href={`/san-pham/${product.slug || product.id}`}
+              className="flex-1"
+            >
               <Button className="w-full h-9 text-xs" variant="primary">
                 Xem chi tiết
               </Button>
             </Link>
-            <Button 
-              size="icon" 
-              variant="outline" 
+            <Button
+              size="icon"
+              variant="outline"
               className="h-9 w-9 shrink-0 group/btn hover:bg-emerald-500 hover:text-white hover:border-emerald-500 active:scale-95 transition-all duration-300 relative overflow-hidden"
               onClick={handleAddToCart}
               disabled={isLoading}

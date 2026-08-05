@@ -4,6 +4,7 @@ import { Trash2, Store as StoreIcon } from "lucide-react";
 import { CartItem as ICartItem } from "@/types/cart";
 import { QuantitySelector } from "./QuantitySelector";
 import { Badge } from "@/components/ui";
+import Image from "next/image";
 
 interface CartItemProps {
   item: ICartItem;
@@ -44,10 +45,12 @@ export const CartItem = ({
 
         <Link href={`/san-pham/${item.slug}`} className="shrink-0">
           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-gray-50 border border-gray-100">
-            <img
+            <Image
               src={item.image}
               alt={item.name}
               className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500"
+              width={500}
+              height={500}
             />
           </div>
         </Link>

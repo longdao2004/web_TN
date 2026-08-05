@@ -1,16 +1,14 @@
-import { HTMLAttributes, ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
-export interface BreadcrumbProps extends HTMLAttributes<HTMLElement> {
+export interface BreadcrumbProps extends React.HTMLAttributes<HTMLElement> {
   separator?: ReactNode;
 }
 
-export interface BreadcrumbItemProps extends HTMLAttributes<HTMLLIElement> {}
-
-export interface BreadcrumbLinkProps extends HTMLAttributes<HTMLAnchorElement> {
+export interface BreadcrumbLinkProps extends React.HTMLAttributes<HTMLAnchorElement> {
   href?: string;
   isCurrentPage?: boolean;
 }
 
-export interface BreadcrumbSeparatorProps extends HTMLAttributes<HTMLLIElement> {
-  children?: ReactNode;
-}
+export type BreadcrumbItemProps = React.HTMLAttributes<HTMLLIElement>;
+
+export type BreadcrumbSeparatorProps = React.HTMLAttributes<HTMLSpanElement>;

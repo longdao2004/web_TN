@@ -1,3 +1,1 @@
-import { HTMLAttributes } from 'react';
-
-export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {}
+export type SkeletonProps = React.HTMLAttributes<HTMLDivElement>;

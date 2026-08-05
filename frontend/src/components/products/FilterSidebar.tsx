@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { ChevronDown, Filter, X } from "lucide-react";
+import React from "react";
+import { Filter, X } from "lucide-react";
 import { Checkbox, Radio, Button } from "@/components/ui";
 
 interface FilterSidebarProps {

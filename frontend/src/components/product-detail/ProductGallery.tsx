@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { cn } from "@/utils/cn";
+import Image from "next/image";
 
 interface ProductGalleryProps {
   images: string[];
@@ -19,10 +20,12 @@ export const ProductGallery = ({
     <div className="flex flex-col gap-4">
       {/* Main Image */}
       <div className="relative aspect-square overflow-hidden rounded-2xl border border-[var(--color-border)] bg-gray-50 cursor-crosshair group">
-        <img
+        <Image
           src={images[activeIndex]}
           alt={`${productName} - Image ${activeIndex + 1}`}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          width={500}
+          height={500}
         />
         {/* Simple hover zoom effect is handled via CSS scale. For a real magnifying glass, we'd need more JS logic */}
       </div>
@@ -41,10 +44,12 @@ export const ProductGallery = ({
                   : "border-transparent hover:border-gray-200",
               )}
             >
-              <img
+              <Image
                 src={img}
                 alt={`${productName} - Thumbnail ${idx + 1}`}
                 className="h-full w-full object-cover"
+                width={500}
+                height={500}
               />
               {activeIndex !== idx && (
                 <div className="absolute inset-0 bg-white/40 hover:bg-transparent transition-colors" />

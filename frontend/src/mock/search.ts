@@ -1,7 +1,7 @@
-import { products } from './products';
+import { MockProduct, products } from './products';
 
 // Giả lập logic tìm kiếm cơ bản
-export const searchProducts = (query: string): any[] => {
+export const searchProducts = (query: string): MockProduct[] => {
   if (!query || query.trim() === '') {
     return products;
   }

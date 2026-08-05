@@ -91,3 +91,5 @@ export const products = [
     unit: 'Hộp 500g'
   }
 ];
+
+export type MockProduct = typeof products[0];

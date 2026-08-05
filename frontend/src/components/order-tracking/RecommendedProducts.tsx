@@ -1,8 +1,10 @@
-import React from 'react';
-import { ProductCard } from '@/components/home/components/ProductCard';
+import React from "react";
+import { ProductCard } from "@/components/home/components/ProductCard";
+
+import { Product } from "@/types/product";
 
 interface RecommendedProductsProps {
-  products: any[];
+  products: Product[];
 }
 
 export const RecommendedProducts = ({ products }: RecommendedProductsProps) => {
@@ -15,7 +17,7 @@ export const RecommendedProducts = ({ products }: RecommendedProductsProps) => {
         </h2>
         <div className="h-px bg-gray-200 flex-1 max-w-[100px]"></div>
       </div>
-      
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />

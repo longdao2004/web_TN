@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Package } from "lucide-react";
 import { CartItem } from "@/types/cart";
+import Image from "next/image";
 
 interface OrderItemsProps {
   items: CartItem[];
@@ -22,10 +23,12 @@ export const OrderItems: React.FC<OrderItemsProps> = ({ items }) => {
               href={`/san-pham/${item.slug}`}
               className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-100 group-hover:border-emerald-300 transition-colors"
             >
-              <img
+              <Image
                 src={item.image}
                 alt={item.name}
                 className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                width={500}
+                height={500}
               />
               <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
                 {item.quantity}

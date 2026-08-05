@@ -1,8 +1,10 @@
-import React from 'react';
-import { StoreCard } from '@/components/store-list/StoreCard';
+import React from "react";
+import { StoreCard } from "@/components/store-list/StoreCard";
+
+import { Store } from "@/types/store";
 
 interface RelatedStoresProps {
-  stores: any[];
+  stores: Store[];
 }
 
 export const RelatedStores = ({ stores }: RelatedStoresProps) => {
@@ -17,7 +19,7 @@ export const RelatedStores = ({ stores }: RelatedStoresProps) => {
         </h2>
         <div className="h-px bg-gray-200 flex-1 max-w-[100px]"></div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stores.map((store) => (
           <StoreCard key={store.id} store={store} />

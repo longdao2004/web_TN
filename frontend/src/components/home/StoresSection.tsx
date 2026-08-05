@@ -4,6 +4,7 @@ import { PageContainer, Section } from "@/components/layout/core";
 import { mockStores } from "@/mock";
 import { Badge, Button } from "@/components/ui";
 import { Star, Users } from "lucide-react";
+import Image from "next/image";
 
 export const StoresSection = () => {
   return (
@@ -32,10 +33,12 @@ export const StoresSection = () => {
             >
               {/* Cover Image */}
               <div className="relative h-32 w-full overflow-hidden">
-                <img
+                <Image
                   src={store.banner}
                   alt={store.name}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  width={500}
+                  height={500}
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
               </div>
@@ -44,10 +47,12 @@ export const StoresSection = () => {
               <div className="relative flex flex-1 flex-col p-5 pt-12 text-center">
                 {/* Avatar */}
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 h-20 w-20 overflow-hidden rounded-full border-4 border-white shadow-sm">
-                  <img
+                  <Image
                     src={store.logo}
                     alt={store.name}
                     className="h-full w-full object-cover"
+                    width={500}
+                    height={500}
                   />
                 </div>
 

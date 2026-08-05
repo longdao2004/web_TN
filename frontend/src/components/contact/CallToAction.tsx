@@ -1,7 +1,6 @@
 import React from "react";
 import { Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui";
-import { contactInfo } from "@/mock/contact";
 
 export const CallToAction = () => {
   return (

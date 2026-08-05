@@ -1,7 +1,8 @@
-import React from 'react';
-import Link from 'next/link';
-import { Calendar, User, Clock } from 'lucide-react';
-import { NewsArticle } from '@/mock/news';
+import React from "react";
+import Link from "next/link";
+import { Calendar, User, Clock } from "lucide-react";
+import { NewsArticle } from "@/mock/news";
+import Image from "next/image";
 
 interface NewsCardProps {
   article: NewsArticle;
@@ -13,10 +14,12 @@ export const NewsCard = ({ article }: NewsCardProps) => {
       <article className="h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group-hover:-translate-y-1">
         {/* Image */}
         <div className="relative h-56 overflow-hidden">
-          <img 
-            src={article.image} 
-            alt={article.title} 
+          <Image
+            src={article.image}
+            alt={article.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            width={500}
+            height={500}
           />
           <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-emerald-700 text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-full">
             {article.category}
@@ -39,7 +42,7 @@ export const NewsCard = ({ article }: NewsCardProps) => {
           <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
             {article.title}
           </h3>
-          
+
           <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
             {article.description}
           </p>
@@ -51,7 +54,7 @@ export const NewsCard = ({ article }: NewsCardProps) => {
               </div>
               {article.author}
             </div>
-            
+
             <span className="text-sm font-semibold text-emerald-600 group-hover:text-emerald-500 transition-colors">
               Đọc tiếp &rarr;
             </span>

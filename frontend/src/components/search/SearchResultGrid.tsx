@@ -1,8 +1,10 @@
-import React from 'react';
-import { ProductCard } from '@/components/home/components/ProductCard';
+import React from "react";
+import { ProductCard } from "@/components/home/components/ProductCard";
+
+import { MockProduct } from "@/mock/products";
 
 interface SearchResultGridProps {
-  products: any[];
+  products: MockProduct[];
 }
 
 export const SearchResultGrid = ({ products }: SearchResultGridProps) => {

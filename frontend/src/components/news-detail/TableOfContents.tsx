@@ -1,13 +1,13 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { AlignLeft } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { AlignLeft } from "lucide-react";
 
 export const TableOfContents = () => {
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]);
 
   useEffect(() => {
     // Tìm tất cả các thẻ h2 trong nội dung bài viết
-    const elements = document.querySelectorAll('article h2');
+    const elements = document.querySelectorAll("article h2");
     const items = Array.from(elements).map((el, index) => {
       // Gắn ID nếu thẻ chưa có ID
       if (!el.id) {
@@ -15,19 +15,23 @@ export const TableOfContents = () => {
       }
       return {
         id: el.id,
-        text: el.textContent || ''
+        text: el.textContent || "",
       };
     });
-    setHeadings(items);
+    const timer = setTimeout(() => setHeadings(items), 0);
+    return () => clearTimeout(timer);
   }, []);
 
-  const scrollToHeading = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+  const scrollToHeading = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    id: string,
+  ) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
       // Cuộn đến vị trí có offset cho header
       const y = element.getBoundingClientRect().top + window.scrollY - 100;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      window.scrollTo({ top: y, behavior: "smooth" });
     }
   };
 
@@ -42,7 +46,7 @@ export const TableOfContents = () => {
       <ul className="space-y-3">
         {headings.map((heading) => (
           <li key={heading.id}>
-            <a 
+            <a
               href={`#${heading.id}`}
               onClick={(e) => scrollToHeading(e, heading.id)}
               className="text-gray-600 hover:text-emerald-600 text-sm font-medium transition-colors line-clamp-2"

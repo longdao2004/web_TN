@@ -1,8 +1,9 @@
-import React from 'react';
-import Link from 'next/link';
-import { ArrowRight, Calendar, User } from 'lucide-react';
-import { Button } from '@/components/ui';
-import { featuredNews } from '@/mock/news';
+import React from "react";
+import Link from "next/link";
+import { ArrowRight, Calendar, User } from "lucide-react";
+import { Button } from "@/components/ui";
+import { featuredNews } from "@/mock/news";
+import Image from "next/image";
 
 export const FeaturedArticle = () => {
   return (
@@ -10,10 +11,12 @@ export const FeaturedArticle = () => {
       <div className="flex flex-col lg:flex-row h-full">
         {/* Image */}
         <div className="lg:w-1/2 relative overflow-hidden h-[300px] lg:h-auto">
-          <img 
-            src={featuredNews.image} 
-            alt={featuredNews.title} 
+          <Image
+            src={featuredNews.image}
+            alt={featuredNews.title}
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            width={500}
+            height={500}
           />
         </div>
 
@@ -24,17 +27,17 @@ export const FeaturedArticle = () => {
               {featuredNews.category}
             </span>
           </div>
-          
+
           <h2 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-4 line-clamp-3 hover:text-emerald-600 transition-colors">
             <Link href={`/tin-tuc/${featuredNews.slug}`}>
               {featuredNews.title}
             </Link>
           </h2>
-          
+
           <p className="text-gray-600 mb-6 text-lg line-clamp-3">
             {featuredNews.description}
           </p>
-          
+
           <div className="flex items-center gap-6 text-sm text-gray-500 mb-8">
             <div className="flex items-center gap-1.5">
               <User className="w-4 h-4" />
@@ -45,7 +48,7 @@ export const FeaturedArticle = () => {
               {featuredNews.publishedAt}
             </div>
           </div>
-          
+
           <div>
             <Link href={`/tin-tuc/${featuredNews.slug}`}>
               <Button className="bg-gray-900 text-white hover:bg-emerald-600 px-6 rounded-full group-hover:shadow-lg transition-all">

@@ -2,6 +2,7 @@ import React from "react";
 import { Star, ThumbsUp } from "lucide-react";
 import { Review } from "@/types/product-detail";
 import { Avatar } from "@/components/ui";
+import Image from 'next/image';
 
 interface ReviewSectionProps {
   reviews: Review[];
@@ -98,11 +99,11 @@ export const ReviewSection = ({
                         key={i}
                         className="h-16 w-16 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in hover:opacity-90"
                       >
-                        <img
+                        <Image
                           src={img}
                           alt="Review image"
                           className="h-full w-full object-cover"
-                        />
+                         width={500} height={500}/>
                       </div>
                     ))}
                   </div>

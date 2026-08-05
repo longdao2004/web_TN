@@ -1,6 +1,7 @@
 import React from "react";
 import { Calendar, Clock, Eye, User } from "lucide-react";
 import { NewsArticle } from "@/mock/news";
+import Image from "next/image";
 
 interface ArticleHeroProps {
   article: NewsArticle;
@@ -11,10 +12,12 @@ export const ArticleHero = ({ article }: ArticleHeroProps) => {
     <section className="relative pt-32 pb-16 bg-gray-900 overflow-hidden text-white">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
+        <Image
           src={article.image}
           alt={article.title}
           className="w-full h-full object-cover opacity-30"
+          width={500}
+          height={500}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent" />
       </div>

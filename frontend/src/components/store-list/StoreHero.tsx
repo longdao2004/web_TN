@@ -2,16 +2,19 @@
 import React from "react";
 import { Button } from "@/components/ui";
 import { Store } from "lucide-react";
+import Image from "next/image";
 
 export const StoreHero = () => {
   return (
     <div className="relative overflow-hidden bg-emerald-900 rounded-3xl animate-in fade-in duration-1000 mb-8 sm:mb-12">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
           alt="Nông sản sạch"
           className="w-full h-full object-cover opacity-30"
+          width={500}
+          height={500}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-900 via-emerald-900/80 to-transparent"></div>
       </div>
