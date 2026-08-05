@@ -9,7 +9,7 @@ import {
 import { Store } from "@/types/store";
 
 interface StoreStatisticsProps {
-  statistics: Store;
+  statistics: NonNullable<Store["statistics"]>;
 }
 
 export const StoreStatistics = ({ statistics }: StoreStatisticsProps) => {
@@ -23,14 +23,14 @@ export const StoreStatistics = ({ statistics }: StoreStatisticsProps) => {
     },
     {
       label: "Đã bán",
-      value: (statistics.totalSold / 1000).toFixed(1) + "k+",
+      value: ((statistics.totalSold || 0) / 1000).toFixed(1) + "k+",
       icon: ShoppingCart,
       color: "text-emerald-500",
       bg: "bg-emerald-50",
     },
     {
       label: "Khách hàng",
-      value: (statistics.totalCustomers / 1000).toFixed(1) + "k+",
+      value: ((statistics.totalCustomers || 0) / 1000).toFixed(1) + "k+",
       icon: Users,
       color: "text-purple-500",
       bg: "bg-purple-50",

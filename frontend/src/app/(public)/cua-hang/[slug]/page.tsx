@@ -96,7 +96,7 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ sl
               </div>
             </div>
 
-            <StoreReviews statistics={store.statistics} reviews={store.reviews} />
+            <StoreReviews store={store} reviews={store.reviews} />
           </div>
           
           {/* Right Column (Sidebar) */}

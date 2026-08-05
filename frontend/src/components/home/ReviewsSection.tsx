@@ -48,7 +48,7 @@ export const ReviewsSection = () => {
                 ))}
               </div>
               <p className="text-gray-600 mb-6 italic leading-relaxed text-sm sm:text-base line-clamp-4">
-                &quot;{review.comment}&quot;
+                &quot;{review.content}&quot;
               </p>
             </div>
           ))}

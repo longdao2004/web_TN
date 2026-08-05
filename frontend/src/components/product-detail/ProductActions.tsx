@@ -18,15 +18,15 @@ export const ProductActions = ({ product }: { product: Product }) => {
     slug: product.slug || product.id,
     name: product.name,
     category: "Sản phẩm",
-    image: product.images ? product.images[0] : product.image || "",
+    image: product.image || "",
     price: product.salePrice || product.price,
     originalPrice: product.salePrice ? product.price : undefined,
     quantity: quantity,
     maxQuantity: product.stock,
     store: {
       id: "store-1",
-      name: product.store?.name || product.storeName || "Cửa hàng",
-      slug: product.store?.name || product.storeName || "store-1",
+      name: product.storeName || "Cửa hàng",
+      slug: product.storeName || "store-1",
     },
   });
 

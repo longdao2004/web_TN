@@ -5,11 +5,11 @@ import Image from "next/image";
 
 export interface StoreReview {
   id: string;
-  userName: string;
-  userAvatar?: string;
+  customerName: string;
+  avatar?: string;
   date: string;
   rating: number;
-  comment: string;
+  content: string;
 }
 
 interface StoreReviewsProps {
@@ -19,6 +19,8 @@ interface StoreReviewsProps {
 
 export const StoreReviews = ({ store, reviews = [] }: StoreReviewsProps) => {
   const { statistics } = store;
+
+  if (!statistics) return null;
 
   return (
     <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm animate-in slide-in-from-bottom-8 duration-700 fade-in delay-600">
@@ -77,10 +79,10 @@ export const StoreReviews = ({ store, reviews = [] }: StoreReviewsProps) => {
             <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0">
               <Image
                 src={
-                  review.userAvatar ||
+                  review.avatar ||
                   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
                 }
-                alt={review.userName}
+                alt={review.customerName}
                 className="w-full h-full object-cover"
                 width={500}
                 height={500}
@@ -89,7 +91,7 @@ export const StoreReviews = ({ store, reviews = [] }: StoreReviewsProps) => {
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
                 <span className="font-semibold text-gray-900">
-                  {review.userName}
+                  {review.customerName}
                 </span>
                 <span className="text-xs text-gray-400">{review.date}</span>
               </div>
@@ -102,7 +104,7 @@ export const StoreReviews = ({ store, reviews = [] }: StoreReviewsProps) => {
                 ))}
               </div>
               <p className="text-sm text-gray-600 leading-relaxed">
-                {review.comment}
+                {review.content}
               </p>
             </div>
           </div>

@@ -51,7 +51,7 @@ export const NewsSidebar = () => {
         <ul className="space-y-3">
           {newsCategories
             .filter((c) => c !== "Tất cả")
-            .map((cat) => (
+            .map((cat, idx) => (
               <li key={cat}>
                 <Link
                   href="#"

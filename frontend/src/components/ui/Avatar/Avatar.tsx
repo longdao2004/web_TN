@@ -44,6 +44,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
           rounded ? "rounded-full" : "rounded-lg",
           className,
         )}
+        {...props}
       >
         {src && !imageError ? (
           <Image
@@ -53,7 +54,6 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
             width={500}
             height={500}
             className="aspect-square h-full w-full object-cover"
-            {...props}
           />
         ) : fallback ? (
           <span>{getInitials(fallback)}</span>

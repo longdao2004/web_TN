@@ -65,7 +65,7 @@ export const StoresSection = () => {
                   <div className="mt-2 flex items-center justify-center gap-1">
                     {store.certificates.slice(0, 2).map((cert, idx) => (
                       <Badge key={idx} variant="secondary" size="sm">
-                        {cert}
+                        {typeof cert === "string" ? cert : cert.name}
                       </Badge>
                     ))}
                   </div>

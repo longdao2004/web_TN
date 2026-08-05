@@ -1,10 +1,10 @@
 import React from "react";
 import { ProductCard } from "@/components/home/components/ProductCard";
 
-import { Store } from "@/types/store";
+import { MockProduct } from "@/mock/products";
 
 interface StoreProductsProps {
-  products: Store[];
+  products: MockProduct[];
 }
 
 export const StoreProducts = ({ products }: StoreProductsProps) => {

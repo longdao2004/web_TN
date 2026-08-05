@@ -59,7 +59,7 @@ export const StoreCard = ({ store }: StoreCardProps) => {
                 className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[10px] px-2 py-0.5 border-emerald-100"
               >
                 <ShieldCheck className="w-3 h-3 mr-1" />
-                {cert}
+                {typeof cert === "string" ? cert : cert.name}
               </Badge>
             ))}
             {store.certificates.length > 2 && (
