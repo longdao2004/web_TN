@@ -105,21 +105,32 @@ export const Header = () => {
             </Link>
 
             <div className="hidden sm:block ml-2 border-l border-gray-200 pl-4">
-              {/* Tạm thời giả định là chưa đăng nhập, dùng Dropdown để demo */}
-              <Dropdown
-                align="right"
-                trigger={
-                  <Avatar
-                    fallback="User"
-                    size="sm"
-                    className="cursor-pointer hover:ring-2 ring-[var(--color-primary)] transition-all"
-                  />
-                }
-                items={[
-                  { label: "Đăng nhập", onClick: () => console.log("login") },
-                  { label: "Đăng ký" },
-                ]}
-              />
+              {/* UI Mock state for authenticated user (currently false) */}
+              {false ? (
+                <Dropdown
+                  align="right"
+                  trigger={
+                    <Avatar
+                      fallback="User"
+                      size="sm"
+                      className="cursor-pointer hover:ring-2 ring-[var(--color-primary)] transition-all"
+                    />
+                  }
+                  items={[
+                    { label: "Tài khoản", onClick: () => router.push("/tai-khoan") },
+                    { label: "Đăng xuất" },
+                  ]}
+                />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => router.push("/dang-nhap")}>
+                    Đăng nhập
+                  </Button>
+                  <Button size="sm" onClick={() => router.push("/dang-ky")}>
+                    Đăng ký
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -166,14 +177,14 @@ export const Header = () => {
             </Link>
             <div className="pt-4 border-t border-[var(--color-border)] flex flex-col space-y-4">
               <Link
-                href="/login"
+                href="/dang-nhap"
                 className="hover:text-[var(--color-primary)] transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Đăng nhập
               </Link>
               <Link
-                href="/register"
+                href="/dang-ky"
                 className="text-[var(--color-primary)] transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

@@ -10,7 +10,7 @@ export const StoreHero = () => {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <Image
-          src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+          src="/images/banners/canhdong.avif"
           alt="Nông sản sạch"
           className="w-full h-full object-cover opacity-30"
           width={500}

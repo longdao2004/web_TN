@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Giới thiệu AgriMarket | Kết nối nông sản sạch',
     description: 'Nền tảng thương mại điện tử giúp kết nối nông dân, cửa hàng nông sản và người tiêu dùng trên toàn quốc.',
-    images: ['https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=2000&auto=format&fit=crop'],
+    images: ['/images/products/cayxuongrong.avif'],
   }
 };
 

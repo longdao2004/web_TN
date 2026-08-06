@@ -5,12 +5,12 @@ export const mockProductDetail: ProductDetail = {
   id: 'prod-1',
   slug: 'san-pham-1',
   name: 'Cà chua Beef Organic Đà Lạt Hộp 500g (Chuẩn VietGAP, Hái tại vườn)',
-  image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=800&auto=format&fit=crop',
+  image: '/images/products/carot.avif',
   images: [
-    'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=800&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?q=80&w=800&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1598511796318-7b82ef45b6db?q=80&w=800&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?q=80&w=800&auto=format&fit=crop'
+    '/images/products/carot.avif',
+    '/images/products/cahoi.avif',
+    '/images/products/xalach.avif',
+    '/images/products/dautay.avif'
   ],
   price: 65000,
   salePrice: 45000,
@@ -40,7 +40,7 @@ export const mockProductDetail: ProductDetail = {
     id: 'store-1',
     slug: 'nong-trai-da-lat',
     name: 'Nông trại Đà Lạt (DaLat Farm)',
-    logo: 'https://images.unsplash.com/photo-1595858603370-d5a230721245?q=80&w=200&auto=format&fit=crop',
+    logo: '/images/products/cachuabi.avif',
     address: 'Xã Xuân Thọ, TP. Đà Lạt, Lâm Đồng',
     rating: 4.9,
     productCount: 125,
@@ -77,12 +77,12 @@ export const mockProductDetail: ProductDetail = {
     {
       id: 'rev-1',
       customerName: 'Nguyễn Thị Hoa',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&auto=format&fit=crop',
+      avatar: '/images/products/cam.avif',
       rating: 5,
       date: '21/11/2023',
       content: 'Cà chua rất tươi và ngon. Quả to, thịt chắc, làm salad cực kỳ hợp. Giao hàng nhanh, đóng gói cẩn thận bằng hộp giấy bảo vệ môi trường. Sẽ tiếp tục ủng hộ shop.',
       images: [
-        'https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?q=80&w=400&auto=format&fit=crop',
+        '/images/products/carot.avif',
       ],
       likes: 12,
     },
@@ -97,7 +97,7 @@ export const mockProductDetail: ProductDetail = {
     {
       id: 'rev-3',
       customerName: 'Lê Ngọc Mai',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop',
+      avatar: '/images/products/cachuabi.avif',
       rating: 5,
       date: '15/11/2023',
       content: 'Món tủ của nhà mình đây rồi. Nấu canh hay ép nước đều rất đậm vị chua ngọt tự nhiên. Bé nhà mình rất thích ăn sống.',

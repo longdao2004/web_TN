@@ -39,7 +39,7 @@ export const StorySection = () => {
 
           <div className="relative h-[500px] w-full rounded-2xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-right-8 duration-1000">
             <Image
-              src="https://images.unsplash.com/photo-1595858603510-9ce3b708b792?q=80&w=1000&auto=format&fit=crop"
+              src="/images/products/xalach.avif"
               alt="Người nông dân thu hoạch"
               className="absolute inset-0 h-full w-full object-cover"
               width={500}

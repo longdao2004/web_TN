@@ -17,7 +17,7 @@ export const NewsHero = () => {
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1595858603370-d5a230721245?q=80&w=2000&auto=format&fit=crop"
+          src="/images/news/cay.avif"
           alt="AgriMarket News"
           className="h-full w-full object-cover opacity-20"
           width={500}

@@ -10,7 +10,7 @@ export const AuthorCard = ({ author }: AuthorCardProps) => {
     <div className="bg-emerald-50 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 my-12 border border-emerald-100 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="shrink-0">
         <Avatar 
-          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop"
+          src="/images/news/dongco.avif"
           fallback={author.charAt(0)}
           size="lg"
           className="w-20 h-20 ring-4 ring-white shadow-md"

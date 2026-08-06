@@ -16,21 +16,21 @@ export const mockOrderSuccess: Order = {
     {
       id: 'p1',
       name: 'Cà chua Cherry Đà Lạt',
-      image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+      image: '/images/products/cahoi.avif',
       price: 45000,
       quantity: 2,
     },
     {
       id: 'p2',
       name: 'Rau xà lách thủy canh thủy tinh mỏng',
-      image: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+      image: '/images/products/thucan.avif',
       price: 25000,
       quantity: 4,
     },
     {
       id: 'p3',
       name: 'Bơ sáp Đắk Lắk size lớn (Loại 1)',
-      image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+      image: '/images/products/ca.avif',
       price: 120000,
       quantity: 1,
     }
@@ -54,7 +54,7 @@ export const mockRecommendedProducts = [
     rating: 4.8,
     reviews: 124,
     store: "Nông trại Rau Sạch ĐL",
-    image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
+    image: "/images/products/raukinh.jpg",
     badges: ["Khuyến mãi", "Hữu cơ"],
     unit: "500g"
   },
@@ -65,7 +65,7 @@ export const mockRecommendedProducts = [
     rating: 4.9,
     reviews: 89,
     store: "HTX Nông Nghiệp Xanh",
-    image: "https://images.unsplash.com/photo-1589383679883-9b986cc01c87?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
+    image: "/images/products/cachuabi.avif",
     badges: ["Mới", "Freeship"],
     unit: "Kg"
   },
@@ -77,7 +77,7 @@ export const mockRecommendedProducts = [
     rating: 5.0,
     reviews: 42,
     store: "Trại Nấm Đồng Nai",
-    image: "https://images.unsplash.com/photo-1509937528035-ad76254b0356?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
+    image: "/images/products/thucan.avif",
     badges: ["Đặc sản"],
     unit: "Kg"
   },
@@ -88,7 +88,7 @@ export const mockRecommendedProducts = [
     rating: 4.7,
     reviews: 512,
     store: "Vựa Trái Cây Miền Tây",
-    image: "https://images.unsplash.com/photo-1615555627236-0d19b78e31bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
+    image: "/images/products/gia_vi.avif",
     badges: [],
     unit: "Trái"
   }

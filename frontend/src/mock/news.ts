@@ -44,7 +44,7 @@ const mockLongContent = `
 
 <h2>3. Yêu cầu kỹ thuật cốt lõi</h2>
 <p>Để đạt được những lợi ích trên, người nông dân cần chú trọng vào các yếu tố sau:</p>
-<img src="https://images.unsplash.com/photo-1595858603370-d5a230721245?q=80&w=1200&auto=format&fit=crop" alt="Minh họa kỹ thuật" />
+<img src="/images/news/rau.avif" alt="Minh họa kỹ thuật" />
 <p>Hình ảnh minh họa hệ thống tưới tiêu nhỏ giọt tự động, giúp tiết kiệm tới 60% lượng nước so với phương pháp tưới truyền thống.</p>
 
 <blockquote>
@@ -65,7 +65,7 @@ export const mockNews: NewsArticle[] = [
     title: 'Xuất khẩu sầu riêng đạt kỷ lục trong quý 1 năm nay',
     description: 'Báo cáo mới nhất cho thấy sản lượng xuất khẩu sầu riêng sang thị trường quốc tế tăng đột biến, mở ra cơ hội lớn cho bà con nông dân.',
     content: mockLongContent,
-    image: 'https://images.unsplash.com/photo-1596731998522-8eb129d2b23a?q=80&w=800&auto=format&fit=crop',
+    image: '/images/news/raucu.avif',
     category: 'Giá thị trường',
     author: 'Minh Tuấn',
     publishedAt: '24/07/2026',
@@ -79,7 +79,7 @@ export const mockNews: NewsArticle[] = [
     title: '5 Mẹo trồng rau thủy canh tại nhà cực kỳ đơn giản',
     description: 'Chỉ với những vật dụng đơn giản, bạn có thể thiết lập ngay một hệ thống rau sạch tại ban công để phục vụ bữa ăn gia đình.',
     content: mockLongContent,
-    image: 'https://images.unsplash.com/photo-1595858603370-d5a230721245?q=80&w=800&auto=format&fit=crop',
+    image: '/images/news/cay.avif',
     category: 'Kinh nghiệm trồng trọt',
     author: 'Lan Anh',
     publishedAt: '23/07/2026',
@@ -93,7 +93,7 @@ export const mockNews: NewsArticle[] = [
     title: 'Chương trình trợ giá nông sản Việt cùng AgriMarket',
     description: 'AgriMarket triển khai chương trình trợ giá, miễn phí vận chuyển cho hàng loạt nông sản nội địa nhằm kích cầu tiêu dùng.',
     content: mockLongContent,
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop',
+    image: '/images/news/cachua.avif',
     category: 'Hoạt động AgriMarket',
     author: 'Admin',
     publishedAt: '20/07/2026',
@@ -107,7 +107,7 @@ export const mockNews: NewsArticle[] = [
     title: 'Cách nhận biết trái cây sạch không hóa chất bằng mắt thường',
     description: 'Nắm vững những nguyên tắc cơ bản này để bảo vệ sức khỏe gia đình bạn trước vấn nạn thực phẩm bẩn đang lan tràn.',
     content: mockLongContent,
-    image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop',
+    image: '/images/news/cachua.avif',
     category: 'An toàn thực phẩm',
     author: 'Bác sĩ Hoa',
     publishedAt: '18/07/2026',
@@ -121,7 +121,7 @@ export const mockNews: NewsArticle[] = [
     title: 'Ứng dụng IoT vào nông nghiệp công nghệ cao',
     description: 'Việc sử dụng cảm biến, hệ thống tưới tiêu tự động đang dần thay đổi bộ mặt của nông nghiệp Việt Nam theo hướng hiện đại hóa.',
     content: mockLongContent,
-    image: 'https://images.unsplash.com/photo-1586771107445-d3af9e1281d1?q=80&w=800&auto=format&fit=crop',
+    image: '/images/news/rau.avif',
     category: 'Kiến thức nông nghiệp',
     author: 'Hoàng Long',
     publishedAt: '15/07/2026',

@@ -10,7 +10,7 @@ export const PromoBannerSection = () => {
         <div className="relative overflow-hidden rounded-none sm:rounded-3xl bg-emerald-900 text-white shadow-xl">
           <div className="absolute inset-0">
             <Image
-              src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1500&auto=format&fit=crop"
+              src="/images/products/gia_vi.avif"
               alt="Promo background"
               className="h-full w-full object-cover opacity-20"
               width={500}

@@ -7,7 +7,7 @@ export const ContactHero = () => {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1596731998522-8eb129d2b23a?q=80&w=2000&auto=format&fit=crop"
+          src="/images/products/cam.avif"
           alt="AgriMarket Support"
           className="h-full w-full object-cover opacity-20"
           width={500}

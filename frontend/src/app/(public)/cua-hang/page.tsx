@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     description:
       "Khám phá hàng trăm cửa hàng, nhà vườn và hợp tác xã uy tín cung cấp nông sản sạch trên toàn quốc.",
     images: [
-      "https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+      "/images/products/thucan.avif",
     ],
   },
 };

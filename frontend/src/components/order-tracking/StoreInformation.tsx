@@ -23,7 +23,7 @@ export const StoreInformation = ({ store }: StoreInformationProps) => {
           <Image
             src={
               store.logo ||
-              "https://images.unsplash.com/photo-1595858603510-9ce3b708b792?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=60"
+              "/images/products/cayxuongrong.avif"
             }
             alt={store.name}
             className="w-full h-full object-cover"

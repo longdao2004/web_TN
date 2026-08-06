@@ -80,7 +80,7 @@ export const StoreReviews = ({ store, reviews = [] }: StoreReviewsProps) => {
               <Image
                 src={
                   review.avatar ||
-                  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                  "/images/stores/sieuthirau.avif"
                 }
                 alt={review.customerName}
                 className="w-full h-full object-cover"

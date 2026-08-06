@@ -7,7 +7,7 @@ export const products = [
     rating: 4.8,
     reviews: 124,
     store: 'Nông trại Đà Lạt xanh',
-    image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=400&auto=format&fit=crop',
+    image: '/images/products/cahoi.avif',
     badges: ['Bán chạy', 'VietGAP'],
     unit: '1kg'
   },
@@ -18,7 +18,7 @@ export const products = [
     rating: 4.9,
     reviews: 86,
     store: 'Rau sạch Mộc Châu',
-    image: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?q=80&w=400&auto=format&fit=crop',
+    image: '/images/products/chua.avif',
     badges: ['Organic'],
     unit: '500g'
   },
@@ -30,7 +30,7 @@ export const products = [
     rating: 4.7,
     reviews: 215,
     store: 'Dâu Tây Đà Lạt',
-    image: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=400&auto=format&fit=crop',
+    image: '/images/products/raukinh.jpg',
     badges: ['Khuyến mãi'],
     unit: 'Hộp 500g'
   },
@@ -41,7 +41,7 @@ export const products = [
     rating: 4.6,
     reviews: 95,
     store: 'Hợp tác xã Hàm Yên',
-    image: 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=400&auto=format&fit=crop',
+    image: '/images/products/dautay.avif',
     badges: [],
     unit: '1kg'
   },
@@ -52,7 +52,7 @@ export const products = [
     rating: 4.9,
     reviews: 42,
     store: 'Meat Deli Hà Nội',
-    image: 'https://images.unsplash.com/photo-1603048297172-c92544798d5e?q=80&w=400&auto=format&fit=crop',
+    image: '/images/products/thoc.avif',
     badges: ['Mới'],
     unit: '1kg'
   },
@@ -64,7 +64,7 @@ export const products = [
     rating: 4.8,
     reviews: 310,
     store: 'Vựa hải sản Năm Căn',
-    image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?q=80&w=400&auto=format&fit=crop',
+    image: '/images/products/gia_vi.avif',
     badges: ['Hỏa tốc', 'Bán chạy'],
     unit: '1kg'
   },
@@ -75,7 +75,7 @@ export const products = [
     rating: 5.0,
     reviews: 512,
     store: 'Đại lý gạo Sóc Trăng',
-    image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=400&auto=format&fit=crop',
+    image: '/images/products/thucan.avif',
     badges: ['Đặc sản'],
     unit: 'Bao 5kg'
   },
@@ -86,7 +86,7 @@ export const products = [
     rating: 4.7,
     reviews: 188,
     store: 'Nông sản Bình Phước',
-    image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=400&auto=format&fit=crop',
+    image: '/images/products/gia_vi.avif',
     badges: [],
     unit: 'Hộp 500g'
   }

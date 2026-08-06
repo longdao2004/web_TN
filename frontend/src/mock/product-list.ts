@@ -15,16 +15,16 @@ export const mockProductsList: Product[] = Array.from({ length: 30 }).map((_, i)
   const certificates = ['VietGAP', 'GlobalGAP', 'OCOP', 'Organic'];
 
   const images = [
-    'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1603048297172-c92544798d5e?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=400&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=400&auto=format&fit=crop'
+    '/images/products/cahoi.avif',
+    '/images/products/chua.avif',
+    '/images/products/raukinh.jpg',
+    '/images/products/dautay.avif',
+    '/images/products/thoc.avif',
+    '/images/products/gia_vi.avif',
+    '/images/products/thucan.avif',
+    '/images/products/gia_vi.avif',
+    '/images/products/rau.avif',
+    '/images/products/rau.avif'
   ];
 
   const rating = Number((((i * 7) % 20) / 10 + 3).toFixed(1)); // 3.0 to 4.9

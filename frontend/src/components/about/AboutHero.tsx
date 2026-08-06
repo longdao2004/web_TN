@@ -10,7 +10,7 @@ export const AboutHero = () => {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=2000&auto=format&fit=crop"
+          src="/images/banners/hangrau.avif"
           alt="AgriMarket Farm"
           className="h-full w-full object-cover opacity-30"
           width={500}

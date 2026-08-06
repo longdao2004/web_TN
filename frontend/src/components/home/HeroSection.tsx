@@ -71,7 +71,7 @@ export const HeroSection = () => {
           {/* Image Right */}
           <div className="relative z-10 h-[400px] w-full sm:h-[500px] lg:h-[600px]">
             <Image
-              src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1000&auto=format&fit=crop"
+              src="/images/products/dautay.avif"
               alt="Fresh Vegetables"
               className="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl"
               width={500}

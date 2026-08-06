@@ -1,18 +1,23 @@
-import React from 'react';
-import { toast } from 'sonner';
-import { Dropdown } from './Dropdown';
-import { Avatar } from '../Avatar';
-import { User, Settings, LogOut } from 'lucide-react';
-import { Button } from '../Button';
+import React from "react";
+import { toast } from "sonner";
+import { Dropdown } from "./Dropdown";
+import { Avatar } from "../Avatar";
+import { User, Settings, LogOut } from "lucide-react";
+import { Button } from "../Button";
 
 export const DropdownExample = () => {
   const menuItems = [
-    { label: 'Hồ sơ cá nhân', icon: <User /> },
-    { label: 'Cài đặt hệ thống', icon: <Settings /> },
-    { divider: true, label: '' },
-    { label: 'Tính năng Pro', disabled: true },
-    { divider: true, label: '' },
-    { label: 'Đăng xuất', icon: <LogOut />, danger: true, onClick: () => toast.success('Đã đăng xuất!') },
+    { label: "Hồ sơ cá nhân", icon: <User /> },
+    { label: "Cài đặt hệ thống", icon: <Settings /> },
+    { divider: true, label: "" },
+    { label: "Tính năng Pro", disabled: true },
+    { divider: true, label: "" },
+    {
+      label: "Đăng xuất",
+      icon: <LogOut />,
+      danger: true,
+      onClick: () => toast.success("Đã đăng xuất!"),
+    },
   ];
 
   return (
@@ -27,7 +32,7 @@ export const DropdownExample = () => {
         align="right"
         trigger={
           <div className="hover:ring-2 ring-[var(--color-primary)] rounded-full transition-all">
-            <Avatar src="https://github.com/shadcn.png" size="md" />
+            <Avatar src="/images/products/cayxuongrong.avif" size="md" />
           </div>
         }
         items={menuItems}
