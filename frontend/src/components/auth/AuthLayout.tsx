@@ -1,6 +1,9 @@
 import React, { ReactNode } from 'react';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { AuthBanner } from './AuthBanner';
+import { Header } from '../layout/PublicLayout/Header';
+import { Footer } from '../layout/PublicLayout/Footer';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -8,38 +11,47 @@ interface AuthLayoutProps {
 
 export const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
-    <div className="flex min-h-screen w-full bg-white lg:bg-gray-50">
-      {/* Banner Left Side - Desktop Only */}
-      <div className="hidden lg:block lg:w-1/2 xl:w-5/12">
-        <div className="sticky top-0 h-screen w-full">
-          <AuthBanner />
-        </div>
-      </div>
-
-      {/* Form Right Side */}
-      <div className="flex w-full flex-col px-4 sm:px-6 lg:w-1/2 xl:w-7/12">
-        <div className="flex min-h-screen flex-col justify-center py-12 lg:px-8 xl:px-24">
+    <div className="flex min-h-screen flex-col bg-gray-50">
+      <Header />
+      
+      <main className="flex-1 w-full py-10 lg:py-14 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl w-full">
           
-          {/* Mobile Logo Header */}
-          <div className="mb-10 flex items-center justify-center gap-2 lg:hidden">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600">
-                <span className="text-2xl font-bold text-white">A</span>
-              </div>
-              <span className="text-2xl font-bold tracking-tight text-gray-900">AgriMarket</span>
+          <div className="mb-6">
+            <Link 
+              href="/" 
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Quay lại trang chủ
             </Link>
           </div>
 
-          <div className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-xl">
-            <div className="rounded-3xl bg-white lg:p-10 lg:shadow-xl lg:shadow-emerald-900/5 lg:ring-1 lg:ring-gray-100">
-              {children}
+          <div className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-100 shadow-xl w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] min-h-[600px]">
+              
+              {/* Mobile Banner */}
+              <div className="block lg:hidden relative w-full h-[220px] sm:h-[260px]">
+                <AuthBanner />
+              </div>
+
+              {/* Desktop Banner */}
+              <div className="hidden lg:block relative w-full h-full">
+                <AuthBanner />
+              </div>
+
+              {/* Right Column: Form */}
+              <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-12 xl:p-14">
+                {children}
+              </div>
+
             </div>
           </div>
-
-          {/* Mobile Footer Spacing (to match visual weight) */}
-          <div className="h-12 lg:hidden" />
+          
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };

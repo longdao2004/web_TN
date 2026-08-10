@@ -3,13 +3,14 @@ import Image from 'next/image';
 
 export const AuthBanner = () => {
   return (
-    <div className="relative hidden h-full w-full flex-col justify-end bg-emerald-900 lg:flex">
+    <div className="relative h-full w-full flex flex-col justify-end bg-emerald-900">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
           src="/images/banners/canhdong.avif"
           alt="Cánh đồng nông nghiệp xanh mướt"
           fill
+          sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover opacity-80"
           priority
         />
@@ -17,19 +18,19 @@ export const AuthBanner = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 p-12 text-white">
-        <div className="mb-6 flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-            <span className="text-2xl font-bold text-white">A</span>
+      <div className="relative z-10 p-6 sm:p-8 lg:p-12 text-white">
+        <div className="mb-4 lg:mb-6 flex items-center gap-2">
+          <div className="flex h-8 w-8 lg:h-10 lg:w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+            <span className="text-xl lg:text-2xl font-bold text-white">A</span>
           </div>
-          <span className="text-2xl font-bold tracking-tight">AgriMarket</span>
+          <span className="text-xl lg:text-2xl font-bold tracking-tight">AgriMarket</span>
         </div>
 
-        <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight">
-          Chào mừng đến với <br /> AgriMarket
+        <h1 className="mb-2 lg:mb-4 text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-tight">
+          Chào mừng đến với <br className="hidden sm:block" /> AgriMarket
         </h1>
         
-        <p className="max-w-md text-lg text-emerald-100">
+        <p className="max-w-md text-sm sm:text-base lg:text-lg text-emerald-100 line-clamp-2 sm:line-clamp-none">
           Nền tảng thương mại điện tử nông sản kết nối người nông dân và người tiêu dùng, mang đến những sản phẩm sạch, an toàn và chất lượng.
         </p>
       </div>

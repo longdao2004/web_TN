@@ -71,11 +71,12 @@ export const HeroSection = () => {
           {/* Image Right */}
           <div className="relative z-10 h-[400px] w-full sm:h-[500px] lg:h-[600px]">
             <Image
-              src="/images/products/dautay.avif"
+              src="/images/products/hangrau.avif"
               alt="Fresh Vegetables"
               className="absolute inset-0 h-full w-full rounded-2xl object-cover shadow-2xl"
               width={500}
               height={500}
+              priority
             />
 
             {/* Floating Card */}

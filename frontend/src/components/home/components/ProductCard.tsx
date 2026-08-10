@@ -21,9 +21,10 @@ interface ProductCardProps {
     badges?: string[];
     unit: string;
   };
+  priority?: boolean;
 }
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+export const ProductCard = ({ product, priority = false }: ProductCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
@@ -86,6 +87,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             width={500}
             height={500}
+            priority={priority}
           />
         </Link>
 
