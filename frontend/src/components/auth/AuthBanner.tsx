@@ -1,14 +1,20 @@
 import React from 'react';
 import Image from 'next/image';
 
-export const AuthBanner = () => {
+interface AuthBannerProps {
+  type?: 'login' | 'register';
+}
+
+export const AuthBanner = ({ type = 'login' }: AuthBannerProps) => {
+  const isLogin = type === 'login';
+
   return (
     <div className="relative h-full w-full flex flex-col justify-end bg-emerald-900">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
           src="/images/banners/canhdong.avif"
-          alt="Cánh đồng nông nghiệp xanh mướt"
+          alt="AgriMarket Banner"
           fill
           sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover opacity-80"
@@ -27,11 +33,18 @@ export const AuthBanner = () => {
         </div>
 
         <h1 className="mb-2 lg:mb-4 text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-tight">
-          Chào mừng đến với <br className="hidden sm:block" /> AgriMarket
+          {isLogin ? (
+            <>Chào mừng đến với <br className="hidden sm:block" /> AgriMarket</>
+          ) : (
+            <>Tham gia cùng <br className="hidden sm:block" /> AgriMarket</>
+          )}
         </h1>
         
         <p className="max-w-md text-sm sm:text-base lg:text-lg text-emerald-100 line-clamp-2 sm:line-clamp-none">
-          Nền tảng thương mại điện tử nông sản kết nối người nông dân và người tiêu dùng, mang đến những sản phẩm sạch, an toàn và chất lượng.
+          {isLogin 
+            ? "Nền tảng thương mại điện tử nông sản kết nối người nông dân và người tiêu dùng, mang đến những sản phẩm sạch, an toàn và chất lượng."
+            : "Đăng ký tài khoản để mua sắm nông sản sạch, chất lượng và kết nối với những nhà cung cấp uy tín."
+          }
         </p>
       </div>
     </div>

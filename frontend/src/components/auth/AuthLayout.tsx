@@ -7,9 +7,10 @@ import { Footer } from '../layout/PublicLayout/Footer';
 
 interface AuthLayoutProps {
   children: ReactNode;
+  type?: 'login' | 'register';
 }
 
-export const AuthLayout = ({ children }: AuthLayoutProps) => {
+export const AuthLayout = ({ children, type = 'login' }: AuthLayoutProps) => {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <Header />
@@ -32,12 +33,12 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
               
               {/* Mobile Banner */}
               <div className="block lg:hidden relative w-full h-[220px] sm:h-[260px]">
-                <AuthBanner />
+                <AuthBanner type={type} />
               </div>
 
               {/* Desktop Banner */}
               <div className="hidden lg:block relative w-full h-full">
-                <AuthBanner />
+                <AuthBanner type={type} />
               </div>
 
               {/* Right Column: Form */}
