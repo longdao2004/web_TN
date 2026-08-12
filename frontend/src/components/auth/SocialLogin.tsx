@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { Button } from '../ui/Button';
 
 export const SocialLogin = () => {
+  const router = useRouter();
+
   const handleGoogleLogin = () => {
-    toast.info('Chức năng sẽ được tích hợp ở Backend.', {
-      description: 'Hiện tại tính năng đăng nhập bằng Google chưa khả dụng.'
-    });
+    router.push('/dang-nhap-google');
   };
 
   return (
