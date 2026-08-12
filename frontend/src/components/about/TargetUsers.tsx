@@ -12,7 +12,7 @@ const users = [
     icon: <ShoppingBag className="w-10 h-10 text-emerald-500" />,
     features: ["Đa dạng sản phẩm", "Mua sắm dễ dàng", "Thanh toán an toàn"],
     image:
-      "/images/products/gia_vi.avif",
+      "/images/placeholders/muasam.jpg",
   },
   {
     role: "Người bán",
@@ -22,7 +22,7 @@ const users = [
     icon: <Store className="w-10 h-10 text-blue-500" />,
     features: ["Quản lý gian hàng", "Thống kê doanh thu", "Hỗ trợ vận chuyển"],
     image:
-      "/images/products/cahoi.avif",
+      "/images/placeholders/nhacungcap.jpg",
   },
   {
     role: "Quản trị viên",
@@ -32,7 +32,7 @@ const users = [
     icon: <Shield className="w-10 h-10 text-amber-500" />,
     features: ["Kiểm duyệt chặt chẽ", "Hỗ trợ 24/7", "Bảo vệ quyền lợi"],
     image:
-      "/images/products/lua.avif",
+      "/images/placeholders/admin.jpg",
   },
 ];
 

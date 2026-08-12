@@ -19,7 +19,7 @@ export const Commitments = () => {
         <div className="flex flex-col md:flex-row gap-12 items-center">
           <div className="md:w-1/2 animate-in fade-in slide-in-from-left-8 duration-1000">
             <Image
-              src="/images/products/cahoi.avif"
+              src="/images/placeholders/camket.jpg"
               alt="Cam kết AgriMarket"
               className="rounded-3xl shadow-xl w-full h-[400px] object-cover"
               width={500}
