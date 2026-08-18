@@ -10,11 +10,14 @@ import { Checkbox } from '../ui/Checkbox';
 import { PasswordInput } from './PasswordInput';
 import { SocialLogin } from './SocialLogin';
 import { AuthDivider } from './AuthDivider';
+import { authService } from '@/services/auth.service';
+import { useAuthStore } from '@/store/auth.store';
 
 import { toast } from 'sonner';
 
 export const LoginForm = () => {
   const router = useRouter();
+  const setToken = useAuthStore((state) => state.setToken);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -52,15 +55,30 @@ export const LoginForm = () => {
     setErrors({ email: '', password: '' });
     setIsLoading(true);
 
-    // Mock API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await authService.login({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      // Lưu token
+      setToken(response.accessToken);
+
       toast.success('Đăng nhập thành công!', {
         description: 'Chào mừng bạn trở lại với AgriMarket.'
       });
-      // Redirect to home page temporarily
+      
+      // Giữ nguyên behavior redirect hiện tại
       router.push('/');
-    }, 1500);
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+        toast.error('Email hoặc mật khẩu không chính xác.');
+      } else {
+        toast.error('Đăng nhập thất bại. Vui lòng thử lại.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
