@@ -18,33 +18,45 @@ import { checkRole } from '../auth/auth.helper';
 import { Role } from '../auth/role.enum';
 
 @ApiTags('stores')
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
 @Controller('stores')
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   create(@Req() req: any, @Body() createStoreDto: CreateStoreDto) {
     return this.storesService.create(req.user.userId, createStoreDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Get('my-store')
   getMyStore(@Req() req: any) {
     return this.storesService.getMyStore(req.user.userId);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Patch('my-store')
   update(@Req() req: any, @Body() updateStoreDto: UpdateStoreDto) {
     return this.storesService.update(req.user.userId, updateStoreDto);
   }
 
+  // Public API for buyers to see all stores
   @Get()
-  findAll(@Req() req: any) {
-    checkRole(req, [Role.ADMIN]);
+  findAll() {
     return this.storesService.findAll();
   }
 
+  // Public API for buyers to see store details
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.storesService.findOne(id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
     checkRole(req, [Role.ADMIN]);

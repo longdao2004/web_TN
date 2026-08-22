@@ -88,13 +88,17 @@ export class ProductsController {
     return this.productsService.findOne(id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(@Req() req: any, @Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    checkRole(req, [Role.SELLER, Role.ADMIN]);
     return this.productsService.update(id, updateProductDto);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Req() req: any, @Param('id') id: string) {
+    checkRole(req, [Role.SELLER, Role.ADMIN]);
     return this.productsService.remove(id);
   }
 }

@@ -81,6 +81,26 @@ export class StoresService {
     });
   }
 
+  async findOne(id: string) {
+    const store = await this.prisma.store.findUnique({
+      where: { id, deletedAt: null },
+      include: {
+        owner: {
+          select: { fullName: true, email: true },
+        },
+        _count: {
+          select: { products: true },
+        },
+      },
+    });
+
+    if (!store) {
+      throw new NotFoundException('Không tìm thấy cửa hàng');
+    }
+
+    return store;
+  }
+
   async remove(id: string) {
     const store = await this.prisma.store.findUnique({
       where: { id, deletedAt: null },
