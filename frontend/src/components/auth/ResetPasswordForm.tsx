@@ -6,12 +6,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, ArrowLeft, Lock } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { PasswordInput } from './PasswordInput';
+import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
 
 const ResetPasswordFormContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get('email') || '';
+  const token = searchParams.get('token') || '';
 
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -44,6 +45,13 @@ const ResetPasswordFormContent = () => {
     let isValid = true;
     const newErrors = { password: '', confirmPassword: '' };
 
+    if (!token) {
+      toast.error('Lỗi', {
+        description: 'Token không hợp lệ hoặc không được cung cấp.'
+      });
+      isValid = false;
+    }
+
     if (!formData.password) {
       newErrors.password = 'Vui lòng nhập mật khẩu mới.';
       isValid = false;
@@ -71,9 +79,12 @@ const ResetPasswordFormContent = () => {
 
     setIsLoading(true);
 
-    // Mock API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await authService.resetPassword({
+        token,
+        newPassword: formData.password,
+      });
+
       toast.success('Đặt lại mật khẩu thành công!', {
         description: 'Mật khẩu của bạn đã được cập nhật. Vui lòng đăng nhập lại.',
         action: {
@@ -82,7 +93,13 @@ const ResetPasswordFormContent = () => {
         },
       });
       router.push('/dang-nhap');
-    }, 1500);
+    } catch (error: any) {
+      toast.error('Đặt lại mật khẩu thất bại', {
+        description: error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau.'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,11 +117,6 @@ const ResetPasswordFormContent = () => {
         <p className="mt-2 text-gray-600">
           Tạo mật khẩu mới cho tài khoản của bạn.
         </p>
-        {email && (
-          <p className="mt-2 text-sm font-medium text-gray-900">
-            Tài khoản: <span className="text-emerald-600">{email}</span>
-          </p>
-        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>

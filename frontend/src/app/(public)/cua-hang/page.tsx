@@ -18,7 +18,7 @@ import {
   StorePagination,
 } from "@/components/store-list";
 
-import { mockStores } from "@/mock/stores";
+import { storeService } from "@/services/store.service";
 
 export const metadata: Metadata = {
   title: "Danh sách Cửa hàng nông sản | AgriMarket",
@@ -34,8 +34,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function StoreListPage() {
-  const featuredStores = mockStores.filter((s) => s.isFeatured);
+export default async function StoreListPage() {
+  let stores: any[] = [];
+  let error = null;
+
+  try {
+    stores = await storeService.getStores();
+  } catch (err: any) {
+    error = err.message || "Lỗi tải danh sách cửa hàng";
+  }
+
+  const featuredStores = stores.filter((s: any) => s.isFeatured);
 
   return (
     <div className="bg-gray-50/50 min-h-screen pb-12 overflow-x-hidden">
@@ -58,25 +67,33 @@ export default function StoreListPage() {
         {/* Hero Section */}
         <StoreHero />
 
-        {/* Featured Stores */}
-        <FeaturedStores stores={featuredStores} />
-
-        {/* Search Bar */}
-        <StoreSearch />
-
-        {/* Main Content Grid */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mt-4">
-          {/* Sidebar Filters */}
-          <div className="w-full lg:w-72 shrink-0">
-            <StoreFilters />
+        {error ? (
+          <div className="py-20 text-center text-red-500 bg-white rounded-xl shadow-sm border border-red-100 mt-6">
+            <p>{error}</p>
           </div>
+        ) : (
+          <>
+            {/* Featured Stores */}
+            {featuredStores.length > 0 && <FeaturedStores stores={featuredStores} />}
 
-          {/* Store Grid */}
-          <div className="flex-1 min-w-0">
-            <StoreGrid stores={mockStores} />
-            <StorePagination />
-          </div>
-        </div>
+            {/* Search Bar */}
+            <StoreSearch />
+
+            {/* Main Content Grid */}
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mt-4">
+              {/* Sidebar Filters */}
+              <div className="w-full lg:w-72 shrink-0">
+                <StoreFilters />
+              </div>
+
+              {/* Store Grid */}
+              <div className="flex-1 min-w-0">
+                <StoreGrid stores={stores} />
+                <StorePagination />
+              </div>
+            </div>
+          </>
+        )}
       </PageContainer>
     </div>
   );

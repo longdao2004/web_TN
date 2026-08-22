@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, Bell, Menu } from "lucide-react";
@@ -10,7 +10,12 @@ import { useCartStore } from "@/store/useCartStore";
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const totalItems = useCartStore((state) => state.totalItems);
+  const fetchCart = useCartStore((state) => state.fetchCart);
   const router = useRouter();
+
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-white/80 backdrop-blur-md">

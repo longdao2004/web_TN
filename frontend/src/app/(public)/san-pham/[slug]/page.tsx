@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { PageContainer } from "@/components/layout/core";
-import { mockProductDetail } from "@/mock/product-detail";
+import { productService } from "@/services/product.service";
 import {
   BreadcrumbSection,
   ProductGallery,
@@ -20,25 +20,27 @@ type Props = {
 
 // Sinh Metadata cho SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  await params;
-
-  // Trong thực tế sẽ fetch API theo slug. Ở đây dùng mock.
-  const product = mockProductDetail;
-
-  return {
-    title: `${product.name} | Sàn Nông Sản`,
-    description: product.description.substring(0, 160),
-    openGraph: {
-      title: product.name,
-      description: product.description.substring(0, 160),
-      images: [product.image],
-    },
-  };
+  const resolvedParams = await params;
+  try {
+    const product = await productService.getProductBySlug(resolvedParams.slug);
+    return {
+      title: `${product.name} | Sàn Nông Sản`,
+      description: product.description?.substring(0, 160) || "",
+      openGraph: {
+        title: product.name,
+        description: product.description?.substring(0, 160) || "",
+        images: [product.image],
+      },
+    };
+  } catch (error) {
+    return { title: 'Sản phẩm không tồn tại' };
+  }
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  await params;
-  const product = mockProductDetail; // Lấy mock data
+  const resolvedParams = await params;
+  const product = await productService.getProductBySlug(resolvedParams.slug);
+
 
   return (
     <div className="bg-gray-50/50 min-h-screen pb-12">

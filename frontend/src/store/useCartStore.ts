@@ -1,69 +1,65 @@
 import { create } from 'zustand';
 import { CartItem } from '@/types/cart';
-import { mockCartItems } from '@/mock/cart';
+import { cartService } from '@/services/cart.service';
 
 interface CartState {
   items: CartItem[];
   totalItems: number;
   buyNowItem: CartItem | null;
-  addItem: (item: CartItem, quantity: number) => boolean;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  fetchCart: () => Promise<void>;
+  addItem: (item: CartItem, quantity: number) => Promise<boolean>;
+  removeItem: (id: string) => Promise<void>;
+  updateQuantity: (id: string, quantity: number) => Promise<void>;
   clearCart: () => void;
   setBuyNowItem: (item: CartItem) => void;
   clearBuyNowItem: () => void;
 }
 
 export const useCartStore = create<CartState>((set) => ({
-  items: mockCartItems,
-  totalItems: mockCartItems.reduce((acc, item) => acc + item.quantity, 0),
+  items: [],
+  totalItems: 0,
   buyNowItem: null,
 
-  addItem: (newItem, quantity) => {
-    let isUpdated = false;
-    set((state) => {
-      const existingItem = state.items.find(item => item.id === newItem.id);
-      
-      let newItems;
-      if (existingItem) {
-        isUpdated = true;
-        newItems = state.items.map(item => 
-          item.id === newItem.id 
-            ? { ...item, quantity: Math.min(item.quantity + quantity, item.maxQuantity) } 
-            : item
-        );
-      } else {
-        newItems = [...state.items, { ...newItem, quantity: Math.min(quantity, newItem.maxQuantity) }];
-      }
-
-      return {
-        items: newItems,
-        totalItems: newItems.reduce((acc, item) => acc + item.quantity, 0)
-      };
-    });
-    return isUpdated;
+  fetchCart: async () => {
+    try {
+      const data = await cartService.getCart();
+      set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
+    } catch (e) {
+      console.error(e);
+      set({ items: [], totalItems: 0 });
+    }
   },
 
-  removeItem: (id) => {
-    set((state) => {
-      const newItems = state.items.filter(item => item.id !== id);
-      return {
-        items: newItems,
-        totalItems: newItems.reduce((acc, item) => acc + item.quantity, 0)
-      };
-    });
+  addItem: async (newItem, quantity) => {
+    try {
+      await cartService.addToCart(newItem.id, quantity);
+      const data = await cartService.getCart();
+      set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   },
 
-  updateQuantity: (id, quantity) => {
-    set((state) => {
-      const newItems = state.items.map(item => 
-        item.id === id ? { ...item, quantity } : item
-      );
-      return {
-        items: newItems,
-        totalItems: newItems.reduce((acc, item) => acc + item.quantity, 0)
-      };
-    });
+  removeItem: async (id) => {
+    try {
+      await cartService.removeCartItem(id);
+      const data = await cartService.getCart();
+      set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
+    } catch (e) {
+      console.error(e);
+    }
+  },
+
+  updateQuantity: async (id, quantity) => {
+    try {
+      await cartService.updateCartItem(id, quantity);
+      const data = await cartService.getCart();
+      set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
+    } catch (e) {
+      console.error(e);
+    }
   },
 
   clearCart: () => set({ items: [], totalItems: 0 }),

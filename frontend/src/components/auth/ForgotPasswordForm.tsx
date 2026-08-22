@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Mail, Loader2, ArrowLeft } from 'lucide-react';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { authService } from '@/services/auth.service';
 
 export const ForgotPasswordForm = () => {
   const router = useRouter();
@@ -33,12 +34,15 @@ export const ForgotPasswordForm = () => {
     setError('');
     setIsLoading(true);
 
-    // Mock API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await authService.forgotPassword({ email });
       // Redirect to OTP page
       router.push(`/nhap-otp?email=${encodeURIComponent(email)}`);
-    }, 1500);
+    } catch (error: any) {
+      setError(error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

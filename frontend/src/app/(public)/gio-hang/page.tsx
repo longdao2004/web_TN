@@ -21,7 +21,11 @@ import {
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, updateQuantity, removeItem } = useCartStore();
+  const { items, updateQuantity, removeItem, fetchCart } = useCartStore();
+
+  React.useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
 
   // State
   const [selectedIds, setSelectedIds] = useState<string[]>(

@@ -10,6 +10,7 @@ import { Checkbox } from '../ui/Checkbox';
 import { PasswordInput } from './PasswordInput';
 import { SocialLogin } from './SocialLogin';
 import { AuthDivider } from './AuthDivider';
+import { authService } from '@/services/auth.service';
 
 import { toast } from 'sonner';
 
@@ -114,15 +115,25 @@ export const RegisterForm = () => {
 
     setIsLoading(true);
 
-    // Mock API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await authService.register({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      });
+
       toast.success('Đăng ký thành công!', {
         description: 'Tài khoản của bạn đã được tạo thành công.'
       });
-      // Redirect to home page temporarily
-      router.push('/');
-    }, 1500);
+      // Redirect to login page after register
+      router.push('/dang-nhap');
+    } catch (error: any) {
+      toast.error('Đăng ký thất bại', {
+        description: error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau.'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

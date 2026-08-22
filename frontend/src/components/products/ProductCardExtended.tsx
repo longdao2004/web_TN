@@ -25,13 +25,13 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
     }).format(price);
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (isLoading) return;
 
     setIsLoading(true);
-    setTimeout(() => {
-      const isUpdated = addItem(
+    try {
+      const isUpdated = await addItem(
         {
           id: product.id,
           productId: product.id,
@@ -46,7 +46,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           store: {
             id: "store-1",
             name: product.storeName || "Cửa hàng",
-            slug: "store-1",
+            slug: "cua-hang",
           },
         },
         1,
@@ -56,17 +56,18 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
         toast.success("Đã tăng số lượng trong giỏ hàng", {
           description: product.name,
           action: { label: "Xem giỏ", onClick: () => router.push("/gio-hang") },
-          duration: 4000,
         });
       } else {
         toast.success("Đã thêm vào giỏ hàng", {
           description: product.name,
           action: { label: "Xem giỏ", onClick: () => router.push("/gio-hang") },
-          duration: 4000,
         });
       }
+    } catch (err) {
+      toast.error("Không thể thêm vào giỏ hàng");
+    } finally {
       setIsLoading(false);
-    }, 400);
+    }
   };
 
   return (

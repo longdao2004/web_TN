@@ -6,6 +6,8 @@ import { userService } from "@/services/user.service";
 import { UserProfile, UpdateProfileRequest } from "@/types/user";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -21,6 +23,9 @@ export default function ProfilePage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isDirty, setIsDirty] = useState(false);
 
+  const { logout } = useAuthStore();
+  const router = useRouter();
+
   async function fetchProfile() {
     try {
       const data = await userService.getProfile();
@@ -31,9 +36,15 @@ export default function ProfilePage() {
         address: data.address || "",
       });
       setIsDirty(false);
-    } catch (error) {
-      console.error(error);
-      toast.error("Không thể tải thông tin hồ sơ");
+    } catch (error: any) {
+      if (error.message === 'UNAUTHORIZED') {
+        logout();
+        toast.error("Phiên đăng nhập đã hết hạn");
+        router.push("/dang-nhap");
+      } else {
+        console.error(error);
+        toast.error("Không thể tải thông tin hồ sơ");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -85,9 +96,15 @@ export default function ProfilePage() {
       });
       setIsDirty(false);
       toast.success("Cập nhật hồ sơ thành công");
-    } catch (error) {
-      console.error(error);
-      toast.error("Không thể cập nhật hồ sơ. Vui lòng thử lại.");
+    } catch (error: any) {
+      if (error.message === 'UNAUTHORIZED') {
+        logout();
+        toast.error("Phiên đăng nhập đã hết hạn");
+        router.push("/dang-nhap");
+      } else {
+        console.error(error);
+        toast.error("Không thể cập nhật hồ sơ. Vui lòng thử lại.");
+      }
     } finally {
       setIsSaving(false);
     }
