@@ -38,7 +38,7 @@ export const useCartStore = create<CartState>((set) => ({
       return true;
     } catch (e) {
       console.error(e);
-      return false;
+      throw e;
     }
   },
 

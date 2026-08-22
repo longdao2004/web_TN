@@ -6,16 +6,34 @@ import { ShoppingCart, Bell, Menu } from "lucide-react";
 import { PageContainer } from "../core";
 import { SearchBox, Button, Avatar, Dropdown } from "@/components/ui";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/auth.store";
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  
   const totalItems = useCartStore((state) => state.totalItems);
   const fetchCart = useCartStore((state) => state.fetchCart);
+  
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const fetchUser = useAuthStore((state) => state.fetchUser);
+  const logout = useAuthStore((state) => state.logout);
+  
   const router = useRouter();
 
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    setIsMounted(true);
+    if (isAuthenticated) {
+      fetchUser();
+      fetchCart();
+    }
+  }, [fetchCart, fetchUser, isAuthenticated]);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/dang-nhap");
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-white/80 backdrop-blur-md">
@@ -77,7 +95,7 @@ export const Header = () => {
               fullWidth
               onSearch={(val) => {
                 if (val && val.trim()) {
-                  router.push(`/tim-kiem?q=${encodeURIComponent(val.trim())}`);
+                  router.push(`/san-pham?search=${encodeURIComponent(val.trim())}`);
                 }
               }}
             />
@@ -89,9 +107,11 @@ export const Header = () => {
               variant="ghost"
               size="icon"
               className="relative text-gray-600"
+              onClick={() => {
+                // TODO: Implement notifications
+              }}
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
             </Button>
 
             <Link href="/gio-hang">
@@ -110,20 +130,28 @@ export const Header = () => {
             </Link>
 
             <div className="hidden sm:block ml-2 border-l border-gray-200 pl-4">
-              {/* UI Mock state for authenticated user (currently false) */}
-              {false ? (
+              {!isMounted ? (
+                <div className="w-24 h-9 bg-gray-100 animate-pulse rounded-md"></div>
+              ) : isAuthenticated ? (
                 <Dropdown
                   align="right"
                   trigger={
-                    <Avatar
-                      fallback="User"
-                      size="sm"
-                      className="cursor-pointer hover:ring-2 ring-[var(--color-primary)] transition-all"
-                    />
+                    <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                      <span className="text-sm font-medium text-gray-700 hidden md:block">
+                        {user?.fullName || "Tài khoản"}
+                      </span>
+                      <Avatar
+                        src={user?.avatarUrl || ""}
+                        fallback={user?.fullName?.charAt(0) || "U"}
+                        size="sm"
+                        className="ring-2 ring-transparent hover:ring-[var(--color-primary)] transition-all"
+                      />
+                    </div>
                   }
                   items={[
                     { label: "Tài khoản", onClick: () => router.push("/tai-khoan") },
-                    { label: "Đăng xuất" },
+                    { label: "Đơn hàng của tôi", onClick: () => router.push("/tai-khoan/don-hang") },
+                    { label: "Đăng xuất", onClick: handleLogout },
                   ]}
                 />
               ) : (
@@ -181,20 +209,50 @@ export const Header = () => {
               Liên hệ
             </Link>
             <div className="pt-4 border-t border-[var(--color-border)] flex flex-col space-y-4">
-              <Link
-                href="/dang-nhap"
-                className="hover:text-[var(--color-primary)] transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Đăng nhập
-              </Link>
-              <Link
-                href="/dang-ky"
-                className="text-[var(--color-primary)] transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Đăng ký
-              </Link>
+              {!isMounted ? null : isAuthenticated ? (
+                <>
+                  <Link
+                    href="/tai-khoan"
+                    className="hover:text-[var(--color-primary)] transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {user?.fullName || "Tài khoản"}
+                  </Link>
+                  <Link
+                    href="/tai-khoan/don-hang"
+                    className="hover:text-[var(--color-primary)] transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Đơn hàng của tôi
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="text-left text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    Đăng xuất
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/dang-nhap"
+                    className="hover:text-[var(--color-primary)] transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    href="/dang-ky"
+                    className="text-[var(--color-primary)] transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Đăng ký
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

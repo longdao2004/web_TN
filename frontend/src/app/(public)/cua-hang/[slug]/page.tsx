@@ -27,7 +27,10 @@ import { getMockStoreDetail } from '@/mock/store-detail';
 // Mock generate metadata
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
-  const store = getMockStoreDetail(resolvedParams.slug);
+  let store = getMockStoreDetail(resolvedParams.slug);
+  if (!store) {
+    store = getMockStoreDetail('store-1');
+  }
   if (!store) {
     return { title: 'Không tìm thấy cửa hàng' };
   }
@@ -45,9 +48,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function StoreDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const store = getMockStoreDetail(resolvedParams.slug);
+  let store = getMockStoreDetail(resolvedParams.slug);
   
-  // Fake 404 for slugs that don't match the mock
+  // Fake 404 fallback to a default mock store so it doesn't break
+  if (!store) {
+    store = getMockStoreDetail('store-1');
+  }
+  
   if (!store) {
     notFound();
   }

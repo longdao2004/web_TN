@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageContainer, Section } from "@/components/layout/core";
 import {
   Breadcrumb,
@@ -20,11 +21,21 @@ export default function ProductListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const searchParams = useSearchParams();
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await productService.getProducts();
+        const filters = {
+          search: searchParams.get('search') || undefined,
+          categoryId: searchParams.get('category') || undefined,
+          minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+          maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+          sortBy: searchParams.get('sort') || undefined,
+          order: (searchParams.get('order') as 'asc' | 'desc') || undefined,
+        };
+        const data = await productService.getProducts(filters);
         setProducts(data);
       } catch (err: any) {
         setError(err.message || 'Lỗi tải danh sách sản phẩm');
@@ -33,7 +44,7 @@ export default function ProductListPage() {
       }
     };
     fetchProducts();
-  }, []);
+  }, [searchParams]);
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">

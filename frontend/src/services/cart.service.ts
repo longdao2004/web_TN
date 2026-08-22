@@ -40,17 +40,26 @@ export const cartService = {
   },
   addToCart: async (productId: string, quantity: number) => {
     const res = await fetch(`${API_URL}/cart/items`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ productId, quantity }) });
-    if (!res.ok) throw new Error('Không thể thêm vào giỏ hàng');
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('UNAUTHORIZED');
+      throw new Error('Không thể thêm vào giỏ hàng');
+    }
     return res.json();
   },
   updateCartItem: async (cartItemId: string, quantity: number) => {
     const res = await fetch(`${API_URL}/cart/items/${cartItemId}`, { method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ quantity }) });
-    if (!res.ok) throw new Error('Không thể cập nhật số lượng');
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('UNAUTHORIZED');
+      throw new Error('Không thể cập nhật số lượng');
+    }
     return res.json();
   },
   removeCartItem: async (cartItemId: string) => {
     const res = await fetch(`${API_URL}/cart/items/${cartItemId}`, { method: 'DELETE', headers: getHeaders() });
-    if (!res.ok) throw new Error('Không thể xóa sản phẩm khỏi giỏ hàng');
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('UNAUTHORIZED');
+      throw new Error('Không thể xóa sản phẩm khỏi giỏ hàng');
+    }
     return res.json();
   }
 };

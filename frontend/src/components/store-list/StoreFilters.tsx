@@ -1,7 +1,24 @@
+"use client";
 import React from "react";
 import { Filter, Star, ShieldCheck, Tag } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export const StoreFilters = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const handleSortChange = (checked: boolean, val: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (checked) {
+      params.set('sort', val);
+    } else {
+      params.delete('sort');
+    }
+    router.push(`/cua-hang?${params.toString()}`);
+  };
+
+  const isRatingSelected = searchParams.get('sort') === 'rating';
+
   return (
     <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm sticky top-24 animate-in slide-in-from-left-4 duration-700 fade-in">
       <div className="flex items-center gap-2 mb-6 border-b border-gray-50 pb-4">
@@ -16,20 +33,17 @@ export const StoreFilters = () => {
             <Star className="w-4 h-4 text-gray-400" /> Đánh giá
           </h3>
           <div className="flex flex-col gap-2">
-            {["Từ 4 sao trở lên", "Từ 3 sao trở lên"].map((label, idx) => (
-              <label
-                key={idx}
-                className="flex items-center gap-3 cursor-pointer group"
-              >
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                <span className="text-sm text-gray-600 group-hover:text-emerald-600 transition-colors">
-                  {label}
-                </span>
-              </label>
-            ))}
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={isRatingSelected}
+                onChange={(e) => handleSortChange(e.target.checked, 'rating')}
+                className="w-4 h-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary-light)]"
+              />
+              <span className="text-sm text-gray-600 group-hover:text-[var(--color-primary)] transition-colors">
+                Từ 4 sao trở lên
+              </span>
+            </label>
           </div>
         </div>
 

@@ -34,12 +34,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function StoreListPage() {
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function StoreListPage({ searchParams }: Props) {
   let stores: any[] = [];
   let error = null;
 
+  const resolvedParams = await searchParams;
+  const search = typeof resolvedParams.search === 'string' ? resolvedParams.search : undefined;
+  const province = typeof resolvedParams.province === 'string' ? resolvedParams.province : undefined;
+  const sort = typeof resolvedParams.sort === 'string' ? resolvedParams.sort : undefined;
+
   try {
-    stores = await storeService.getStores();
+    stores = await storeService.getStores({ search, province, sort });
   } catch (err: any) {
     error = err.message || "Lỗi tải danh sách cửa hàng";
   }

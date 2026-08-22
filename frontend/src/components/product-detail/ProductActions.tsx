@@ -32,19 +32,21 @@ export const ProductActions = ({ product }: { product: Product }) => {
 
   const handleAddToCart = async () => {
     try {
-      const isUpdated = await addItem(createCartItem(), quantity);
-      toast.success(
-        isUpdated ? "Đã tăng số lượng trong giỏ hàng" : "Đã thêm vào giỏ hàng",
-        {
-          description: `${product.name} (x${quantity})`,
-          action: {
-            label: "Xem giỏ hàng",
-            onClick: () => router.push("/gio-hang"),
-          },
+      await addItem(createCartItem(), quantity);
+      toast.success("Thêm vào giỏ hàng thành công", {
+        description: `${product.name} (x${quantity})`,
+        action: {
+          label: "Xem giỏ hàng",
+          onClick: () => router.push("/gio-hang"),
         },
-      );
-    } catch (err) {
-      toast.error("Không thể thêm vào giỏ hàng");
+      });
+    } catch (err: any) {
+      if (err.message === "UNAUTHORIZED") {
+        toast.error("Vui lòng đăng nhập để mua hàng");
+        router.push("/dang-nhap");
+      } else {
+        toast.error("Không thể thêm vào giỏ hàng");
+      }
     }
   };
 

@@ -15,6 +15,7 @@ import {
 import { useCartStore } from "@/store/useCartStore";
 import { Voucher } from "@/types/cart";
 import { VoucherBox } from "@/components/cart/VoucherBox";
+import { orderService } from "@/services/order.service";
 
 import {
   mockDefaultAddress,
@@ -113,13 +114,27 @@ function CheckoutContent() {
     return { subTotal, discount, shippingFee, tax, total };
   }, [items, appliedVoucher, shippingMethodId]);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     setIsSubmitting(true);
 
-    // Giả lập API gọi lên server
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
+    try {
+      // 1. Tạo đơn hàng với địa chỉ mặc định
+      const address = mockDefaultAddress;
+      const fullAddress = `${address.addressLine}, ${address.ward}, ${address.district}, ${address.province}`;
+      
+      const orderRes = await orderService.createOrder({ 
+        shippingAddress: fullAddress, 
+        phone: address.phone 
+      });
+
+      // 2. Xác định phương thức thanh toán
+      // Chỉ hỗ trợ COD và VNPAY dựa theo Provider của BE
+      const provider = paymentMethodId === 'pay-vnpay' ? 'VNPAY' : 'COD';
+
+      const paymentRes = await orderService.createPaymentUrl({
+        orderId: orderRes.orderId,
+        provider,
+      });
 
       if (isBuyNow) {
         clearBuyNowItem();
@@ -127,13 +142,21 @@ function CheckoutContent() {
         clearCart();
       }
 
-      toast.success("Đặt hàng thành công!", {
-        description: "Cảm ơn bạn đã mua sắm tại AgriMarket.",
-        duration: 5000,
-      });
-
-      router.push("/dat-hang-thanh-cong");
-    }, 1000);
+      if (provider === 'VNPAY' && paymentRes.url) {
+        window.location.href = paymentRes.url;
+      } else {
+        setIsSuccess(true);
+        toast.success("Đặt hàng thành công!", {
+          description: "Cảm ơn bạn đã mua sắm tại AgriMarket.",
+          duration: 5000,
+        });
+        router.push("/dat-hang-thanh-cong");
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Lỗi đặt hàng. Vui lòng thử lại!');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isMounted || (items.length === 0 && !isSuccess)) {

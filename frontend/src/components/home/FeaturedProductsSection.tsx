@@ -1,11 +1,18 @@
-import React from 'react';
+"use client";
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageContainer, Section } from '@/components/layout/core';
 import { Button } from '@/components/ui';
 import { ProductCard } from './components/ProductCard';
-import { products } from '@/mock';
+import { productService } from '@/services/product.service';
 
 export const FeaturedProductsSection = () => {
+  const [products, setProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    productService.getProducts().then(setProducts).catch(console.error);
+  }, []);
+
   return (
     <Section bgClass="bg-white">
       <PageContainer>

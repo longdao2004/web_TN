@@ -42,7 +42,7 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
 
     setIsLoading(true);
     try {
-      const isUpdated = await addItem(
+      await addItem(
         {
           id: product.id,
           productId: product.id,
@@ -59,19 +59,17 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
         1,
       );
 
-      if (isUpdated) {
-        toast.success("Đã tăng số lượng trong giỏ hàng", {
-          description: product.name,
-          action: { label: "Xem giỏ", onClick: () => router.push("/gio-hang") },
-        });
+      toast.success("Thêm vào giỏ hàng thành công", {
+        description: product.name,
+        action: { label: "Xem giỏ", onClick: () => router.push("/gio-hang") },
+      });
+    } catch (err: any) {
+      if (err.message === "UNAUTHORIZED") {
+        toast.error("Vui lòng đăng nhập để mua hàng");
+        router.push("/dang-nhap");
       } else {
-        toast.success("Thêm vào giỏ hàng thành công", {
-          description: product.name,
-          action: { label: "Xem giỏ", onClick: () => router.push("/gio-hang") },
-        });
+        toast.error("Không thể thêm vào giỏ hàng");
       }
-    } catch (err) {
-      toast.error("Không thể thêm vào giỏ hàng");
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +109,7 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
       {/* Product Info */}
       <div className="flex flex-1 flex-col p-4">
         <Link
-          href={`/store/${product.store}`}
+          href={`/cua-hang/${product.store}`}
           className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:underline mb-1"
         >
           {product.store}

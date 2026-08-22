@@ -1,13 +1,19 @@
-import React from 'react';
+"use client";
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageContainer, Section } from '@/components/layout/core';
 import { Button } from '@/components/ui';
 import { ProductCard } from './components/ProductCard';
-import { products } from '@/mock';
+import { productService } from '@/services/product.service';
 
 export const NewProductsSection = () => {
-  // Lấy 4 sản phẩm cuối cùng làm ví dụ
-  const newProducts = [...products].reverse().slice(0, 4);
+  const [newProducts, setNewProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    productService.getProducts().then(data => {
+      setNewProducts([...data].reverse().slice(0, 4));
+    }).catch(console.error);
+  }, []);
 
   return (
     <Section bgClass="bg-gray-50">
