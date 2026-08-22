@@ -31,7 +31,6 @@ export class OrderController {
   }
   @Get('history')
   getUserOrders(@Request() req: any) {
-    // Chỉ Khách hàng mới được xem lịch sử mua hàng của chính họ
     checkRole(req, [Role.BUYER]);
 
     const userId = req.user.userId;

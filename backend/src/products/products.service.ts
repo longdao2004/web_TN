@@ -44,27 +44,97 @@ export class ProductsService {
     });
   }
 
-  findAll() {
+  findAll(filters?: {
+    search?: string;
+    categoryId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: string;
+    order?: 'asc' | 'desc';
+  }) {
+    const whereClause: any = { deletedAt: null };
+
+    if (filters?.search) {
+      whereClause.name = { contains: filters.search, mode: 'insensitive' };
+    }
+    if (filters?.categoryId) {
+      whereClause.categoryId = filters.categoryId;
+    }
+    if (filters?.minPrice !== undefined || filters?.maxPrice !== undefined) {
+      whereClause.batches = {
+        some: {
+          expiryDate: { gt: new Date() },
+          price: {
+            ...(filters.minPrice !== undefined ? { gte: filters.minPrice } : {}),
+            ...(filters.maxPrice !== undefined ? { lte: filters.maxPrice } : {}),
+          },
+        },
+      };
+    }
+
+    let orderByClause: any = { createdAt: 'desc' };
+    if (filters?.sortBy === 'price') {
+      // NOTE: Sorting by relation aggregates (like max/min price in batches) can be complex in Prisma. 
+      // This is a simplified approach, actual implementation might need sorting after fetch or raw query for exact price sorting.
+      // We'll skip complex relation sorting here and just rely on default or simple fields.
+      orderByClause = undefined; // Will handle in memory if strictly required, or omit for now
+    } else if (filters?.sortBy === 'rating') {
+      orderByClause = { soldCount: filters.order || 'desc' }; // Mock rating with soldCount
+    } else if (filters?.sortBy === 'newest') {
+      orderByClause = { createdAt: 'desc' };
+    }
+
     return this.prisma.product.findMany({
-      where: { deletedAt: null },
+      where: whereClause,
       include: {
         category: true,
         store: true,
-        // Chỉ lấy những lô hàng còn hạn sử dụng (expiryDate lớn hơn ngày hiện tại)
+        reviews: {
+          select: { id: true, rating: true }
+        },
         batches: {
           where: {
             expiryDate: { gt: new Date() },
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: orderByClause,
+    }).then(products => {
+      // Manual post-fetch sorting for price if needed since it's nested
+      if (filters?.sortBy === 'price') {
+        return products.sort((a, b) => {
+          const priceA = a.batches?.[0]?.price || 0;
+          const priceB = b.batches?.[0]?.price || 0;
+          return filters.order === 'desc' ? priceB - priceA : priceA - priceB;
+        });
+      }
+      return products;
     });
   }
 
   findOne(id: string) {
     return this.prisma.product.findUnique({
       where: { id },
-      include: { batches: true, category: true, store: true },
+      include: { 
+        batches: {
+          where: { expiryDate: { gt: new Date() } }
+        },
+        category: true, 
+        store: true,
+        reviews: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        },
+        certificates: true
+      },
     });
   }
 

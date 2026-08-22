@@ -167,11 +167,12 @@ export class PaymentsService {
           });
         });
 
-        return { code: '00', message: 'Thanh toán thành công' };
+        return { code: '00', message: 'Thanh toán thành công', orderId };
       } else {
         return {
           code: responseCode,
           message: 'Thanh toán thất bại hoặc khách hàng đã hủy',
+          orderId,
         };
       }
     } else {

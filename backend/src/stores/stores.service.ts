@@ -66,9 +66,26 @@ export class StoresService {
     });
   }
 
-  async findAll() {
+  async findAll(filters?: { search?: string, province?: string, sort?: string }) {
+    const whereClause: any = { deletedAt: null };
+
+    if (filters?.search) {
+      whereClause.name = { contains: filters.search, mode: 'insensitive' };
+    }
+    if (filters?.province) {
+      whereClause.address = { contains: filters.province, mode: 'insensitive' };
+    }
+
+    let orderByClause: any = { createdAt: 'desc' };
+    if (filters?.sort === 'rating') {
+      // Mock sorting for rating since rating isn't real yet
+      orderByClause = { createdAt: 'desc' };
+    } else if (filters?.sort === 'newest') {
+      orderByClause = { createdAt: 'desc' };
+    }
+
     return this.prisma.store.findMany({
-      where: { deletedAt: null },
+      where: whereClause,
       include: {
         owner: {
           select: { fullName: true, email: true },
@@ -77,7 +94,7 @@ export class StoresService {
           select: { products: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: orderByClause,
     });
   }
 

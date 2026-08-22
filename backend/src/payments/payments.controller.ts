@@ -50,10 +50,8 @@ export class PaymentsController {
   })
   async vnpayReturn(@Query() query: any, @Res() res: any) {
     const result = await this.paymentsService.vnpayReturn(query);
-
-    // Trong môi trường thực tế, sau khi tính toán xong, Backend thường redirect user về Front-end.
-    // Ví dụ: return res.redirect(`http://localhost:3001/payment/result?code=${result.code}`);
-    // Ở đây đồ án chỉ viết API trả về JSON.
-    return res.json(result);
+    
+    // Redirect về Frontend hiển thị trang thành công / thất bại
+    return res.redirect(`http://localhost:3001/dat-hang-thanh-cong?code=${result.code}&message=${encodeURIComponent(result.message)}&orderId=${result.orderId || ''}`);
   }
 }

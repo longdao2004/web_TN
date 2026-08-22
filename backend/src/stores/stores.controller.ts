@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query
 } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
@@ -45,8 +46,12 @@ export class StoresController {
 
   // Public API for buyers to see all stores
   @Get()
-  findAll() {
-    return this.storesService.findAll();
+  findAll(
+    @Query('search') search?: string,
+    @Query('province') province?: string,
+    @Query('sort') sort?: string,
+  ) {
+    return this.storesService.findAll({ search, province, sort });
   }
 
   // Public API for buyers to see store details
