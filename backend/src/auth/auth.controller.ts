@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/password.dto';
@@ -31,9 +31,11 @@ export class AuthController {
   // API: Google sẽ gọi callback này sau khi người dùng đăng nhập thành công
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req) {
-    // req.user chứa thông tin lấy từ GoogleStrategy truyền xuống
-    return this.authService.googleLogin(req.user);
+  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
+    // Gọi service xử lý login/register
+    const result = await this.authService.googleLogin(req.user);
+    // Redirect thẳng về Frontend kèm token trên URL
+    return res.redirect(`http://localhost:3001/dang-nhap-google/callback?token=${result.accessToken}`);
   }
 
   // --- FORGOT PASSWORD ROUTES ---

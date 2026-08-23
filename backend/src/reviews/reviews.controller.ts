@@ -29,6 +29,14 @@ export class ReviewsController {
     return this.reviewsService.create(req.user.userId, createReviewDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  @ApiOperation({ summary: 'Lấy các đánh giá của tôi' })
+  findMyReviews(@Req() req: any) {
+    return this.reviewsService.findMyReviews(req.user.userId);
+  }
+
   // Lưu ý: Route này KHÔNG có UseGuards vì đánh giá sản phẩm thường là Public (ai cũng xem được)
   @Get('product/:productId')
   @ApiOperation({ summary: 'Lấy toàn bộ đánh giá của 1 sản phẩm cụ thể' })

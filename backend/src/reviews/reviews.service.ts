@@ -39,11 +39,22 @@ export class ReviewsService {
     });
   }
 
+  async findMyReviews(userId: string) {
+    return this.prisma.review.findMany({
+      where: { userId, deletedAt: null },
+      include: {
+        product: {
+          select: { id: true, name: true, imageUrl: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   /**
-   * Lấy toàn bộ đánh giá của 1 sản phẩm cụ thể.
-   * Logic quan trọng:
-   * - Khi trả về dữ liệu, phải include bảng User nhưng CẦN ẨN thông tin nhạy cảm (email, password),
-   *   chỉ lấy fullName và avatarUrl để hiển thị lên UI.
+   * Lấy danh sách đánh giá CỦA 1 SẢN PHẨM CỤ THỂ
+   * Ở đây tôi kết hợp join bảng User (người viết đánh giá) nhưng
+   * chỉ lấy fullName và avatarUrl để hiển thị lên UI.
    */
   async findByProduct(productId: string) {
     return this.prisma.review.findMany({
