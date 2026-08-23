@@ -17,7 +17,7 @@ export const userService = {
       headers: getHeaders(),
     });
     if (!res.ok) {
-      if (res.status === 401) {
+      if (res.status === 401 || res.status === 404) {
         throw new Error('UNAUTHORIZED');
       }
       throw new Error('Lỗi khi lấy thông tin người dùng');

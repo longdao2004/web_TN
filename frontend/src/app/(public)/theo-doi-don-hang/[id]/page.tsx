@@ -128,7 +128,7 @@ export default function OrderTrackingPage() {
             <div className="lg:col-span-8 flex flex-col gap-6">
               <PurchasedProducts products={order.products} />
               <StoreInformation store={order.store} />
-              {order.status === "DELIVERED" && <ReviewSection status={order.status} />}
+              {order.status === "COMPLETED" && <ReviewSection status={order.status} products={order.products} />}
             </div>
 
             {/* Right Column */}

@@ -8,7 +8,8 @@ export const SocialLogin = () => {
   const router = useRouter();
 
   const handleGoogleLogin = () => {
-    router.push('/dang-nhap-google');
+    // Chuyển hướng người dùng sang API của Backend để bắt đầu quy trình OAuth2
+    window.location.href = 'http://localhost:3000/auth/google';
   };
 
   return (

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User, MapPin, ShoppingBag, LogOut } from "lucide-react";
+import { User, MapPin, ShoppingBag, LogOut, Star } from "lucide-react";
 import { PageContainer } from "@/components/layout/core";
 import {
   Breadcrumb,
@@ -25,6 +25,11 @@ const SIDEBAR_ITEMS = [
     name: "Đơn hàng của tôi",
     href: "/tai-khoan/don-hang",
     icon: ShoppingBag,
+  },
+  {
+    name: "Đánh giá của tôi",
+    href: "/tai-khoan/danh-gia",
+    icon: Star,
   },
   {
     name: "Địa chỉ nhận hàng",
