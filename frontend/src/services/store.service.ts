@@ -31,5 +31,34 @@ export const storeService = {
       reviewsCount: 0,
       isFeatured: false,
     }));
+  },
+  
+  getStoreById: async (id: string): Promise<Store> => {
+    const res = await fetch(`${API_URL}/stores/${id}`, { method: 'GET' });
+    if (!res.ok) throw new Error('Lỗi khi lấy thông tin cửa hàng');
+    const item = await res.json();
+    
+    return {
+      id: item.id,
+      slug: item.id,
+      name: item.name,
+      logo: item.logoUrl || '/images/products/cachuabi.avif',
+      banner: '/images/products/carot.avif',
+      address: item.address || 'Chưa cập nhật',
+      description: item.description || 'Cửa hàng chưa có mô tả.',
+      certificates: [],
+      productsCount: item._count?.products || item.products?.length || 0,
+      rating: 5,
+      reviewsCount: 0,
+      isFeatured: false,
+      joinDate: item.createdAt || '2026',
+      statistics: {
+        totalProducts: item._count?.products || item.products?.length || 0,
+        totalSold: 100, // mock fallback
+        totalCustomers: 50, // mock fallback
+        responseRate: '95%',
+        averageRating: 5,
+      }
+    };
   }
 };

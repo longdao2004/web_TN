@@ -91,7 +91,7 @@ export const SortBar = ({ totalItems, onOpenMobileFilter }: SortBarProps) => {
             name="search"
             defaultValue={searchParams.get('search') || ''}
             placeholder="Tìm trong kết quả..."
-            className="w-full h-10 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-sm"
+            className="w-full h-10 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-sm text-gray-900 bg-white"
           />
         </form>
         <div className="w-full sm:w-48 shrink-0">

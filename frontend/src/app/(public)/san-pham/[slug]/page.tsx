@@ -45,7 +45,7 @@ export default async function ProductDetailPage({ params }: Props) {
   return (
     <div className="bg-gray-50/50 min-h-screen pb-12">
       <PageContainer>
-        {/* Breadcrumb */}
+        {/* Đường dẫn (Breadcrumb) */}
         <BreadcrumbSection productName={product.name} />
 
         {/* Main Product Layout */}

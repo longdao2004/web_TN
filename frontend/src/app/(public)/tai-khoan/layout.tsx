@@ -69,7 +69,7 @@ export default function AccountLayout({
 
   return (
     <PageContainer className="py-8">
-      {/* Breadcrumb */}
+      {/* Đường dẫn (Breadcrumb) */}
       <Breadcrumb className="mb-8">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -122,7 +122,7 @@ export default function AccountLayout({
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* Nội dung chính */}
         <div className="flex-1 min-w-0">
           {children}
         </div>

@@ -2,15 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Mail, Loader2, ArrowLeft } from 'lucide-react';
+import { Mail, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { authService } from '@/services/auth.service';
 
 export const ForgotPasswordForm = () => {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
 
@@ -36,8 +35,7 @@ export const ForgotPasswordForm = () => {
 
     try {
       await authService.forgotPassword({ email });
-      // Redirect to OTP page
-      router.push(`/nhap-otp?email=${encodeURIComponent(email)}`);
+      setIsSuccess(true);
     } catch (error: any) {
       setError(error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau.');
     } finally {
@@ -52,12 +50,38 @@ export const ForgotPasswordForm = () => {
     }
   };
 
+  if (isSuccess) {
+    return (
+      <div className="text-center animate-in fade-in zoom-in-95 duration-300">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+          <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Kiểm tra email của bạn</h2>
+        <p className="mt-4 text-gray-600 leading-relaxed">
+          Chúng tôi đã gửi một liên kết khôi phục mật khẩu. <br className="hidden sm:block" />
+          Vui lòng kiểm tra hộp thư đến (hoặc thư mục rác) của email:
+        </p>
+        <p className="mt-2 text-sm font-bold text-emerald-600">
+          {email}
+        </p>
+        
+        <div className="mt-8">
+          <Link href="/dang-nhap">
+            <Button variant="outline" className="w-full">
+              Quay lại Đăng nhập
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Quên mật khẩu?</h2>
         <p className="mt-2 text-gray-600">
-          Nhập email đã đăng ký để nhận mã xác thực và khôi phục mật khẩu của bạn.
+          Nhập email đã đăng ký để nhận liên kết khôi phục mật khẩu.
         </p>
       </div>
 
@@ -98,10 +122,10 @@ export const ForgotPasswordForm = () => {
           {isLoading ? (
             <span className="flex items-center gap-2">
               <Loader2 className="h-5 w-5 animate-spin" />
-              Đang gửi mã...
+              Đang gửi liên kết...
             </span>
           ) : (
-            'Gửi mã xác thực'
+            'Gửi liên kết khôi phục'
           )}
         </Button>
       </form>

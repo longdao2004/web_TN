@@ -25,7 +25,7 @@ export const ContactForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate simple
+    // Xác thực đơn giản
     if (!formData.name || !formData.email || !formData.message) {
       toast.error("Vui lòng điền đầy đủ thông tin bắt buộc");
       setIsSubmitting(false);

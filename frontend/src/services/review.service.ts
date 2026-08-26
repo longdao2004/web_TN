@@ -32,6 +32,15 @@ export interface Review {
 }
 
 export const reviewService = {
+  getAllReviews: async (): Promise<any[]> => {
+    const res = await fetch(`${API_URL}/reviews`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Lỗi khi lấy đánh giá');
+    return res.json();
+  },
+
   getMyReviews: async (): Promise<Review[]> => {
     const res = await fetch(`${API_URL}/reviews/me`, {
       method: 'GET',

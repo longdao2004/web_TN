@@ -1,12 +1,19 @@
 import React from "react";
 import Link from "next/link";
 import { PageContainer, Section } from "@/components/layout/core";
-import { mockStores } from "@/mock";
+import { storeService } from "@/services/store.service";
 import { Badge, Button } from "@/components/ui";
 import { Star, Users } from "lucide-react";
 import Image from "next/image";
 
-export const StoresSection = () => {
+export const StoresSection = async () => {
+  let storesList: any[] = [];
+  try {
+    storesList = await storeService.getStores();
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách cửa hàng:", error);
+  }
+
   return (
     <Section bgClass="bg-white">
       <PageContainer>
@@ -25,16 +32,16 @@ export const StoresSection = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {mockStores.slice(0, 4).map((store) => (
+          {storesList.slice(0, 4).map((store) => (
             <Link
               key={store.id}
-              href={`/cua-hang/${store.slug}`}
+              href={`/cua-hang/${store.id}`}
               className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white transition-all hover:shadow-lg hover:-translate-y-1"
             >
               {/* Cover Image */}
               <div className="relative h-32 w-full overflow-hidden">
                 <Image
-                  src={store.banner}
+                  src={store.banner || "/images/products/carot.avif"}
                   alt={store.name}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   width={500}
@@ -48,7 +55,7 @@ export const StoresSection = () => {
                 {/* Avatar */}
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 h-20 w-20 overflow-hidden rounded-full border-4 border-white shadow-sm">
                   <Image
-                    src={store.logo}
+                    src={store.logo || "/images/products/cachuabi.avif"}
                     alt={store.name}
                     className="h-full w-full object-cover"
                     width={500}
@@ -61,7 +68,7 @@ export const StoresSection = () => {
                 </h3>
 
                 {/* Badges */}
-                {store.certificates.length > 0 && (
+                {store.certificates && store.certificates.length > 0 && (
                   <div className="mt-2 flex items-center justify-center gap-1">
                     {store.certificates.slice(0, 2).map((cert, idx) => (
                       <Badge key={idx} variant="secondary" size="sm">
@@ -72,17 +79,17 @@ export const StoresSection = () => {
                 )}
 
                 <p className="mt-3 text-sm text-gray-500 line-clamp-2 mb-4 flex-1">
-                  {store.description}
+                  {store.description || "Cửa hàng đang cập nhật mô tả"}
                 </p>
 
                 <div className="flex items-center justify-center gap-4 text-xs font-medium text-gray-700 pt-4 border-t border-gray-100">
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                    <span>{store.rating}</span>
+                    <span>{store.rating || 5}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4 text-gray-400" />
-                    <span>{store.reviewsCount}</span>
+                    <span>{store.reviewsCount || 0}</span>
                   </div>
                 </div>
               </div>

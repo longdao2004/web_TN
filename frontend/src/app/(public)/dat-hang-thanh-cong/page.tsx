@@ -44,10 +44,10 @@ export default async function OrderSuccessPage({ searchParams }: Props) {
           </div>
         ) : (
           <>
-            {/* Hero Section */}
+            {/* Phần Hero (Banner) */}
             <OrderSuccessHero />
             
-            {/* Main Content Grid */}
+            {/* Lưới nội dung chính */}
             <div className="max-w-5xl mx-auto mt-2">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 {/* Left Column (Timeline & Products) */}

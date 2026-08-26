@@ -4,8 +4,6 @@ export * from './AuthDivider';
 export * from './LoginForm';
 export * from './RegisterForm';
 export * from './ForgotPasswordForm';
-export * from './OtpForm';
 export * from './ResetPasswordForm';
-export * from './GoogleAuthMockForm';
 export * from './PasswordInput';
 export * from './SocialLogin';

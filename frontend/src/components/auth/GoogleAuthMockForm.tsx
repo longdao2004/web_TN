@@ -14,7 +14,7 @@ export const GoogleAuthMockForm = () => {
   const handleContinue = () => {
     setIsLoading(true);
 
-    // Mock processing time
+    // Thời gian chờ xử lý mô phỏng
     setTimeout(() => {
       setIsLoading(false);
       toast.success('Đăng nhập Google thành công!', {

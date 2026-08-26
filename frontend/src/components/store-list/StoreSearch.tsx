@@ -33,7 +33,7 @@ export const StoreSearch = () => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-11 pr-4 py-3.5 sm:py-4 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all shadow-sm placeholder:text-gray-400 font-medium"
+          className="w-full pl-11 pr-4 py-3.5 sm:py-4 bg-white text-gray-900 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all shadow-sm placeholder:text-gray-400 font-medium"
           placeholder="Tìm tên cửa hàng, hợp tác xã..."
         />
         <button type="submit" className="hidden">Tìm</button>

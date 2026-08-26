@@ -44,12 +44,12 @@ export const SearchBox = forwardRef<HTMLInputElement, SearchBoxProps>(
 
     return (
       <div className={cn('relative flex items-center', fullWidth ? 'w-full' : 'w-auto', className)}>
-        {/* Search Icon */}
+        {/* Biểu tượng Tìm kiếm */}
         <div className="absolute left-3 flex items-center text-[var(--color-text-secondary)] pointer-events-none">
           <Search className="w-4 h-4" />
         </div>
 
-        {/* Input Field */}
+        {/* Trường nhập liệu */}
         <input
           ref={ref}
           type="text"
@@ -66,7 +66,7 @@ export const SearchBox = forwardRef<HTMLInputElement, SearchBoxProps>(
           {...props}
         />
 
-        {/* Clear Button */}
+        {/* Nút xóa */}
         {searchValue && (
           <button
             type="button"

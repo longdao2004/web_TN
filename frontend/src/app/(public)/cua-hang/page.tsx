@@ -55,15 +55,23 @@ export default async function StoreListPage({ searchParams }: Props) {
 
   const featuredStores = stores.filter((s: any) => s.isFeatured);
 
+  // Phân trang ở Client side dựa vào searchParams
+  const page = typeof resolvedParams.page === 'string' ? Number(resolvedParams.page) : 1;
+  const itemsPerPage = 8;
+  const totalItems = stores.length;
+  
+  // Cắt mảng stores theo trang hiện tại
+  const paginatedStores = stores.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
   return (
     <div className="bg-gray-50/50 min-h-screen pb-12 overflow-x-hidden">
       <PageContainer>
-        {/* Breadcrumb */}
+        {/* Đường dẫn (Breadcrumb) */}
         <div className="py-4 sm:py-6">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+                <BreadcrumbLink href="/">Trang chủ </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -73,7 +81,7 @@ export default async function StoreListPage({ searchParams }: Props) {
           </Breadcrumb>
         </div>
 
-        {/* Hero Section */}
+        {/* Phần Hero (Banner) */}
         <StoreHero />
 
         {error ? (
@@ -82,23 +90,23 @@ export default async function StoreListPage({ searchParams }: Props) {
           </div>
         ) : (
           <>
-            {/* Featured Stores */}
+            {/* Cửa hàng nổi bật */}
             {featuredStores.length > 0 && <FeaturedStores stores={featuredStores} />}
 
-            {/* Search Bar */}
+            {/* Thanh tìm kiếm */}
             <StoreSearch />
 
-            {/* Main Content Grid */}
+            {/* Lưới nội dung chính */}
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mt-4">
-              {/* Sidebar Filters */}
+              {/* Thanh bên Bộ lọc */}
               <div className="w-full lg:w-72 shrink-0">
                 <StoreFilters />
               </div>
 
-              {/* Store Grid */}
+              {/* Lưới Cửa hàng */}
               <div className="flex-1 min-w-0">
-                <StoreGrid stores={stores} />
-                <StorePagination />
+                <StoreGrid stores={paginatedStores} />
+                <StorePagination totalItems={totalItems} itemsPerPage={itemsPerPage} />
               </div>
             </div>
           </>

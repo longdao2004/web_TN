@@ -27,16 +27,16 @@ export default function CartPage() {
     fetchCart();
   }, [fetchCart]);
 
-  // State
+  // Trạng thái
   const [selectedIds, setSelectedIds] = useState<string[]>(
     items.map((i) => i.id),
   );
   const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
 
-  // Modal State
+  // Trạng thái Modal
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
 
-  // Handlers
+  // Các hàm xử lý sự kiện
   const handleSelectAll = (selected: boolean) => {
     setSelectedIds(selected ? items.map((i) => i.id) : []);
   };
@@ -65,7 +65,7 @@ export default function CartPage() {
     }
   };
 
-  // Calculations
+  // Tính toán dữ liệu
   const summaryData = useMemo<CartSummaryData>(() => {
     const selectedItems = items.filter((item) => selectedIds.includes(item.id));
     const subTotal = selectedItems.reduce(
@@ -88,12 +88,12 @@ export default function CartPage() {
       }
     }
 
-    // Default shipping logic: freeship > 500k, else 30k (unless voucher gives freeship)
+    // Logic giao hàng mặc định: miễn phí vận chuyển > 500k, ngược lại 30k (trừ khi có mã miễn phí)
     let shippingFee = subTotal > 500000 || subTotal === 0 ? 0 : 30000;
     if (appliedVoucher?.code === "FREESHIP") {
       shippingFee = Math.max(0, shippingFee - appliedVoucher.discountValue);
-      // Fixed logic: the FREESHIP voucher in mock says max 30k. So it basically covers the 30k fee.
-      discount = 0; // Move discount to shipping offset for simplicity, or just keep it as discount
+      // Logic đã sửa: voucher FREESHIP trong dữ liệu giả báo tối đa 30k. Nên cơ bản nó bù trừ cho 30k phí.
+      discount = 0; // Đưa phần giảm giá sang trừ thẳng vào phí ship cho đơn giản
     }
 
     const tax = Math.round(subTotal * 0.08); // 8% VAT
@@ -106,7 +106,7 @@ export default function CartPage() {
     return items.find((i) => i.id === deleteItemId)?.name;
   }, [deleteItemId, items]);
 
-  // View
+  // Hiển thị giao diện
   if (items.length === 0) {
     return (
       <div className="bg-gray-50/50 min-h-screen py-12">
@@ -133,7 +133,7 @@ export default function CartPage() {
   return (
     <div className="bg-gray-50/50 min-h-screen pb-12">
       <PageContainer>
-        {/* Breadcrumb */}
+        {/* Đường dẫn (Breadcrumb) */}
         <div className="py-4 sm:py-6">
           <Breadcrumb>
             <BreadcrumbList>

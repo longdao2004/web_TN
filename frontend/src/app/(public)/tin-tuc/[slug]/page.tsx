@@ -52,7 +52,7 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
     notFound();
   }
 
-  // Get 4 related articles (excluding the current one)
+  // Lấy 4 bài viết liên quan (loại trừ bài viết hiện tại)
   const relatedArticles = mockNews
     .filter(n => n.id !== article.id)
     .slice(0, 4);
@@ -62,7 +62,7 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
       <ArticleHero article={article} />
 
       <PageContainer>
-        {/* Breadcrumb */}
+        {/* Đường dẫn (Breadcrumb) */}
         <nav className="flex items-center gap-2 py-6 text-sm text-gray-500 overflow-x-auto whitespace-nowrap">
           <Link href="/" className="hover:text-emerald-600 flex items-center gap-1">
             <Home className="w-4 h-4" />
@@ -79,7 +79,7 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
         </nav>
 
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 pb-16">
-          {/* Main Content Area */}
+          {/* Khu vực nội dung chính */}
           <div className="lg:w-[70%]">
             <ArticleContent content={article.content} />
             <ShareButtons />

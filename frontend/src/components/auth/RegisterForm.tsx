@@ -38,7 +38,7 @@ export const RegisterForm = () => {
     let isValid = true;
     const newErrors = { ...errors };
 
-    // Full name
+    // Họ và tên
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Vui lòng nhập họ và tên';
       isValid = false;
@@ -60,7 +60,7 @@ export const RegisterForm = () => {
       }
     }
 
-    // Phone
+    // Số điện thoại
     if (!formData.phone) {
       newErrors.phone = 'Vui lòng nhập số điện thoại';
       isValid = false;
@@ -74,7 +74,7 @@ export const RegisterForm = () => {
       }
     }
 
-    // Password
+    // Mật khẩu
     if (!formData.password) {
       newErrors.password = 'Vui lòng nhập mật khẩu';
       isValid = false;
@@ -85,7 +85,7 @@ export const RegisterForm = () => {
       newErrors.password = '';
     }
 
-    // Confirm Password
+    // Xác nhận mật khẩu
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Vui lòng nhập lại mật khẩu';
       isValid = false;
@@ -96,7 +96,7 @@ export const RegisterForm = () => {
       newErrors.confirmPassword = '';
     }
 
-    // Terms
+    // Điều khoản
     if (!formData.agreeTerms) {
       newErrors.agreeTerms = 'Vui lòng đồng ý với điều khoản sử dụng';
       isValid = false;
@@ -125,7 +125,7 @@ export const RegisterForm = () => {
       toast.success('Đăng ký thành công!', {
         description: 'Tài khoản của bạn đã được tạo thành công.'
       });
-      // Redirect to login page after register
+      // Chuyển hướng tới trang đăng nhập sau khi đăng ký thành công
       router.push('/dang-nhap');
     } catch (error: any) {
       toast.error('Đăng ký thất bại', {
@@ -142,7 +142,7 @@ export const RegisterForm = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
-    // Clear error when user types
+    // Xóa lỗi khi người dùng nhập liệu
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }

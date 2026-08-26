@@ -18,15 +18,17 @@ import {
   SearchPagination
 } from '@/components/search';
 
-import { searchProducts } from '@/mock/search';
+import { productService } from '@/services/product.service';
+import { storeService } from '@/services/store.service';
+import { StoreGrid } from '@/components/store-list';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const resolvedParams = await searchParams;
   const q = typeof resolvedParams.q === 'string' ? resolvedParams.q : '';
   
   return {
-    title: q ? `Kết quả tìm kiếm cho "${q}" | AgriMarket` : 'Tìm kiếm nông sản | AgriMarket',
-    description: `Tìm kiếm và mua sắm các loại nông sản tươi ngon, sạch và an toàn.`,
+    title: q ? `Kết quả tìm kiếm cho "${q}" | AgriMarket` : 'Tìm kiếm | AgriMarket',
+    description: `Tìm kiếm sản phẩm và cửa hàng.`,
   };
 }
 
@@ -34,14 +36,29 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const resolvedParams = await searchParams;
   const q = typeof resolvedParams.q === 'string' ? resolvedParams.q : '';
   
-  const results = searchProducts(q);
-  const hasResults = results.length > 0;
+  let products: any[] = [];
+  let stores: any[] = [];
+
+  try {
+    const [productsData, storesData] = await Promise.all([
+      productService.getProducts({ search: q }).catch(() => []),
+      storeService.getStores({ search: q }).catch(() => [])
+    ]);
+    products = productsData.items || productsData;
+    stores = storesData || [];
+  } catch (error) {
+    console.error('Lỗi khi tìm kiếm:', error);
+  }
+
+  const hasProductResults = products.length > 0;
+  const hasStoreResults = stores.length > 0;
+  const hasResults = hasProductResults || hasStoreResults;
 
   return (
     <div className="bg-gray-50/50 min-h-screen pb-12 overflow-x-hidden">
       <PageContainer>
         
-        {/* Breadcrumb */}
+        {/* Đường dẫn (Breadcrumb) */}
         <div className="py-4 sm:py-6">
           <Breadcrumb>
             <BreadcrumbList>
@@ -57,30 +74,32 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </div>
 
         {hasResults && (
-          <SearchHeader query={q} totalResults={results.length} />
+          <SearchHeader query={q} totalResults={products.length + stores.length} />
         )}
         
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start mt-6">
           
-          {/* Sidebar Filters */}
-          {hasResults && (
-            <div className="hidden lg:block w-72 shrink-0">
-              <SearchSidebar />
-            </div>
-          )}
-          
-          {/* Main Content */}
+          {/* Nội dung chính */}
           <div className="flex-1 min-w-0 w-full">
             {hasResults ? (
               <>
-                {/* Mobile Filter Toggle (can add later if needed) */}
-                <div className="lg:hidden mb-4">
-                  {/* Placeholder for mobile filter button */}
-                </div>
+                {hasStoreResults && (
+                  <div className="mb-10">
+                    <h2 className="text-xl font-bold mb-4 text-gray-900 border-b pb-2">Cửa hàng liên quan ({stores.length})</h2>
+                    <StoreGrid stores={stores} />
+                  </div>
+                )}
                 
-                <SearchToolbar />
-                <SearchResultGrid products={results} />
-                <SearchPagination />
+                {hasProductResults && (
+                  <div>
+                    <div className="flex justify-between items-center mb-4 border-b pb-2">
+                      <h2 className="text-xl font-bold text-gray-900">Sản phẩm liên quan ({products.length})</h2>
+                      <SearchToolbar />
+                    </div>
+                    <SearchResultGrid products={products} />
+                    <SearchPagination />
+                  </div>
+                )}
               </>
             ) : (
               <EmptySearch query={q} />

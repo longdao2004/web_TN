@@ -87,7 +87,7 @@ export const LoginForm = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
-    // Clear error when user types
+    // Xóa lỗi khi người dùng nhập liệu
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }

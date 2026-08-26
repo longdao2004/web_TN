@@ -14,10 +14,33 @@ export const StoreFilters = () => {
     } else {
       params.delete('sort');
     }
-    router.push(`/cua-hang?${params.toString()}`);
+    // Khi lọc, reset page về 1
+    params.delete('page');
+    router.push(`/cua-hang?${params.toString()}`, { scroll: false });
+  };
+
+  const handleFilterChange = (key: string, checked: boolean, val: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const currentValues = params.getAll(key);
+    
+    if (checked) {
+      if (!currentValues.includes(val)) {
+        params.append(key, val);
+      }
+    } else {
+      params.delete(key);
+      currentValues.forEach(v => {
+        if (v !== val) params.append(key, v);
+      });
+    }
+    // Khi lọc, reset page về 1
+    params.delete('page');
+    router.push(`/cua-hang?${params.toString()}`, { scroll: false });
   };
 
   const isRatingSelected = searchParams.get('sort') === 'rating';
+  const selectedCerts = searchParams.getAll('cert');
+  const selectedCategories = searchParams.getAll('category');
 
   return (
     <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm sticky top-24 animate-in slide-in-from-left-4 duration-700 fade-in">
@@ -63,6 +86,8 @@ export const StoreFilters = () => {
                 >
                   <input
                     type="checkbox"
+                    checked={selectedCerts.includes(label)}
+                    onChange={(e) => handleFilterChange('cert', e.target.checked, label)}
                     className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span className="text-sm text-gray-600 group-hover:text-emerald-600 transition-colors">
@@ -90,6 +115,8 @@ export const StoreFilters = () => {
                 >
                   <input
                     type="checkbox"
+                    checked={selectedCategories.includes(label)}
+                    onChange={(e) => handleFilterChange('category', e.target.checked, label)}
                     className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span className="text-sm text-gray-600 group-hover:text-emerald-600 transition-colors">

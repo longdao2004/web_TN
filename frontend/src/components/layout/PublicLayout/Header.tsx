@@ -23,6 +23,7 @@ export const Header = () => {
   const router = useRouter();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
     if (isAuthenticated) {
       fetchUser();
@@ -39,7 +40,7 @@ export const Header = () => {
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-white/80 backdrop-blur-md">
       <PageContainer>
         <div className="flex h-16 items-center justify-between gap-4">
-          {/* Logo & Mobile Menu */}
+          {/* Logo & Menu di động */}
           <div className="flex items-center gap-4">
             <button
               className="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900"
@@ -54,7 +55,7 @@ export const Header = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Điều hướng Desktop */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-[var(--color-text-secondary)]">
             <Link
               href="/san-pham"
@@ -88,20 +89,21 @@ export const Header = () => {
             </Link>
           </nav>
 
-          {/* Search Bar */}
+          {/* Thanh tìm kiếm */}
           <div className="hidden md:flex flex-1 max-w-md mx-4">
             <SearchBox
-              placeholder="Tìm kiếm nông sản..."
+              placeholder="Tìm kiếm nông sản, cửa hàng..."
               fullWidth
               onSearch={(val) => {
                 if (val && val.trim()) {
-                  router.push(`/san-pham?search=${encodeURIComponent(val.trim())}`);
+                  // Chuyển hướng tới trang tìm kiếm tổng hợp (Global Search)
+                  router.push(`/tim-kiem?q=${encodeURIComponent(val.trim())}`);
                 }
               }}
             />
           </div>
 
-          {/* User Actions */}
+          {/* Hành động của người dùng */}
           <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
@@ -169,7 +171,7 @@ export const Header = () => {
         </div>
       </PageContainer>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Menu thả xuống di động */}
       {isMobileMenuOpen && (
         <div className="lg:hidden absolute top-16 left-0 w-full bg-white border-b border-[var(--color-border)] shadow-lg animate-in slide-in-from-top-2">
           <nav className="flex flex-col p-4 space-y-4 text-sm font-medium text-[var(--color-text-secondary)]">

@@ -15,7 +15,7 @@ import { mockNews } from '@/mock/news';
 export default function NewsPage() {
   const [activeCategory, setActiveCategory] = useState('Tất cả');
 
-  // Filter bài viết dựa trên danh mục (Bỏ qua bài viết featured đầu tiên)
+  // Lọc bài viết dựa trên danh mục (Bỏ qua bài viết nổi bật đầu tiên)
   const filteredNews = useMemo(() => {
     const list = mockNews.slice(1); // Bỏ qua bài đầu tiên vì đã nằm ở Featured
     

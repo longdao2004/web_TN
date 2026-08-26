@@ -12,6 +12,23 @@ export const CategoriesSection = () => {
     categoryService.getAllCategories().then(setCategories).catch(console.error);
   }, []);
 
+  const getCategoryImage = (name: string) => {
+    if (!name) return "/images/products/raumuong.jpg";
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes("sữa")) return "/images/products/sua.jpg";
+    if (lowerName.includes("sấy")) return "/images/products/hoaquasay.jpg";
+    if (lowerName.includes("vùng miền") || lowerName.includes("đặc sản")) return "/images/products/vingmien.jpg";
+    if (lowerName.includes("rau") || lowerName.includes("củ")) return "/images/categories/carot.avif";
+    if (lowerName.includes("trái cây") || lowerName.includes("quả")) return "/images/categories/traicay.avif";
+    if (lowerName.includes("thịt")) return "/images/categories/thit.avif";
+    if (lowerName.includes("hải sản") || lowerName.includes("cá")) return "/images/categories/ca.avif";
+    if (lowerName.includes("gạo") || lowerName.includes("ngũ cốc")) return "/images/categories/gao.avif";
+    if (lowerName.includes("gia vị")) return "/images/categories/giavi.avif";
+    
+    // Ảnh mặc định nếu không khớp từ khóa
+    return "/images/products/raumuong.jpg";
+  };
+
   return (
     <Section>
       <PageContainer>
@@ -41,7 +58,7 @@ export const CategoriesSection = () => {
             >
               <div className="relative h-20 w-20 overflow-hidden rounded-full">
                 <Image
-                  src={`https://picsum.photos/seed/${category.id}/200/200`} // Mock image since backend doesn't provide category images
+                  src={getCategoryImage(category.name)}
                   alt={category.name}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                   width={200}

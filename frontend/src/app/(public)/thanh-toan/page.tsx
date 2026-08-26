@@ -63,7 +63,7 @@ function CheckoutContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Redirect if cart is empty
+  // Chuyển hướng nếu giỏ hàng trống
   useEffect(() => {
     if (isMounted && items.length === 0 && !isSuccess) {
       if (isBuyNow) {
@@ -76,7 +76,7 @@ function CheckoutContent() {
     }
   }, [items.length, isMounted, router, isBuyNow, isSuccess]);
 
-  // Calculations
+  // Tính toán dữ liệu
   const summaryData = useMemo(() => {
     const subTotal = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -105,7 +105,7 @@ function CheckoutContent() {
 
     if (appliedVoucher?.code === "FREESHIP") {
       shippingFee = Math.max(0, shippingFee - appliedVoucher.discountValue);
-      discount = 0; // Move discount to shipping offset for simplicity
+      discount = 0; // Đưa phần giảm giá sang bù trừ phí ship cho đơn giản
     }
 
     const tax = Math.round(subTotal * 0.08); // 8% VAT
@@ -160,13 +160,13 @@ function CheckoutContent() {
   };
 
   if (!isMounted || (items.length === 0 && !isSuccess)) {
-    return null; // Return null to avoid flash of empty state before redirect
+    return null; // Trả về null để tránh chớp nhoáng giao diện trống trước khi chuyển hướng
   }
 
   return (
     <div className="bg-gray-50/50 min-h-screen pb-12 sm:pb-24">
       <PageContainer>
-        {/* Breadcrumb */}
+        {/* Đường dẫn (Breadcrumb) */}
         <div className="py-4 sm:py-6">
           <Breadcrumb>
             <BreadcrumbList>

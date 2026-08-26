@@ -25,11 +25,11 @@ export const FilterSidebar = ({ onCloseMobile }: FilterSidebarProps) => {
     } else {
       params.delete(key);
     }
-    router.push(`/san-pham?${params.toString()}`);
+    router.push(`/san-pham?${params.toString()}`, { scroll: false });
   };
 
   const handleCategoryChange = (catId: string, checked: boolean) => {
-    // For simplicity, we just use a single category filter in URL
+    // Để đơn giản, chúng ta chỉ sử dụng một bộ lọc danh mục duy nhất trong URL
     if (checked) {
       updateParam('category', catId);
     } else {
@@ -42,27 +42,27 @@ export const FilterSidebar = ({ onCloseMobile }: FilterSidebarProps) => {
       const params = new URLSearchParams(searchParams.toString());
       params.delete('minPrice');
       params.delete('maxPrice');
-      router.push(`/san-pham?${params.toString()}`);
+      router.push(`/san-pham?${params.toString()}`, { scroll: false });
     } else if (value === '1') {
       const params = new URLSearchParams(searchParams.toString());
       params.delete('minPrice');
       params.set('maxPrice', '50000');
-      router.push(`/san-pham?${params.toString()}`);
+      router.push(`/san-pham?${params.toString()}`, { scroll: false });
     } else if (value === '2') {
       const params = new URLSearchParams(searchParams.toString());
       params.set('minPrice', '50000');
       params.set('maxPrice', '200000');
-      router.push(`/san-pham?${params.toString()}`);
+      router.push(`/san-pham?${params.toString()}`, { scroll: false });
     } else if (value === '3') {
       const params = new URLSearchParams(searchParams.toString());
       params.set('minPrice', '200000');
       params.set('maxPrice', '500000');
-      router.push(`/san-pham?${params.toString()}`);
+      router.push(`/san-pham?${params.toString()}`, { scroll: false });
     } else if (value === '4') {
       const params = new URLSearchParams(searchParams.toString());
       params.set('minPrice', '500000');
       params.delete('maxPrice');
-      router.push(`/san-pham?${params.toString()}`);
+      router.push(`/san-pham?${params.toString()}`, { scroll: false });
     }
   };
 
@@ -75,7 +75,7 @@ export const FilterSidebar = ({ onCloseMobile }: FilterSidebarProps) => {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Header Mobile Only */}
+      {/* Header chỉ dành cho di động */}
       <div className="flex items-center justify-between lg:hidden pb-4 border-b border-[var(--color-border)]">
         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
           <Filter className="h-5 w-5" />
@@ -101,7 +101,7 @@ export const FilterSidebar = ({ onCloseMobile }: FilterSidebarProps) => {
         </button>
       </div>
 
-      {/* Categories */}
+      {/* Các danh mục */}
       <div className="flex flex-col gap-3">
         <h3 className="font-semibold text-gray-900">Danh mục</h3>
         <div className="flex flex-col gap-2.5">
@@ -119,7 +119,7 @@ export const FilterSidebar = ({ onCloseMobile }: FilterSidebarProps) => {
 
       <hr className="border-[var(--color-border)]" />
 
-      {/* Price Range */}
+      {/* Khoảng giá */}
       <div className="flex flex-col gap-3">
         <h3 className="font-semibold text-gray-900">Khoảng giá</h3>
         <div className="flex flex-col gap-2.5">

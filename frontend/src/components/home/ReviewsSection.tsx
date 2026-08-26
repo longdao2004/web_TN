@@ -1,10 +1,22 @@
 import React from "react";
 import { PageContainer, Section } from "@/components/layout/core";
-import { reviews } from "@/mock";
+import { reviewService } from "@/services/review.service";
 import { Star } from "lucide-react";
 import Image from "next/image";
 
-export const ReviewsSection = () => {
+export const ReviewsSection = async () => {
+  let reviewsList: any[] = [];
+  try {
+    reviewsList = await reviewService.getAllReviews();
+  } catch (error) {
+    console.error("Lỗi khi tải đánh giá:", error);
+  }
+
+  // Nếu chưa có đánh giá nào, có thể tạm thời không render lưới hoặc hiển thị thông báo
+  if (!reviewsList || reviewsList.length === 0) {
+    return null; 
+  }
+
   return (
     <Section bgClass="bg-white">
       <PageContainer>
@@ -19,24 +31,24 @@ export const ReviewsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {reviews.map((review) => (
+          {reviewsList.slice(0, 3).map((review) => (
             <div
               key={review.id}
               className="rounded-2xl border border-[var(--color-border)] bg-gray-50 p-6 transition-shadow hover:shadow-md"
             >
               <div className="flex items-center gap-4 mb-4">
                 <Image
-                  src={review.avatar}
-                  alt={review.customerName}
+                  src={review.user?.avatarUrl || "/images/avatars/default.png"}
+                  alt={review.user?.fullName || "Khách hàng"}
                   className="h-12 w-12 rounded-full object-cover"
-                  width={500}
-                  height={500}
+                  width={48}
+                  height={48}
                 />
                 <div>
-                  <h4 className="font-semibold text-gray-900">
-                    {review.customerName}
+                  <h4 className="font-semibold text-gray-900 line-clamp-1">
+                    {review.user?.fullName || "Khách hàng"}
                   </h4>
-                  <p className="text-xs text-gray-500">{review.date}</p>
+                  <p className="text-xs text-gray-500 truncate max-w-[150px]">Mua: {review.product?.name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1 mb-3">
@@ -48,7 +60,7 @@ export const ReviewsSection = () => {
                 ))}
               </div>
               <p className="text-gray-600 mb-6 italic leading-relaxed text-sm sm:text-base line-clamp-4">
-                &quot;{review.content}&quot;
+                &quot;{review.comment}&quot;
               </p>
             </div>
           ))}

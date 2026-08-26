@@ -4,12 +4,13 @@ import { ProductDetail } from '../types/product-detail';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export const productService = {
-  getProducts: async (filters?: { search?: string, categoryId?: string, minPrice?: number, maxPrice?: number, sortBy?: string, order?: 'asc' | 'desc' }): Promise<Product[]> => {
+  getProducts: async (filters?: { search?: string, categoryId?: string, storeId?: string, minPrice?: number, maxPrice?: number, sortBy?: string, order?: 'asc' | 'desc' }): Promise<any> => {
     let url = `${API_URL}/products`;
     if (filters) {
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
       if (filters.categoryId) params.append('categoryId', filters.categoryId);
+      if (filters.storeId) params.append('storeId', filters.storeId);
       if (filters.minPrice) params.append('minPrice', filters.minPrice.toString());
       if (filters.maxPrice) params.append('maxPrice', filters.maxPrice.toString());
       if (filters.sortBy) params.append('sortBy', filters.sortBy);

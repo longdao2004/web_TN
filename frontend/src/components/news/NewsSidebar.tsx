@@ -42,7 +42,7 @@ export const NewsSidebar = () => {
         </div>
       </div>
 
-      {/* Categories */}
+      {/* Các danh mục */}
       <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
         <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
           <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />

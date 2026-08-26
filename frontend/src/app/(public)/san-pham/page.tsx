@@ -48,7 +48,7 @@ export default function ProductListPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
-      {/* Banner & Breadcrumb */}
+      {/* Banner và Breadcrumb */}
       <div className="bg-white border-b border-[var(--color-border)] pt-8 pb-8">
         <PageContainer>
           <Breadcrumb className="mb-6">
@@ -91,7 +91,7 @@ export default function ProductListPage() {
             </div>
           ) : (
             <div className="flex flex-col lg:flex-row gap-8 items-start relative">
-              {/* Mobile Filter Overlay */}
+              {/* Lớp phủ bộ lọc trên di động */}
               {isMobileFilterOpen && (
                 <div
                   className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -99,7 +99,7 @@ export default function ProductListPage() {
                 />
               )}
 
-              {/* Sidebar Filter */}
+              {/* Bộ lọc thanh bên */}
               <aside
                 className={`
                   fixed inset-y-0 left-0 z-50 w-4/5 max-w-sm bg-white p-6 overflow-y-auto transition-transform duration-300 shadow-2xl lg:shadow-none
@@ -112,7 +112,7 @@ export default function ProductListPage() {
                 />
               </aside>
 
-              {/* Main Content Area */}
+              {/* Khu vực nội dung chính */}
               <main className="flex-1 w-full lg:w-3/4">
                 <SortBar
                   totalItems={products.length}

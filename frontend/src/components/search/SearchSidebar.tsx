@@ -27,7 +27,7 @@ export const SearchSidebar = () => {
       </div>
 
       <div className="space-y-6">
-        {/* Price Range */}
+        {/* Khoảng giá */}
         <div>
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Khoảng giá</h3>
           <div className="flex items-center gap-2">
