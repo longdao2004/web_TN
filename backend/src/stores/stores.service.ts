@@ -13,7 +13,7 @@ export class StoresService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: string, createStoreDto: CreateStoreDto) {
-    // Check if user already has a store
+    // Kiểm tra xem người dùng đã có cửa hàng chưa
     const existingStore = await this.prisma.store.findUnique({
       where: { ownerId: userId },
     });
@@ -29,7 +29,7 @@ export class StoresService {
       },
     });
 
-    // Automatically upgrade user role to SELLER if they are BUYER
+    // Tự động nâng cấp quyền người dùng lên SELLER nếu họ đang là BUYER
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (user && user.role === Role.BUYER) {
       await this.prisma.user.update({
@@ -78,7 +78,7 @@ export class StoresService {
 
     let orderByClause: any = { createdAt: 'desc' };
     if (filters?.sort === 'rating') {
-      // Mock sorting for rating since rating isn't real yet
+      // Sắp xếp giả cho đánh giá vì đánh giá chưa phải dữ liệu thật
       orderByClause = { createdAt: 'desc' };
     } else if (filters?.sort === 'newest') {
       orderByClause = { createdAt: 'desc' };

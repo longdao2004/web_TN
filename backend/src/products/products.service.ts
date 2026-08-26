@@ -47,6 +47,7 @@ export class ProductsService {
   findAll(filters?: {
     search?: string;
     categoryId?: string;
+    storeId?: string; // Bổ sung lọc theo cửa hàng
     minPrice?: number;
     maxPrice?: number;
     sortBy?: string;
@@ -54,11 +55,17 @@ export class ProductsService {
   }) {
     const whereClause: any = { deletedAt: null };
 
+    // Tìm kiếm theo tên sản phẩm (không phân biệt hoa thường)
     if (filters?.search) {
       whereClause.name = { contains: filters.search, mode: 'insensitive' };
     }
+    // Lọc theo danh mục
     if (filters?.categoryId) {
       whereClause.categoryId = filters.categoryId;
+    }
+    // Lọc sản phẩm thuộc về một cửa hàng cụ thể (Dùng cho Khối chi tiết cửa hàng ở Frontend)
+    if (filters?.storeId) {
+      whereClause.storeId = filters.storeId;
     }
     if (filters?.minPrice !== undefined || filters?.maxPrice !== undefined) {
       whereClause.batches = {

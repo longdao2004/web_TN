@@ -39,6 +39,18 @@ export class ReviewsService {
     });
   }
 
+  async findAll() {
+    return this.prisma.review.findMany({
+      where: { deletedAt: null },
+      take: 10, // Lấy 10 đánh giá mới nhất toàn hệ thống để show ở trang chủ
+      include: {
+        user: { select: { fullName: true, avatarUrl: true } },
+        product: { select: { name: true, imageUrl: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findMyReviews(userId: string) {
     return this.prisma.review.findMany({
       where: { userId, deletedAt: null },

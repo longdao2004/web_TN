@@ -83,6 +83,7 @@ export class ProductsController {
   findAll(
     @Query('search') search?: string,
     @Query('categoryId') categoryId?: string,
+    @Query('storeId') storeId?: string,
     @Query('minPrice') minPrice?: string,
     @Query('maxPrice') maxPrice?: string,
     @Query('sortBy') sortBy?: string,
@@ -91,6 +92,7 @@ export class ProductsController {
     return this.productsService.findAll({
       search,
       categoryId,
+      storeId,
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       sortBy,

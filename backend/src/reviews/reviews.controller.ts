@@ -29,6 +29,12 @@ export class ReviewsController {
     return this.reviewsService.create(req.user.userId, createReviewDto);
   }
 
+  @Get()
+  @ApiOperation({ summary: 'Lấy các đánh giá mới nhất toàn hệ thống' })
+  findAll() {
+    return this.reviewsService.findAll();
+  }
+
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get('me')

@@ -24,7 +24,7 @@ export class MailService {
   // Gửi mail quên mật khẩu
   async sendForgotPasswordEmail(email: string, token: string) {
     try {
-      const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+      const resetLink = `http://localhost:3001/dat-lai-mat-khau?token=${token}`;
 
       await this.mailerService.sendMail({
         to: email,
