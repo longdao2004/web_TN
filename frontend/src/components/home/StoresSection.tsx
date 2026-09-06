@@ -70,7 +70,7 @@ export const StoresSection = async () => {
                 {/* Badges */}
                 {store.certificates && store.certificates.length > 0 && (
                   <div className="mt-2 flex items-center justify-center gap-1">
-                    {store.certificates.slice(0, 2).map((cert, idx) => (
+                    {store.certificates.slice(0, 2).map((cert: any, idx: any) => (
                       <Badge key={idx} variant="secondary" size="sm">
                         {typeof cert === "string" ? cert : cert.name}
                       </Badge>

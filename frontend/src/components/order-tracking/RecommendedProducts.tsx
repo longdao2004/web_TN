@@ -1,13 +1,42 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { ProductCard } from "@/components/home/components/ProductCard";
+import { Product } from "@/types/product";
+import { productService } from "@/services/product.service";
+import { Skeleton } from "@/components/ui";
 
-import { MockProduct } from "@/mock/products";
+export const RecommendedProducts = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-interface RecommendedProductsProps {
-  products: MockProduct[];
-}
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await productService.getProducts({});
+        setProducts(Array.isArray(res) ? res.slice(0, 4) : []);
+      } catch (error) {
+        console.error("Failed to fetch recommended products", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
-export const RecommendedProducts = ({ products }: RecommendedProductsProps) => {
+  if (loading) {
+    return (
+      <div className="mt-12 sm:mt-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (products.length === 0) return null;
+
   return (
     <div className="mt-12 sm:mt-16 animate-in slide-in-from-bottom-12 duration-1000 fade-in delay-500 fill-mode-both">
       <div className="flex items-center justify-center gap-4 mb-6 sm:mb-8">
@@ -20,7 +49,20 @@ export const RecommendedProducts = ({ products }: RecommendedProductsProps) => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard 
+            key={product.id} 
+            product={{
+              id: product.id,
+              name: product.name,
+              price: product.salePrice || product.price,
+              originalPrice: product.salePrice ? product.price : undefined,
+              rating: product.rating || 0,
+              reviews: product.reviewCount || 0,
+              store: product.storeName || "Cửa hàng",
+              image: product.image || "/images/products/cachuabi.avif",
+              unit: product.unit || "kg"
+            }} 
+          />
         ))}
       </div>
     </div>

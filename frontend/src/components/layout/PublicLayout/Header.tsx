@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, Bell, Menu } from "lucide-react";
 import { PageContainer } from "../core";
@@ -11,15 +12,15 @@ import { useAuthStore } from "@/store/auth.store";
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  
+
   const totalItems = useCartStore((state) => state.totalItems);
   const fetchCart = useCartStore((state) => state.fetchCart);
-  
+
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const fetchUser = useAuthStore((state) => state.fetchUser);
   const logout = useAuthStore((state) => state.logout);
-  
+
   const router = useRouter();
 
   useEffect(() => {
@@ -39,58 +40,65 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-white/80 backdrop-blur-md">
       <PageContainer>
-        <div className="flex h-16 items-center justify-between gap-4">
-          {/* Logo & Menu di động */}
-          <div className="flex items-center gap-4">
-            <button
-              className="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl font-bold text-[var(--color-primary)]">
-                AgriMarket
-              </span>
-            </Link>
+        <div className="flex h-20 items-center justify-between gap-4">
+          <div className="flex items-center gap-8">
+            {/* Logo & Menu di động */}
+            <div className="flex items-center gap-4">
+              <button
+                className="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              <Link href="/" className="flex items-center gap-2">
+                <Image
+                  src="/images/logos/logo.png"
+                  alt="AgriMarket Logo"
+                  width={240}
+                  height={64}
+                  className="h-16 w-auto object-contain"
+                  priority
+                />
+              </Link>
+            </div>
+
+            {/* Điều hướng Desktop */}
+            <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-[var(--color-text-secondary)]">
+              <Link
+                href="/san-pham"
+                className="hover:text-[var(--color-primary)] transition-colors"
+              >
+                Sản phẩm
+              </Link>
+              <Link
+                href="/cua-hang"
+                className="hover:text-[var(--color-primary)] transition-colors"
+              >
+                Cửa hàng
+              </Link>
+              <Link
+                href="/gioi-thieu"
+                className="hover:text-[var(--color-primary)] transition-colors"
+              >
+                Giới thiệu
+              </Link>
+              <Link
+                href="/tin-tuc"
+                className="hover:text-[var(--color-primary)] transition-colors"
+              >
+                Tin tức
+              </Link>
+              <Link
+                href="/lien-he"
+                className="hover:text-[var(--color-primary)] transition-colors"
+              >
+                Liên hệ
+              </Link>
+            </nav>
           </div>
 
-          {/* Điều hướng Desktop */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-[var(--color-text-secondary)]">
-            <Link
-              href="/san-pham"
-              className="hover:text-[var(--color-primary)] transition-colors"
-            >
-              Sản phẩm
-            </Link>
-            <Link
-              href="/cua-hang"
-              className="hover:text-[var(--color-primary)] transition-colors"
-            >
-              Cửa hàng
-            </Link>
-            <Link
-              href="/gioi-thieu"
-              className="hover:text-[var(--color-primary)] transition-colors"
-            >
-              Giới thiệu
-            </Link>
-            <Link
-              href="/tin-tuc"
-              className="hover:text-[var(--color-primary)] transition-colors"
-            >
-              Tin tức
-            </Link>
-            <Link
-              href="/lien-he"
-              className="hover:text-[var(--color-primary)] transition-colors"
-            >
-              Liên hệ
-            </Link>
-          </nav>
-
           {/* Thanh tìm kiếm */}
-          <div className="hidden md:flex flex-1 max-w-md mx-4">
+          <div className="hidden md:flex flex-1 max-w-xl mx-4">
             <SearchBox
               placeholder="Tìm kiếm nông sản, cửa hàng..."
               fullWidth
@@ -151,14 +159,24 @@ export const Header = () => {
                     </div>
                   }
                   items={[
-                    { label: "Tài khoản", onClick: () => router.push("/tai-khoan") },
-                    { label: "Đơn hàng của tôi", onClick: () => router.push("/tai-khoan/don-hang") },
+                    {
+                      label: "Tài khoản",
+                      onClick: () => router.push("/tai-khoan"),
+                    },
+                    {
+                      label: "Đơn hàng của tôi",
+                      onClick: () => router.push("/tai-khoan/don-hang"),
+                    },
                     { label: "Đăng xuất", onClick: handleLogout },
                   ]}
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => router.push("/dang-nhap")}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/dang-nhap")}
+                  >
                     Đăng nhập
                   </Button>
                   <Button size="sm" onClick={() => router.push("/dang-ky")}>

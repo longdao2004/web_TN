@@ -25,7 +25,6 @@ import {
 import {
   mockTrackingTimeline,
   mockTrackingTimelineDelivered,
-  mockTrackingRecommendedProducts,
 } from "@/mock/order-tracking";
 import { orderService } from "@/services/order.service";
 import { toast } from "sonner";
@@ -40,44 +39,41 @@ export default function OrderTrackingPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const history = await orderService.getOrderHistory();
-        const foundOrder = history.find((o: any) => o.id === id);
+        // Lấy chi tiết đơn hàng thông qua API getOrderById (thay vì getOrderHistory)
+        const foundOrder = await orderService.getOrderById(id);
         
         if (foundOrder) {
-          // Ánh xạ dữ liệu BE về định dạng FE cần (vì BE chưa trả đầy đủ)
+          // Ánh xạ dữ liệu BE về định dạng FE cần
           setOrder({
-            ...foundOrder,
             id: foundOrder.id,
             status: foundOrder.status,
             createdAt: foundOrder.createdAt,
             totalAmount: foundOrder.totalAmount,
             products: foundOrder.items.map((item: any) => ({
-              id: item.productId,
-              name: item.product.name,
+              id: item.batch.product.id,
+              name: item.batch.product.name,
               price: item.priceAtPurchase,
               quantity: item.quantity,
-              image: item.product.imageUrl,
+              image: item.batch.product.imageUrl || "/images/products/cachuabi.avif",
             })),
             store: {
-              name: "Nông Trại Xanh (Demo)", // BE chưa trả store in history
-              slug: "nong-trai-xanh",
+              name: "Cửa hàng AgriMarket", 
+              slug: "agrimarket",
             },
             deliveryInfo: {
-              name: "Giao hàng tiêu chuẩn",
-              estimatedTime: "2-3 ngày",
-              address: foundOrder.shippingAddress || "123 Cầu Giấy, Hà Nội",
-              phone: foundOrder.phone || "0901234567",
+              // Lấy Tên và Số điện thoại thực tế của khách hàng từ DB
+              name: foundOrder.user?.fullName || "Khách hàng",
+              phone: foundOrder.user?.phone || "Không có",
+              address: foundOrder.shippingAddress || "Chưa cung cấp",
               trackingNumber: `TRACK-${foundOrder.id.split('-')[0].toUpperCase()}`,
             },
-            paymentMethod: "Thanh toán nội địa",
-            shippingFee: 30000,
+            paymentMethod: foundOrder.paymentMethod === "VNPAY" ? "VNPay" : "Thanh toán khi nhận hàng",
+            shippingFee: 0,
             discount: 0,
           });
-        } else {
-          toast.error("Không tìm thấy đơn hàng");
         }
       } catch (error: any) {
-        toast.error(error.message || "Lỗi tải thông tin đơn hàng");
+        toast.error(error.message || "Không thể tải thông tin đơn hàng");
       } finally {
         setIsLoading(false);
       }
@@ -141,7 +137,7 @@ export default function OrderTrackingPage() {
           <ActionButtons storeSlug={order.store?.slug} />
         </div>
 
-        <RecommendedProducts products={mockTrackingRecommendedProducts} />
+        <RecommendedProducts />
       </PageContainer>
     </div>
   );

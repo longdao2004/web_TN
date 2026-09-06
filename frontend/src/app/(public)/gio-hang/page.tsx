@@ -11,6 +11,8 @@ import {
 } from "@/components/ui";
 import { Voucher, CartSummaryData } from "@/types/cart";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/auth.store";
+import { toast } from "sonner";
 import {
   CartList,
   CartSummary,
@@ -22,10 +24,17 @@ import {
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, fetchCart } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
 
   React.useEffect(() => {
+    // [Bảo mật] Kiểm tra nếu chưa đăng nhập thì chuyển hướng
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để xem giỏ hàng!");
+      router.push("/dang-nhap");
+      return;
+    }
     fetchCart();
-  }, [fetchCart]);
+  }, [fetchCart, isAuthenticated, router]);
 
   // Trạng thái
   const [selectedIds, setSelectedIds] = useState<string[]>(

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui";
 import { ShoppingBag, FileText, Home } from "lucide-react";
 
-export const ActionButtons = () => {
+export const ActionButtons = ({ orderId }: { orderId?: string }) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 animate-in slide-in-from-bottom-10 duration-700 fade-in delay-150 fill-mode-both">
       <Link href="/" className="flex-1">
@@ -17,7 +17,7 @@ export const ActionButtons = () => {
         </Button>
       </Link>
 
-      <Link href="/theo-doi-don-hang" className="flex-1">
+      <Link href={orderId ? `/theo-doi-don-hang/${orderId}` : "/tai-khoan/don-hang"} className="flex-1">
         <Button
           variant="outline"
           size="lg"

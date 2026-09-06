@@ -6,11 +6,13 @@ import { QuantitySelector } from "./QuantitySelector";
 import { ActionButtons } from "./ActionButtons";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/auth.store";
 
 export const ProductActions = ({ product }: { product: Product }) => {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
-  const { addItem, setBuyNowItem } = useCartStore();
+  const { addItem } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
 
   const createCartItem = () => ({
     id: product.id,
@@ -31,6 +33,13 @@ export const ProductActions = ({ product }: { product: Product }) => {
   });
 
   const handleAddToCart = async () => {
+    // [Bảo mật] Ép buộc đăng nhập trước khi thao tác giỏ hàng
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để mua hàng!");
+      router.push("/dang-nhap");
+      return;
+    }
+
     try {
       await addItem(createCartItem(), quantity);
       toast.success("Thêm vào giỏ hàng thành công", {
@@ -41,25 +50,32 @@ export const ProductActions = ({ product }: { product: Product }) => {
         },
       });
     } catch (err: any) {
-      if (err.message === "UNAUTHORIZED") {
-        toast.error("Vui lòng đăng nhập để mua hàng");
-        router.push("/dang-nhap");
-      } else {
-        toast.error("Không thể thêm vào giỏ hàng");
-      }
+      toast.error("Không thể thêm vào giỏ hàng");
     }
   };
 
-  const handleBuyNow = () => {
-    setBuyNowItem(createCartItem());
-    toast("⚡ Đang chuyển đến trang thanh toán...", {
+  const handleBuyNow = async () => {
+    // [Bảo mật] Kiểm tra đăng nhập
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để mua hàng!");
+      router.push("/dang-nhap");
+      return;
+    }
+
+    toast("Đang xử lý và chuyển đến trang thanh toán...", {
       duration: 1000,
-      className: "animate-in fade-in slide-in-from-bottom-4",
     });
-    // Add small delay for toast to show
-    setTimeout(() => {
-      router.push("/thanh-toan?type=buynow");
-    }, 300);
+    
+    try {
+      // [Logic] Backend tự gom toàn bộ giỏ hàng khi thanh toán. 
+      // Do đó ta sẽ Add sản phẩm này vào giỏ rồi nhảy sang Checkout luôn.
+      await addItem(createCartItem(), quantity);
+      setTimeout(() => {
+        router.push("/thanh-toan");
+      }, 500);
+    } catch (err) {
+      toast.error("Đã xảy ra lỗi khi mua ngay!");
+    }
   };
 
   const handleFavorite = () => {

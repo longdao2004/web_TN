@@ -45,5 +45,17 @@ export const orderService = {
       throw new Error(err.message || 'Lỗi lấy lịch sử đơn hàng');
     }
     return res.json();
+  },
+
+  getOrderById: async (orderId: string) => {
+    const res = await fetch(`${API_URL}/orders/${orderId}`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Lỗi lấy chi tiết đơn hàng');
+    }
+    return res.json();
   }
 };

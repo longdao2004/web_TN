@@ -11,6 +11,8 @@ interface AuthState {
   logout: () => void;
 }
 
+import { useCartStore } from './useCartStore';
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
   user: null,
@@ -23,6 +25,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } else {
       if (typeof window !== 'undefined') localStorage.removeItem('token');
       set({ token: null, user: null, isAuthenticated: false });
+      // Xóa giỏ hàng local khi set token null (đăng xuất)
+      useCartStore.getState().clearCart();
     }
   },
   fetchUser: async () => {
@@ -40,5 +44,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     if (typeof window !== 'undefined') localStorage.removeItem('token');
     set({ token: null, user: null, isAuthenticated: false });
+    // Bắt buộc làm sạch giỏ hàng khi người dùng đăng xuất để tránh rò rỉ dữ liệu
+    useCartStore.getState().clearCart();
   },
 }));

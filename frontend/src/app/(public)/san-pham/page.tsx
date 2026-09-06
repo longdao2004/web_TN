@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageContainer, Section } from "@/components/layout/core";
 import {
@@ -14,7 +14,7 @@ import {
 import { FilterSidebar, SortBar, ProductGrid } from "@/components/products";
 import { productService } from "@/services/product.service";
 
-export default function ProductListPage() {
+function ProductListContent() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<any[]>([]);
@@ -134,5 +134,13 @@ export default function ProductListPage() {
         </PageContainer>
       </Section>
     </div>
+  );
+}
+
+export default function ProductListPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Đang tải...</div>}>
+      <ProductListContent />
+    </Suspense>
   );
 }

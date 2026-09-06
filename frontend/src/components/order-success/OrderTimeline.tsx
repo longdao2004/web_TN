@@ -22,6 +22,21 @@ export const OrderTimeline = ({ steps }: OrderTimelineProps) => {
     }
   };
 
+  const getProgressPercentage = () => {
+    if (!steps || steps.length === 0) return 0;
+    // Find the last index that is completed or active
+    let lastActiveIndex = 0;
+    for (let i = steps.length - 1; i >= 0; i--) {
+      if (steps[i].isCompleted || steps[i].isActive) {
+        lastActiveIndex = i;
+        break;
+      }
+    }
+    return (lastActiveIndex / (steps.length - 1)) * 100;
+  };
+
+  const progress = `${getProgressPercentage()}%`;
+
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm animate-in slide-in-from-bottom-5 duration-700 fade-in overflow-hidden">
       <h2 className="text-lg font-bold text-gray-900 mb-6">Tiến trình đơn hàng</h2>
@@ -32,7 +47,7 @@ export const OrderTimeline = ({ steps }: OrderTimelineProps) => {
         <div className="hidden md:block absolute top-[22px] left-[10%] right-[10%] h-[2px] bg-gray-100 z-0">
           <div 
             className="absolute top-0 left-0 h-full bg-emerald-500 transition-all duration-1000"
-            style={{ width: '25%' }} // Mock 25% for first step completed
+            style={{ width: progress }}
           ></div>
         </div>
 
@@ -40,7 +55,7 @@ export const OrderTimeline = ({ steps }: OrderTimelineProps) => {
         <div className="md:hidden absolute top-[22px] bottom-[22px] left-[22px] w-[2px] bg-gray-100 z-0">
           <div 
             className="absolute top-0 left-0 w-full bg-emerald-500 transition-all duration-1000"
-            style={{ height: '25%' }} // Mock 25%
+            style={{ height: progress }}
           ></div>
         </div>
 
