@@ -12,7 +12,6 @@ export class OrderService {
   constructor(private prisma: PrismaService) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
-    // 1. Lấy giỏ hàng hiện tại của khách
     const cart = await this.prisma.cart.findUnique({
       where: { userId },
       include: {
@@ -32,7 +31,6 @@ export class OrderService {
       throw new BadRequestException('Giỏ hàng của bạn đang trống!');
     }
 
-    // 2. Tính toán tổng tiền trước
     let totalAmount = 0;
     cart.items.forEach((item) => {
       const latestBatch = item.product.batches[0];
@@ -40,9 +38,7 @@ export class OrderService {
       totalAmount += price * item.quantity;
     });
 
-    // 3. SỬ DỤNG TRANSACTION
     return this.prisma.$transaction(async (tx) => {
-      // 3a. Tạo Đơn hàng và các Chi tiết đơn hàng
       const order = await tx.order.create({
         data: {
           userId,
@@ -66,7 +62,6 @@ export class OrderService {
         },
       });
 
-      // 3b. Trừ số lượng tồn kho trong Lô hàng (Batch)
       for (const item of cart.items) {
         const latestBatch = item.product.batches[0];
         if (latestBatch) {
@@ -82,7 +77,6 @@ export class OrderService {
         }
       }
 
-      // 3c. Làm sạch giỏ hàng sau khi chốt đơn
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
       return {
@@ -93,17 +87,13 @@ export class OrderService {
     });
   }
 
-  /**
-   * LẤY LỊCH SỬ ĐƠN HÀNG CỦA KHÁCH HÀNG
-   */
   async getUserOrders(userId: string) {
     const orders = await this.prisma.order.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' }, // Sắp xếp: Đơn mới nhất lên đầu
+      orderBy: { createdAt: 'desc' },
       include: {
         items: {
           include: {
-            // Chỉ lấy tên và ảnh của sản phẩm cho nhẹ dữ liệu trả về
             product: {
               select: {
                 name: true,
@@ -122,11 +112,7 @@ export class OrderService {
     return orders;
   }
 
-  /**
-   * CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (Dành cho SELLER hoặc ADMIN)
-   */
   async updateOrderStatus(orderId: string, status: string) {
-    // 1. Kiểm tra xem đơn hàng có tồn tại không
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
     });
@@ -135,10 +121,49 @@ export class OrderService {
       throw new NotFoundException('Không tìm thấy đơn hàng này!');
     }
 
-    // 2. Cập nhật trạng thái
     return this.prisma.order.update({
       where: { id: orderId },
       data: { status: status as OrderStatus },
     });
+  }
+
+  async getOrderById(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        // Lấy thêm thông tin người đặt hàng (Tên, Số điện thoại)
+        user: {
+          select: {
+            fullName: true,
+            phone: true,
+          }
+        },
+        items: {
+          include: {
+            batch: {
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    name: true,
+                    imageUrl: true,
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng');
+    }
+
+    if (order.userId !== userId) {
+      throw new NotFoundException('Bạn không có quyền xem đơn hàng này');
+    }
+
+    return order;
   }
 }

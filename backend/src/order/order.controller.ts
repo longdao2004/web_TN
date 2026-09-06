@@ -37,6 +37,13 @@ export class OrderController {
     return this.orderService.getUserOrders(userId);
   }
 
+  @Get(':id')
+  getOrderById(@Request() req: any, @Param('id') orderId: string) {
+    checkRole(req, [Role.BUYER]);
+    const userId = req.user.userId;
+    return this.orderService.getOrderById(orderId, userId);
+  }
+
   @Patch(':id/status')
   updateOrderStatus(
     @Request() req: any,
