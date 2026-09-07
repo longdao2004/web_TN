@@ -80,7 +80,8 @@ export const productService = {
         logo: item.store?.logoUrl || '',
         address: item.store?.address || 'Đang cập nhật',
         rating: 5,
-        productCount: 0,
+        // Ít nhất phải hiển thị 1 sản phẩm thay vì 0
+        productCount: item.store?._count?.products || item.store?.products?.length || 1,
         responseRate: 100,
         joinedAt: '',
       },

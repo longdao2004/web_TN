@@ -51,14 +51,8 @@ export const storeService = {
       rating: 5,
       reviewsCount: 0,
       isFeatured: false,
-      joinDate: item.createdAt || '2026',
-      statistics: {
-        totalProducts: item._count?.products || item.products?.length || 0,
-        totalSold: 100, // mock fallback
-        totalCustomers: 50, // mock fallback
-        responseRate: '95%',
-        averageRating: 5,
-      }
+      // Format ngày tham gia chuẩn từ Backend
+      joinDate: item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : 'Đang cập nhật',
     };
   }
 };

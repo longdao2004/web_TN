@@ -96,8 +96,8 @@ export const ProductActions = ({ product }: { product: Product }) => {
       <ActionButtons
         onAddToCart={handleAddToCart}
         onBuyNow={handleBuyNow}
-        onFavorite={handleFavorite}
-        onShare={handleShare}
+        onFavorite={() => {}} // Removed from UI
+        onShare={() => {}} // Removed from UI
         disabled={product.stock === 0}
       />
     </div>

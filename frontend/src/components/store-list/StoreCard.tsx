@@ -28,17 +28,16 @@ export const StoreCard = ({ store }: StoreCardProps) => {
         {/* Content */}
         <div className="px-5 pb-6 flex-1 flex flex-col relative pt-12">
           {/* Logo (Overlapping Banner) */}
+          {/* Sửa CSS khung Avatar bỏ padding trắng để đồng bộ */}
           <div className="absolute -top-10 left-5">
-            <div className="w-20 h-20 bg-white rounded-xl p-1 shadow-md">
-              <div className="w-full h-full rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
-                <Image
-                  src={store.logo}
-                  alt={`Logo ${store.name}`}
-                  className="w-full h-full object-cover"
-                  width={500}
-                  height={500}
-                />
-              </div>
+            <div className="w-20 h-20 rounded-xl shadow-md border-4 border-white bg-white overflow-hidden">
+              <Image
+                src={store.logo}
+                alt={`Logo ${store.name}`}
+                className="w-full h-full object-cover"
+                width={500}
+                height={500}
+              />
             </div>
           </div>
 
@@ -78,7 +77,7 @@ export const StoreCard = ({ store }: StoreCardProps) => {
 
           <div className="w-full h-px bg-gray-100 mb-4"></div>
 
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-sm mt-auto">
             <div className="flex items-center gap-1.5 text-gray-700">
               <Package className="w-4 h-4 text-emerald-600" />
               <span className="font-semibold">{store.productsCount}</span>
@@ -86,13 +85,19 @@ export const StoreCard = ({ store }: StoreCardProps) => {
             </div>
 
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-              <span className="font-semibold text-gray-900">
-                {store.rating}
-              </span>
-              <span className="text-gray-400 text-xs">
-                ({store.reviewsCount})
-              </span>
+              {store.reviewsCount > 0 ? (
+                <>
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span className="font-semibold text-gray-900">
+                    {store.rating}
+                  </span>
+                  <span className="text-gray-400 text-xs">
+                    ({store.reviewsCount})
+                  </span>
+                </>
+              ) : (
+                <span className="text-gray-400 text-xs italic">Chưa có đánh giá</span>
+              )}
             </div>
           </div>
         </div>

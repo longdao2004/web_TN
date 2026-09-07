@@ -12,7 +12,8 @@ export const BatchInformation = ({ batch }: BatchInformationProps) => {
       <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
         Thông tin lô sản phẩm
         <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-200 text-gray-600">
-          {batch.id}
+          {/* Cắt ngắn ID lô hàng để UI gọn hơn */}
+          {batch.id ? batch.id.substring(0, 8).toUpperCase() : 'N/A'}
         </span>
       </h3>
 
@@ -21,7 +22,10 @@ export const BatchInformation = ({ batch }: BatchInformationProps) => {
           <Calendar className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
           <div>
             <div className="text-gray-500 text-xs">Thu hoạch / Đóng gói</div>
-            <div className="font-medium text-gray-900">{batch.harvestDate}</div>
+            <div className="font-medium text-gray-900">
+              {/* Format chuỗi ngày tháng sang dạng dd/mm/yyyy */}
+              {batch.harvestDate ? new Date(batch.harvestDate).toLocaleDateString("vi-VN") : "Đang cập nhật"}
+            </div>
           </div>
         </div>
 
@@ -29,7 +33,9 @@ export const BatchInformation = ({ batch }: BatchInformationProps) => {
           <Calendar className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
           <div>
             <div className="text-gray-500 text-xs">Hạn sử dụng</div>
-            <div className="font-medium text-gray-900">{batch.expiryDate}</div>
+            <div className="font-medium text-gray-900">
+              {batch.expiryDate ? new Date(batch.expiryDate).toLocaleDateString("vi-VN") : "Đang cập nhật"}
+            </div>
           </div>
         </div>
 

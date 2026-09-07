@@ -98,7 +98,7 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
           {/* Left Column (Main Content) */}
           <div className="xl:col-span-8 flex flex-col gap-6">
             {/* Fallback properties that don't exist yet gracefully */}
-            {store.statistics && <StoreStatistics statistics={store.statistics} />}
+            {/* {store.statistics && <StoreStatistics statistics={store.statistics} />} */}
             
             {/* Products with Filter */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col gap-6 animate-in slide-in-from-bottom-8 duration-700 fade-in delay-200">
@@ -118,7 +118,10 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
           {/* Right Column (Sidebar) */}
           <div className="xl:col-span-4 flex flex-col gap-6">
             <StoreIntroduction introduction={store.description || 'Chưa có thông tin giới thiệu.'} />
-            <StoreCertificates certificates={store.certificates || []} />
+            {/* Chỉ hiển thị Box Chứng nhận nếu có dữ liệu thật */}
+            {store.certificates && store.certificates.length > 0 && (
+              <StoreCertificates certificates={store.certificates} />
+            )}
             <StoreLocation address={store.address} />
           </div>
           

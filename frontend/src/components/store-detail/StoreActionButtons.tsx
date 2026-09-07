@@ -22,6 +22,8 @@ export const StoreActionButtons = () => {
 
   return (
     <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+      {/* Tính năng Theo dõi đang ngõ cụt, tạm ẩn để tránh UX kém */}
+      {/*
       <Button 
         variant={isFollowing ? "outline" : "primary"}
         className={`rounded-xl font-bold h-11 px-6 flex-1 sm:flex-none ${isFollowing ? 'border-gray-200 text-gray-700 bg-white' : 'shadow-lg shadow-emerald-500/20'}`}
@@ -30,6 +32,7 @@ export const StoreActionButtons = () => {
         {isFollowing ? <Check className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
         {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
       </Button>
+      */}
       
       <Button 
         variant="outline"

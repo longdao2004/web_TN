@@ -39,25 +39,6 @@ export const ActionButtons = ({
       >
         Mua ngay
       </Button>
-
-      <div className="flex gap-3">
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-12 w-12 shrink-0 text-gray-600 hover:text-red-500 hover:border-red-200 hover:bg-red-50"
-          onClick={onFavorite}
-        >
-          <Heart className="h-5 w-5" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-12 w-12 shrink-0 text-gray-600 hover:text-[var(--color-primary)] hover:border-[var(--color-primary-light)] hover:bg-[var(--color-primary-light)]"
-          onClick={onShare}
-        >
-          <Share2 className="h-5 w-5" />
-        </Button>
-      </div>
     </div>
   );
 };

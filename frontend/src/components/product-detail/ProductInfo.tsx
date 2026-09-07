@@ -49,18 +49,10 @@ export const ProductInfo = ({ product }: ProductInfoProps) => {
         <div className="w-px h-4 bg-gray-300 hidden sm:block"></div>
 
         <div className="text-gray-500">
-          Đã bán:{" "}
-          <span className="font-semibold text-gray-900">
-            {product.reviewCount * 3 + 120}
-          </span>
-        </div>
-
-        <div className="w-px h-4 bg-gray-300 hidden sm:block"></div>
-
-        <div className="text-gray-500">
           Mã SP:{" "}
           <span className="font-semibold text-gray-900">
-            {product.id.toUpperCase()}
+            {/* Cắt ngắn ID để làm mã sản phẩm cho gọn */}
+            {product.id.substring(0, 8).toUpperCase()}
           </span>
         </div>
       </div>
@@ -71,13 +63,14 @@ export const ProductInfo = ({ product }: ProductInfoProps) => {
           {formatPrice(product.salePrice || product.price)}
         </span>
 
-        {product.salePrice && (
+        {/* Ẩn tag giảm giá nếu giá bán bằng giá gốc */}
+        {product.salePrice && product.salePrice < product.price && (
           <div className="flex items-center gap-2 mb-1">
             <span className="text-lg text-gray-400 line-through font-medium">
               {formatPrice(product.price)}
             </span>
             <Badge variant="danger" className="font-bold rounded-md">
-              -{product.discount}%
+              -{product.discount || 0}%
             </Badge>
           </div>
         )}

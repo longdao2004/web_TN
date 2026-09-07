@@ -105,10 +105,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           )}
         </div>
 
-        {/* Favorite Button Overlay */}
-        <button className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-gray-500 backdrop-blur-sm transition-all hover:bg-red-50 hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100">
-          <Heart className="h-4 w-4" />
-        </button>
+        {/* Nút Yêu thích đã bị gỡ bỏ do tính năng này chưa hoàn thiện */}
       </div>
 
       {/* Product Info */}
