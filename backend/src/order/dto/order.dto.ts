@@ -12,4 +12,10 @@ export class CreateOrderDto {
     description: 'Số điện thoại nhận hàng',
   })
   phone!: string;
+
+  @ApiProperty({ required: false, description: 'ID sản phẩm nếu Mua Ngay' })
+  productId?: string;
+
+  @ApiProperty({ required: false, description: 'Số lượng nếu Mua Ngay' })
+  quantity?: number;
 }

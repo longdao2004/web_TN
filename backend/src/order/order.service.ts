@@ -11,7 +11,61 @@ import { CreateOrderDto } from './dto/order.dto';
 export class OrderService {
   constructor(private prisma: PrismaService) {}
 
-  async createOrder(userId: string, dto: CreateOrderDto) {
+    async createOrder(userId: string, dto: CreateOrderDto & { productId?: string; quantity?: number }) {
+        // Trường hợp 1: MUA NGAY (Trực tiếp từ trang chi tiết sản phẩm, không động vào giỏ hàng)
+    if (dto.productId && dto.quantity) {
+      const { productId, quantity } = dto; // Trích xuất hằng số để TypeScript đảm bảo kiểu number
+
+      const product = await this.prisma.product.findUnique({
+        where: { id: productId },
+        include: { batches: { orderBy: { createdAt: 'desc' } } },
+      });
+
+      if (!product) throw new NotFoundException('Sản phẩm không tồn tại!');
+      const latestBatch = product.batches[0];
+      if (!latestBatch || latestBatch.quantity < quantity) {
+        throw new BadRequestException('Sản phẩm không đủ số lượng trong kho!');
+      }
+
+      const price = latestBatch.price;
+      const totalAmount = price * quantity;
+
+      return this.prisma.$transaction(async (tx) => {
+        const order = await tx.order.create({
+          data: {
+            userId,
+            totalAmount,
+            status: 'PENDING',
+            shippingAddress: dto.shippingAddress,
+            items: {
+              create: [
+                {
+                  productId: product.id,
+                  productBatchId: latestBatch.id,
+                  quantity: quantity,
+                  priceAtPurchase: price,
+                },
+              ],
+            },
+          },
+        });
+
+        // Trừ tồn kho
+        await tx.productBatch.update({
+          where: { id: latestBatch.id },
+          data: { quantity: latestBatch.quantity - quantity },
+        });
+
+        return {
+          message: 'Đặt hàng thành công!',
+          orderId: order.id,
+          totalAmount,
+        };
+      });
+    }
+    
+
+    // Trường hợp 2: ĐẶT HÀNG TỪ GIỎ HÀNG (Giữ nguyên như cũ)
     const cart = await this.prisma.cart.findUnique({
       where: { userId },
       include: {
@@ -45,12 +99,10 @@ export class OrderService {
           totalAmount,
           status: 'PENDING',
           shippingAddress: dto.shippingAddress,
-
           items: {
             create: cart.items.map((item) => {
               const latestBatch = item.product.batches[0];
               const price = latestBatch ? latestBatch.price : 0;
-
               return {
                 productId: item.productId,
                 productBatchId: latestBatch?.id,
@@ -82,7 +134,7 @@ export class OrderService {
       return {
         message: 'Đặt hàng thành công!',
         orderId: order.id,
-        totalAmount: totalAmount,
+        totalAmount,
       };
     });
   }
@@ -147,6 +199,13 @@ export class OrderService {
                     id: true,
                     name: true,
                     imageUrl: true,
+                    store: {
+                      select: {
+                        id: true,
+                        name: true,
+                        logoUrl: true,
+                      }
+                    }
                   }
                 }
               }
@@ -165,5 +224,50 @@ export class OrderService {
     }
 
     return order;
+  }
+
+    // Hủy đơn hàng và tự động hoàn lại số lượng vào kho lô hàng
+  async cancelOrder(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng!');
+    }
+
+    if (order.userId !== userId) {
+      throw new BadRequestException('Bạn không có quyền hủy đơn hàng này!');
+    }
+
+    if (order.status !== 'PENDING') {
+      throw new BadRequestException(
+        'Đơn hàng đã được người bán xử lý hoặc đã hoàn tất, không thể hủy!',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Chuyển trạng thái sang CANCELLED
+      const updatedOrder = await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'CANCELLED' },
+      });
+
+      // 2. Hoàn lại số lượng tồn kho cho các lô hàng (batch)
+      for (const item of order.items) {
+        await tx.productBatch.update({
+          where: { id: item.productBatchId },
+          data: {
+            quantity: { increment: item.quantity },
+          },
+        });
+      }
+
+      return {
+        message: 'Hủy đơn hàng thành công và đã hoàn lại số lượng vào kho!',
+        order: updatedOrder,
+      };
+    });
   }
 }

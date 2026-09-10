@@ -56,4 +56,11 @@ export class OrderController {
       updateOrderStatusDto.status,
     );
   }
+
+    @Patch(':id/cancel')
+  cancelOrder(@Request() req: any, @Param('id') orderId: string) {
+    checkRole(req, [Role.BUYER]);
+    const userId = req.user.userId;
+    return this.orderService.cancelOrder(orderId, userId);
+  }
 }
