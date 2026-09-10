@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { PageContainer, Section } from "@/components/layout/core";
-import { mockNews } from "@/mock";
+import { mockNews } from "@/mock/news";
 import { Button } from "@/components/ui";
 import Image from "next/image";
 
