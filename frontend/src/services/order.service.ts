@@ -9,7 +9,7 @@ const getHeaders = () => {
 };
 
 export const orderService = {
-  createOrder: async (data: { shippingAddress: string; phone: string }) => {
+    createOrder: async (data: { shippingAddress: string; phone: string; productId?: string; quantity?: number }) => {
     const res = await fetch(`${API_URL}/orders`, {
       method: 'POST',
       headers: getHeaders(),
@@ -57,5 +57,17 @@ export const orderService = {
       throw new Error(err.message || 'Lỗi lấy chi tiết đơn hàng');
     }
     return res.json();
-  }
+  },
+
+    cancelOrder: async (orderId: string) => {
+    const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Lỗi hủy đơn hàng');
+    }
+    return res.json();
+  },
 };

@@ -22,12 +22,46 @@ import {
   RecommendedProducts,
 } from "@/components/order-tracking";
 
-import {
-  mockTrackingTimeline,
-  mockTrackingTimelineDelivered,
-} from "@/mock/order-tracking";
 import { orderService } from "@/services/order.service";
 import { toast } from "sonner";
+import { TimelineStep } from "@/types/order";
+
+// [Thực tế] Hàm sinh Timeline các bước dựa trên trạng thái đơn hàng thật trong Database
+const generateOrderTimeline = (status: string): TimelineStep[] => {
+  if (status === "CANCELLED") {
+    return [
+      { id: "1", label: "Đã đặt hàng", isCompleted: true, isActive: false },
+      { id: "2", label: "Đã hủy đơn hàng", isCompleted: true, isActive: true },
+    ];
+  }
+
+  return [
+    {
+      id: "1",
+      label: "Đơn hàng đã đặt",
+      isCompleted: true,
+      isActive: status === "PENDING",
+    },
+    {
+      id: "2",
+      label: "Đang đóng gói",
+      isCompleted: ["PACKING", "SHIPPING", "COMPLETED", "DELIVERED"].includes(status),
+      isActive: status === "PACKING",
+    },
+    {
+      id: "3",
+      label: "Đang giao hàng",
+      isCompleted: ["SHIPPING", "COMPLETED", "DELIVERED"].includes(status),
+      isActive: status === "SHIPPING",
+    },
+    {
+      id: "4",
+      label: "Giao thành công",
+      isCompleted: ["COMPLETED", "DELIVERED"].includes(status),
+      isActive: status === "COMPLETED" || status === "DELIVERED",
+    },
+  ];
+};
 
 export default function OrderTrackingPage() {
   const params = useParams();
@@ -36,49 +70,51 @@ export default function OrderTrackingPage() {
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        // Lấy chi tiết đơn hàng thông qua API getOrderById (thay vì getOrderHistory)
-        const foundOrder = await orderService.getOrderById(id);
-        
-        if (foundOrder) {
-          // Ánh xạ dữ liệu BE về định dạng FE cần
-          setOrder({
-            id: foundOrder.id,
-            status: foundOrder.status,
-            createdAt: foundOrder.createdAt,
-            totalAmount: foundOrder.totalAmount,
-            products: foundOrder.items.map((item: any) => ({
-              id: item.batch.product.id,
-              name: item.batch.product.name,
-              price: item.priceAtPurchase,
-              quantity: item.quantity,
-              image: item.batch.product.imageUrl || "/images/products/cachuabi.avif",
-            })),
-            store: {
-              name: "Cửa hàng AgriMarket", 
-              slug: "agrimarket",
-            },
-            deliveryInfo: {
-              // Lấy Tên và Số điện thoại thực tế của khách hàng từ DB
-              name: foundOrder.user?.fullName || "Khách hàng",
-              phone: foundOrder.user?.phone || "Không có",
-              address: foundOrder.shippingAddress || "Chưa cung cấp",
-              trackingNumber: `TRACK-${foundOrder.id.split('-')[0].toUpperCase()}`,
-            },
-            paymentMethod: foundOrder.paymentMethod === "VNPAY" ? "VNPay" : "Thanh toán khi nhận hàng",
-            shippingFee: 0,
-            discount: 0,
-          });
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Không thể tải thông tin đơn hàng");
-      } finally {
-        setIsLoading(false);
+  // Đưa hàm fetchOrder ra ngoài để ActionButtons bên dưới cũng gọi được
+  const fetchOrder = async () => {
+    try {
+      const foundOrder = await orderService.getOrderById(id);
+      
+      if (foundOrder) {
+        // [Thực tế] Lấy thông tin cửa hàng thực tế từ sản phẩm trong đơn
+        const firstStore = foundOrder.items?.[0]?.batch?.product?.store;
+
+        // Ánh xạ dữ liệu BE về định dạng FE cần
+        setOrder({
+          id: foundOrder.id,
+          status: foundOrder.status,
+          createdAt: foundOrder.createdAt,
+          totalAmount: foundOrder.totalAmount,
+          products: foundOrder.items.map((item: any) => ({
+            id: item.batch?.product?.id || item.productId,
+            name: item.batch?.product?.name || "Sản phẩm",
+            price: item.priceAtPurchase,
+            quantity: item.quantity,
+            image: item.batch?.product?.imageUrl || "/images/products/cachuabi.avif",
+          })),
+          store: {
+            name: firstStore?.name || "Cửa hàng Nông sản", 
+            slug: firstStore?.id || "",
+          },
+          deliveryInfo: {
+            name: foundOrder.user?.fullName || "Khách hàng",
+            phone: foundOrder.user?.phone || "Không có",
+            address: foundOrder.shippingAddress || "Chưa cung cấp",
+            trackingNumber: `AGRI-${foundOrder.id.split('-')[0].toUpperCase()}`,
+          },
+          paymentMethod: foundOrder.paymentMethod === "VNPAY" ? "VNPay" : "Thanh toán khi nhận hàng (COD)",
+          shippingFee: 0,
+          discount: 0,
+        });
       }
-    };
-    
+    } catch (error: any) {
+      toast.error(error.message || "Không thể tải thông tin đơn hàng");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (id) {
       fetchOrder();
     }
@@ -117,24 +153,32 @@ export default function OrderTrackingPage() {
         <div className="flex flex-col gap-6">
           <OrderHeader order={order} />
 
-          <OrderStatusTimeline steps={order.status === "DELIVERED" ? mockTrackingTimelineDelivered : mockTrackingTimeline} />
+          {/* [Thực tế] Sử dụng hàm sinh timeline tự động theo trạng thái thật của đơn hàng */}
+          <OrderStatusTimeline steps={generateOrderTimeline(order.status)} />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            {/* Left Column */}
+            {/* Cột trái */}
             <div className="lg:col-span-8 flex flex-col gap-6">
               <PurchasedProducts products={order.products} />
               <StoreInformation store={order.store} />
-              {order.status === "COMPLETED" && <ReviewSection status={order.status} products={order.products} />}
+              {(order.status === "COMPLETED" || order.status === "DELIVERED") && (
+                <ReviewSection status={order.status} products={order.products} />
+              )}
             </div>
 
-            {/* Right Column */}
+            {/* Cột phải */}
             <div className="lg:col-span-4 flex flex-col gap-6">
               <ShippingInformation info={order.deliveryInfo} />
               <PaymentSummary order={order} />
             </div>
           </div>
 
-          <ActionButtons storeSlug={order.store?.slug} />
+          <ActionButtons 
+            storeSlug={order.store?.slug} 
+            orderId={order.id}
+            orderStatus={order.status}
+            onOrderCancelled={() => fetchOrder()}
+          />
         </div>
 
         <RecommendedProducts />

@@ -3,11 +3,12 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Bell, Menu } from "lucide-react";
 import { PageContainer } from "../core";
 import { SearchBox, Button, Avatar, Dropdown } from "@/components/ui";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/auth.store";
+import { NotificationPopover } from "./NotificationPopover";
+import { ShoppingCart, Menu } from "lucide-react";
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -113,16 +114,7 @@ export const Header = () => {
 
           {/* Hành động của người dùng */}
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative text-gray-600"
-              onClick={() => {
-                // TODO: Implement notifications
-              }}
-            >
-              <Bell className="h-5 w-5" />
-            </Button>
+            <NotificationPopover />
 
             <Link href="/gio-hang">
               <Button

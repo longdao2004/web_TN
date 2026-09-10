@@ -19,35 +19,11 @@ import { Voucher } from "@/types/cart";
 import { VoucherBox } from "@/components/cart/VoucherBox";
 import { orderService } from "@/services/order.service";
 import { useAuthStore } from "@/store/auth.store";
+import {
+  SHIPPING_METHODS,
+  PAYMENT_METHODS,
+} from "@/constants/checkout.constants";
 
-const SHIPPING_METHODS = [
-  {
-    id: 'ship-standard',
-    name: 'Giao hàng tiêu chuẩn',
-    estimatedTime: '2 - 3 ngày làm việc',
-    price: 30000,
-  },
-  {
-    id: 'ship-express',
-    name: 'Giao hàng hỏa tốc',
-    estimatedTime: 'Nhận hàng trong 2H',
-    price: 55000,
-  },
-];
-
-const PAYMENT_METHODS = [
-  {
-    id: 'pay-cod',
-    name: 'Thanh toán khi nhận hàng (COD)',
-    iconType: 'cod' as any,
-    description: 'Thanh toán bằng tiền mặt khi shipper giao hàng',
-  },
-  {
-    id: 'pay-vnpay',
-    name: 'Cổng thanh toán VNPay',
-    iconType: 'vnpay' as any,
-  },
-];
 import {
   ShippingMethod,
   PaymentMethod,
@@ -80,9 +56,7 @@ function CheckoutContent() {
   const [shippingMethodId, setShippingMethodId] = useState(
     SHIPPING_METHODS[0].id,
   );
-  const [paymentMethodId, setPaymentMethodId] = useState(
-    PAYMENT_METHODS[0].id,
-  );
+  const [paymentMethodId, setPaymentMethodId] = useState(PAYMENT_METHODS[0].id);
   const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -108,7 +82,7 @@ function CheckoutContent() {
         router.push("/dang-nhap");
         return;
       }
-      
+
       if (items.length === 0 && !isSuccess) {
         if (isBuyNow) {
           toast.error("Không tìm thấy sản phẩm");
@@ -149,7 +123,7 @@ function CheckoutContent() {
 
     if (appliedVoucher?.code === "FREESHIP") {
       shippingFee = Math.max(0, shippingFee - appliedVoucher.discountValue);
-      discount = 0; // Đưa phần giảm giá sang bù trừ phí ship cho đơn giản
+      discount = 0;
     }
 
     const tax = Math.round(subTotal * 0.08); // 8% VAT
@@ -168,14 +142,29 @@ function CheckoutContent() {
         return;
       }
 
-      const orderRes = await orderService.createOrder({ 
-        shippingAddress: addressText, 
-        phone: phoneText 
-      });
+            // Tạo payload đơn hàng: nếu là "Mua ngay" thì gửi kèm productId & quantity
+      const payload: {
+        shippingAddress: string;
+        phone: string;
+        productId?: string;
+        quantity?: number;
+      } = {
+        shippingAddress: addressText,
+        phone: phoneText,
+      };
 
-      // 2. Xác định phương thức thanh toán
-      // Chỉ hỗ trợ COD và VNPAY dựa theo Provider của BE
-      const provider = paymentMethodId === 'pay-vnpay' ? 'VNPAY' : 'COD';
+      if (isBuyNow && items.length > 0) {
+        payload.productId = items[0].id || (items[0] as any).productId;
+        payload.quantity = items[0].quantity;
+      }
+
+      const orderRes = await orderService.createOrder(payload);
+
+      // Xác định phương thức thanh toán
+      const selectedPayment = PAYMENT_METHODS.find(
+        (p) => p.id === paymentMethodId,
+      );
+      const provider = selectedPayment?.provider || "COD";
 
       const paymentRes = await orderService.createPaymentUrl({
         orderId: orderRes.orderId,
@@ -188,11 +177,9 @@ function CheckoutContent() {
         clearCart();
       }
 
-      if (provider === 'VNPAY' && paymentRes.url) {
-        // Redirect đến trang thanh toán của VNPay
+      if (provider === "VNPAY" && paymentRes.url) {
         window.location.href = paymentRes.url;
       } else {
-        // COD: Chuyển thẳng đến trang thành công kèm theo orderId
         setIsSuccess(true);
         toast.success("Đặt hàng thành công!", {
           description: "Cảm ơn bạn đã mua sắm tại AgriMarket.",
@@ -201,14 +188,14 @@ function CheckoutContent() {
         router.push(`/dat-hang-thanh-cong?orderId=${orderRes.orderId}`);
       }
     } catch (error: any) {
-      toast.error(error.message || 'Lỗi đặt hàng. Vui lòng thử lại!');
+      toast.error(error.message || "Lỗi đặt hàng. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (!isMounted || (items.length === 0 && !isSuccess)) {
-    return null; // Trả về null để tránh chớp nhoáng giao diện trống trước khi chuyển hướng
+    return null;
   }
 
   return (
@@ -231,61 +218,75 @@ function CheckoutContent() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-4 mb-2 tracking-tight">
-            Thanh toán
-          </h1>
         </div>
 
-        {/* Layout */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start relative">
-          {/* Cột trái: Form nhập liệu (70%) */}
-          <div className="w-full lg:w-[70%] flex flex-col gap-6 animate-in slide-in-from-bottom-4 duration-500 fade-in">
-            <div className="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Cột trái (Thông tin nhận hàng, Vận chuyển, Thanh toán) */}
+          <div className="w-full lg:w-[65%] flex flex-col gap-6">
+            {/* 1. Thông tin giao hàng */}
+            <div className="bg-white rounded-2xl p-6 border border-[var(--color-border)] shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
                 Thông tin giao hàng
               </h2>
-              <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                  <Input 
-                    value={phoneText} 
-                    onChange={(e) => setPhoneText(e.target.value)} 
-                    placeholder="Nhập số điện thoại"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Họ và tên
+                  </label>
+                  <Input
+                    value={user?.fullName || "Khách hàng"}
+                    disabled
+                    className="bg-gray-50 text-gray-600 cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ chi tiết</label>
-                  <Textarea 
-                    value={addressText} 
-                    onChange={(e) => setAddressText(e.target.value)} 
-                    placeholder="Ví dụ: 123 Đường số 1, Phường An Phú, Quận 2, TP.HCM"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Số điện thoại <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    value={phoneText}
+                    onChange={(e) => setPhoneText(e.target.value)}
+                    placeholder="Nhập số điện thoại nhận hàng..."
+                    required
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Địa chỉ nhận hàng <span className="text-red-500">*</span>
+                  </label>
+                  <Textarea
+                    value={addressText}
+                    onChange={(e) => setAddressText(e.target.value)}
+                    placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..."
                     rows={3}
+                    required
                   />
                 </div>
               </div>
             </div>
 
+            {/* 2. Phương thức vận chuyển (Gọi trực tiếp component tổng) */}
             <ShippingMethod
               methods={SHIPPING_METHODS}
               selectedId={shippingMethodId}
               onChange={setShippingMethodId}
             />
 
+            {/* 3. Phương thức thanh toán (Gọi trực tiếp component tổng) */}
             <PaymentMethod
               methods={PAYMENT_METHODS}
               selectedId={paymentMethodId}
               onChange={setPaymentMethodId}
             />
-
-            <OrderItems items={items} />
           </div>
 
-          {/* Cột phải: Summary (30%) */}
-          <div className="w-full lg:w-[30%] flex flex-col gap-6 animate-in slide-in-from-bottom-8 duration-700 fade-in lg:sticky lg:top-24">
+          {/* Cột phải (Danh sách sản phẩm & Tóm tắt đơn hàng) */}
+          <div className="w-full lg:w-[35%] flex flex-col gap-6 sticky top-24">
+            <OrderItems items={items} />
+
             <VoucherBox
-              appliedVoucher={appliedVoucher}
               onApplyVoucher={setAppliedVoucher}
+              appliedVoucher={appliedVoucher}
             />
 
             <OrderSummary
@@ -296,29 +297,14 @@ function CheckoutContent() {
               total={summaryData.total}
             />
 
-            {/* Desktop Checkout Button */}
-            <div className="hidden lg:block">
-              <CheckoutButton
-                isLoading={isSubmitting}
-                onClick={handleCheckout}
-              />
-            </div>
+            <CheckoutButton
+              onClick={handleCheckout}
+              disabled={isSubmitting}
+              isLoading={isSubmitting}
+            />
           </div>
         </div>
       </PageContainer>
-
-      {/* Mobile Sticky Checkout Button */}
-      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 animate-in slide-in-from-bottom-full">
-        <div className="flex justify-between items-center mb-3">
-          <span className="text-sm font-semibold text-gray-600">
-            Tổng thanh toán:
-          </span>
-          <span className="text-lg font-black text-emerald-600">
-            {summaryData.total.toLocaleString("vi-VN")}đ
-          </span>
-        </div>
-        <CheckoutButton isLoading={isSubmitting} onClick={handleCheckout} />
-      </div>
     </div>
   );
 }
@@ -327,9 +313,7 @@ export default function CheckoutPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
-          Đang tải...
-        </div>
+        <div className="p-12 text-center">Đang tải trang thanh toán...</div>
       }
     >
       <CheckoutContent />

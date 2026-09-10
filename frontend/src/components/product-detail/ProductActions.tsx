@@ -11,7 +11,7 @@ import { useAuthStore } from "@/store/auth.store";
 export const ProductActions = ({ product }: { product: Product }) => {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
-  const { addItem } = useCartStore();
+  const { addItem, setBuyNowItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
 
   const createCartItem = () => ({
@@ -54,29 +54,17 @@ export const ProductActions = ({ product }: { product: Product }) => {
     }
   };
 
-  const handleBuyNow = async () => {
-    // [Bảo mật] Kiểm tra đăng nhập
-    if (!isAuthenticated) {
-      toast.error("Vui lòng đăng nhập để mua hàng!");
-      router.push("/dang-nhap");
-      return;
-    }
+  const handleBuyNow = () => {
+  if (!isAuthenticated) {
+    toast.error("Vui lòng đăng nhập để mua hàng!");
+    router.push("/dang-nhap");
+    return;
+  }
 
-    toast("Đang xử lý và chuyển đến trang thanh toán...", {
-      duration: 1000,
-    });
-    
-    try {
-      // [Logic] Backend tự gom toàn bộ giỏ hàng khi thanh toán. 
-      // Do đó ta sẽ Add sản phẩm này vào giỏ rồi nhảy sang Checkout luôn.
-      await addItem(createCartItem(), quantity);
-      setTimeout(() => {
-        router.push("/thanh-toan");
-      }, 500);
-    } catch (err) {
-      toast.error("Đã xảy ra lỗi khi mua ngay!");
-    }
-  };
+  // Lưu sản phẩm vào luồng mua ngay độc lập (không động vào giỏ hàng)
+  setBuyNowItem(createCartItem());
+  router.push("/thanh-toan?type=buynow");
+};
 
   const handleFavorite = () => {
     toast.info("Đã thêm vào danh sách yêu thích!");
