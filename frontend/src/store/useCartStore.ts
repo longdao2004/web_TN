@@ -25,8 +25,13 @@ export const useCartStore = create<CartState>((set) => ({
       const data = await cartService.getCart();
       set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
     } catch (e) {
-      console.error(e);
-      set({ items: [], totalItems: 0 });
+      if (e instanceof Error && e.message === 'UNAUTHORIZED') {
+        // Khách chưa đăng nhập không có giỏ hàng, chỉ set giỏ rỗng êm ái
+        set({ items: [], totalItems: 0 });
+      } else {
+        console.error(e);
+        set({ items: [], totalItems: 0 });
+      }
     }
   },
 

@@ -35,9 +35,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = await userService.getProfile();
       set({ user, isAuthenticated: true });
     } catch (error) {
-      console.error("Failed to fetch user profile", error);
       if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+        // Lỗi 401 là bình thường với khách vãng lai, chỉ đăng xuất ngầm, bỏ qua không văng lỗi
         get().logout();
+      } else {
+        // Chỉ hiện lỗi với các trục trặc khác (ví dụ: đứt mạng)
+        console.error("Failed to fetch user profile", error);
       }
     }
   },
