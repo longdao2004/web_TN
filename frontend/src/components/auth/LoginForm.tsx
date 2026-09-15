@@ -68,8 +68,14 @@ export const LoginForm = () => {
         description: 'Chào mừng bạn trở lại với AgriMarket.'
       });
       
-      // Giữ nguyên behavior redirect hiện tại
-      router.push('/');
+      // Phân luồng tự động dựa vào chức vụ (role) của người dùng
+      if (response.user.role === 'SELLER') {
+        router.push('/seller'); // Đẩy vào Kênh Người bán
+      } else if (response.user.role === 'ADMIN') {
+        router.push('/admin'); // Đẩy vào Kênh Admin
+      } else {
+        router.push('/'); // Khách hàng bình thường thì ra Trang chủ
+      }
     } catch (error: unknown) {
       if (error instanceof Error && error.message === 'UNAUTHORIZED') {
         toast.error('Email hoặc mật khẩu không chính xác.');

@@ -1,14 +1,11 @@
-import { AdminDashboardLayout } from '@/components/layout/DashboardLayout';
 import { ReactNode } from 'react';
 
-// Ghi chú: Dựa vào logic phân quyền (Auth Role), bạn có thể đổi AdminDashboardLayout
-// thành BuyerDashboardLayout hoặc SellerDashboardLayout tương ứng.
-// Hiện tại đang thiết lập mặc định là Admin để hiển thị.
-
-export default function Layout({ children }: { children: ReactNode }) {
+// Layout gốc của Dashboard chỉ đóng vai trò truyền dữ liệu (children),
+// giao diện cụ thể (Seller/Admin) sẽ được định nghĩa ở các layout con.
+export default function DashboardRootLayout({ children }: { children: ReactNode }) {
   return (
-    <AdminDashboardLayout>
+    <div className="min-h-screen bg-gray-50">
       {children}
-    </AdminDashboardLayout>
+    </div>
   );
 }

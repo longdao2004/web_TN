@@ -151,15 +151,26 @@ export const Header = () => {
                     </div>
                   }
                   items={[
-                    {
-                      label: "Tài khoản",
-                      onClick: () => router.push("/tai-khoan"),
-                    },
-                    {
-                      label: "Đơn hàng của tôi",
-                      onClick: () => router.push("/tai-khoan/don-hang"),
-                    },
-                    { label: "Đăng xuất", onClick: handleLogout },
+                    // Nếu là SELLER thì chèn thêm nút Kênh Người Bán
+    ...(user?.role === 'SELLER' ? [{
+      label: "Kênh Người Bán",
+      onClick: () => router.push("/seller"),
+    }] : []),
+    
+    // Nếu là ADMIN thì chèn thêm nút Kênh Quản Trị
+    ...(user?.role === 'ADMIN' ? [{
+      label: "Kênh Quản Trị",
+      onClick: () => router.push("/admin"),
+    }] : []),
+    {
+      label: "Tài khoản",
+      onClick: () => router.push("/tai-khoan"),
+    },
+    {
+      label: "Đơn hàng của tôi",
+      onClick: () => router.push("/tai-khoan/don-hang"),
+    },
+    { label: "Đăng xuất", onClick: handleLogout },
                   ]}
                 />
               ) : (

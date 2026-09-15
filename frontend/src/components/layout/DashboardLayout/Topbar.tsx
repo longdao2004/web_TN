@@ -11,6 +11,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui";
+import { useRouter } from 'next/navigation';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -19,6 +20,8 @@ interface TopbarProps {
 }
 
 export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
+  const router = useRouter();
+
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-[var(--color-border)] bg-white px-4 sm:px-6">
       <div className="flex items-center gap-4">
@@ -80,8 +83,14 @@ export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
             </div>
           }
           items={[
-            { label: "Hồ sơ", onClick: () => console.log("profile") },
-            { label: "Cài đặt" },
+            // Chèn thêm nút Thoát hiểm lên đầu tiên
+            { 
+              label: "Trở về Nông sản Việt", 
+              onClick: () => router.push("/") 
+            },
+            { divider: true, label: "" },
+            { label: "Hồ sơ cá nhân", onClick: () => console.log("profile") },
+            { label: "Cài đặt", onClick: () => console.log("settings") },
             { divider: true, label: "" },
             { label: "Đăng xuất", danger: true },
           ]}

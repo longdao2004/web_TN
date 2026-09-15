@@ -7,30 +7,34 @@ export const SellerDashboardLayout = ({
 }: {
   children: ReactNode;
 }) => {
-  const sidebarItems = [
+    const sidebarItems = [
     {
-      label: "Thống kê cửa hàng",
+      label: "Thống kê", // Đáp ứng Mục 5
       href: "/seller",
       icon: <BarChart3 className="h-5 w-5" />,
-      isActive: true,
     },
     {
-      label: "Quản lý Đơn hàng",
+      label: "Đơn hàng", // Đáp ứng Mục 4
       href: "/seller/orders",
       icon: <Package className="h-5 w-5" />,
     },
     {
-      label: "Quản lý Sản phẩm",
+      label: "Sản phẩm", // Đáp ứng Mục 2
       href: "/seller/products",
       icon: <Store className="h-5 w-5" />,
     },
     {
-      label: "Khách hàng",
-      href: "/seller/customers",
-      icon: <Users className="h-5 w-5" />,
+      label: "Lô hàng", // Đáp ứng Mục 3a
+      href: "/seller/batches",
+      icon: <Package className="h-5 w-5" />, // Tạm dùng icon Package, bạn có thể đổi icon khác
     },
     {
-      label: "Thiết lập cửa hàng",
+      label: "Chứng nhận", // Đáp ứng Mục 3b
+      href: "/seller/certificates",
+      icon: <Users className="h-5 w-5" />, // Sẽ đổi icon sau
+    },
+    {
+      label: "Cửa hàng", // Đáp ứng Mục 1
       href: "/seller/settings",
       icon: <Settings className="h-5 w-5" />,
     },
