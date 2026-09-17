@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 
 // Tạo sẵn một mảng Dữ liệu giả (Mock Data) để vẽ giao diện
@@ -27,10 +28,10 @@ export default function SellerProductsPage() {
       {/* Tiêu đề và Nút Thêm mới */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Quản lý Sản phẩm</h1>
-        <button className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
+        <Link href="/seller/products/create" className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
           <Plus className="w-5 h-5" />
           Thêm sản phẩm mới
-        </button>
+        </Link>
       </div>
 
       {/* Khung Bảng (Table) hiển thị sản phẩm */}
