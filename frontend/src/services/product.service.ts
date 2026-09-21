@@ -30,6 +30,8 @@ export const productService = {
       image: item.imageUrl || '',
       price: item.batches?.[0]?.price || 0,
       stock: item.batches?.reduce((acc: number, b: any) => acc + b.quantity, 0) || 0,
+      batches: item.batches || [],
+      certificates: item.certificates || [],
       store: item.store?.name || 'Cửa hàng',
       storeName: item.store?.name || 'Cửa hàng',
       province: item.origin || 'Chưa cập nhật',
@@ -113,5 +115,29 @@ export const productService = {
       })) || [],
       relatedProducts: [],
     };
+  },
+  
+  // HÀM MỚI: Thêm sản phẩm (Dùng FormData vì có upload ảnh)
+  createProduct: async (formData: FormData) => {
+    // 1. Lấy token để xác thực Seller
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    
+    // 2. Bắn API
+    const res = await fetch(`${API_URL}/products`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        // LƯU Ý CỰC QUAN TRỌNG: Tuyệt đối KHÔNG set 'Content-Type': 'application/json' ở đây.
+        // Trình duyệt sẽ tự động nhận diện FormData và set Content-Type là multipart/form-data
+      },
+      body: formData,
+    });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Lỗi khi tạo sản phẩm');
+    }
+    
+    return res.json();
   }
 };

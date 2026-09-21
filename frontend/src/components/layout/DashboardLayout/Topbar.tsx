@@ -12,15 +12,23 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui";
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from "@/store/auth.store";
 
 interface TopbarProps {
   onToggleSidebar: () => void;
   title: string;
   breadcrumb?: { label: string; href?: string }[];
-}
+};
 
 export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
   const router = useRouter();
+  const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-[var(--color-border)] bg-white px-4 sm:px-6">
@@ -79,24 +87,22 @@ export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
           align="right"
           trigger={
             <div className="flex items-center gap-2 cursor-pointer hover:ring-2 ring-[var(--color-primary)]/50 rounded-full transition-all">
-              <Avatar fallback="NV" size="sm" />
+              <Avatar src={user?.avatarUrl || ""} fallback={user?.fullName?.charAt(0) || "U"} size="sm" />
             </div>
           }
           items={[
-            // Chèn thêm nút Thoát hiểm lên đầu tiên
             { 
-              label: "Trở về Nông sản Việt", 
+              label: "Trở về Trang chủ", 
               onClick: () => router.push("/") 
             },
             { divider: true, label: "" },
             { label: "Hồ sơ cá nhân", onClick: () => console.log("profile") },
             { label: "Cài đặt", onClick: () => console.log("settings") },
             { divider: true, label: "" },
-            { label: "Đăng xuất", danger: true },
+            { label: "Đăng xuất", danger: true, onClick: handleLogout }, 
           ]}
         />
       </div>
     </header>
   );
 };
-

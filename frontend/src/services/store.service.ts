@@ -1,7 +1,19 @@
 import { Store } from '../types/store';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+// THÊM MỚI: Hàm đính kèm Token để Seller gọi API bảo mật
+const getHeaders = () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
 export const storeService = {
+  // ==========================================
+  // PHẦN 1: CÁC HÀM CŨ CHO KHÁCH HÀNG (GIỮ NGUYÊN)
+  // ==========================================
   getStores: async (filters?: { search?: string, province?: string, sort?: string }): Promise<Store[]> => {
     let url = `${API_URL}/stores`;
     if (filters) {
@@ -51,8 +63,29 @@ export const storeService = {
       rating: 5,
       reviewsCount: 0,
       isFeatured: false,
-      // Format ngày tham gia chuẩn từ Backend
       joinDate: item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : 'Đang cập nhật',
     };
+  },
+
+  // ==========================================
+  // PHẦN 2: THÊM MỚI 2 HÀM DÀNH CHO SELLER
+  // ==========================================
+  getMyStore: async () => {
+    const res = await fetch(`${API_URL}/stores/my-store`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Lỗi lấy thông tin cửa hàng');
+    return res.json();
+  },
+
+  updateMyStore: async (data: { name?: string; description?: string }) => {
+    const res = await fetch(`${API_URL}/stores/my-store`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Lỗi cập nhật cửa hàng');
+    return res.json();
   }
 };
