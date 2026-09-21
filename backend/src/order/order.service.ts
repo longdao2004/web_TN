@@ -81,6 +81,7 @@ export class OrderService {
       },
     });
 
+    // Kiểm tra nếu giỏ hàng trống
     if (!cart || cart.items.length === 0) {
       throw new BadRequestException('Giỏ hàng của bạn đang trống!');
     }
@@ -116,6 +117,7 @@ export class OrderService {
 
       for (const item of cart.items) {
         const latestBatch = item.product.batches[0];
+        // Kiểm tra tồn kho trước khi trừ
         if (latestBatch) {
           if (latestBatch.quantity < item.quantity) {
             throw new BadRequestException(
@@ -124,7 +126,7 @@ export class OrderService {
           }
           await tx.productBatch.update({
             where: { id: latestBatch.id },
-            data: { quantity: latestBatch.quantity - item.quantity },
+            data: { quantity: latestBatch.quantity - item.quantity }, // trừ tồn kho
           });
         }
       }
