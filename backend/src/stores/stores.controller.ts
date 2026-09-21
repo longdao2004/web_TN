@@ -8,7 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
-  Query
+  Query,
 } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';

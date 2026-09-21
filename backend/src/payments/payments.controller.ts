@@ -50,8 +50,10 @@ export class PaymentsController {
   })
   async vnpayReturn(@Query() query: any, @Res() res: any) {
     const result = await this.paymentsService.vnpayReturn(query);
-    
+
     // Redirect về Frontend hiển thị trang thành công / thất bại
-    return res.redirect(`http://localhost:3001/dat-hang-thanh-cong?code=${result.code}&message=${encodeURIComponent(result.message)}&orderId=${result.orderId || ''}`);
+    return res.redirect(
+      `http://localhost:3001/dat-hang-thanh-cong?code=${result.code}&message=${encodeURIComponent(result.message)}&orderId=${result.orderId || ''}`,
+    );
   }
 }

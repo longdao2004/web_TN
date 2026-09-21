@@ -11,8 +11,11 @@ import { CreateOrderDto } from './dto/order.dto';
 export class OrderService {
   constructor(private prisma: PrismaService) {}
 
-    async createOrder(userId: string, dto: CreateOrderDto & { productId?: string; quantity?: number }) {
-        // Trường hợp 1: MUA NGAY (Trực tiếp từ trang chi tiết sản phẩm, không động vào giỏ hàng)
+  async createOrder(
+    userId: string,
+    dto: CreateOrderDto & { productId?: string; quantity?: number },
+  ) {
+    // Trường hợp 1: MUA NGAY (Trực tiếp từ trang chi tiết sản phẩm, không động vào giỏ hàng)
     if (dto.productId && dto.quantity) {
       const { productId, quantity } = dto; // Trích xuất hằng số để TypeScript đảm bảo kiểu number
 
@@ -63,7 +66,6 @@ export class OrderService {
         };
       });
     }
-    
 
     // Trường hợp 2: ĐẶT HÀNG TỪ GIỎ HÀNG (Giữ nguyên như cũ)
     const cart = await this.prisma.cart.findUnique({
@@ -141,6 +143,7 @@ export class OrderService {
     });
   }
 
+  //Truy vấn lịch sử đơn hàng của người dùng
   async getUserOrders(userId: string) {
     const orders = await this.prisma.order.findMany({
       where: { userId },
@@ -162,6 +165,45 @@ export class OrderService {
     if (!orders || orders.length === 0) {
       throw new NotFoundException('Bạn chưa có đơn hàng nào!');
     }
+
+    return orders;
+  }
+
+    async getStoreOrders(userId: string) {
+    // 1. Lấy thông tin cửa hàng của user hiện tại
+    const store = await this.prisma.store.findUnique({
+      where: { ownerId: userId },
+    });
+
+    if (!store) {
+      throw new NotFoundException('Bạn chưa có cửa hàng!');
+    }
+
+    // 2. Lấy các đơn hàng chứa sản phẩm thuộc về cửa hàng này
+    const orders = await this.prisma.order.findMany({
+      where: {
+        items: {
+          some: {
+            product: {
+              storeId: store.id,
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { fullName: true, phone: true } // Lấy thông tin người mua
+        },
+        items: {
+          where: { product: { storeId: store.id } }, // Chỉ lấy đúng các món của store này
+          include: {
+            product: { select: { name: true, imageUrl: true } },
+            batch: true,
+          },
+        },
+      },
+    });
 
     return orders;
   }
@@ -190,7 +232,7 @@ export class OrderService {
           select: {
             fullName: true,
             phone: true,
-          }
+          },
         },
         items: {
           include: {
@@ -206,15 +248,15 @@ export class OrderService {
                         id: true,
                         name: true,
                         logoUrl: true,
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!order) {
@@ -228,7 +270,7 @@ export class OrderService {
     return order;
   }
 
-    // Hủy đơn hàng và tự động hoàn lại số lượng vào kho lô hàng
+  // Hủy đơn hàng và tự động hoàn lại số lượng vào kho lô hàng
   async cancelOrder(orderId: string, userId: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },

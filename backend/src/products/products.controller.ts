@@ -107,7 +107,11 @@ export class ProductsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  update(@Req() req: any, @Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
     checkRole(req, [Role.SELLER, Role.ADMIN]);
     return this.productsService.update(id, updateProductDto);
   }

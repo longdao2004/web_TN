@@ -31,8 +31,8 @@ export class ProductsService {
           create: {
             harvestDate: new Date(harvestDate),
             expiryDate: new Date(expiryDate),
-            quantity: quantity,
-            price: price,
+            quantity: Number(quantity),
+            price: Number(price),
           },
         },
       },
@@ -72,8 +72,12 @@ export class ProductsService {
         some: {
           expiryDate: { gt: new Date() },
           price: {
-            ...(filters.minPrice !== undefined ? { gte: filters.minPrice } : {}),
-            ...(filters.maxPrice !== undefined ? { lte: filters.maxPrice } : {}),
+            ...(filters.minPrice !== undefined
+              ? { gte: filters.minPrice }
+              : {}),
+            ...(filters.maxPrice !== undefined
+              ? { lte: filters.maxPrice }
+              : {}),
           },
         },
       };
@@ -81,7 +85,7 @@ export class ProductsService {
 
     let orderByClause: any = { createdAt: 'desc' };
     if (filters?.sortBy === 'price') {
-      // NOTE: Sorting by relation aggregates (like max/min price in batches) can be complex in Prisma. 
+      // NOTE: Sorting by relation aggregates (like max/min price in batches) can be complex in Prisma.
       // This is a simplified approach, actual implementation might need sorting after fetch or raw query for exact price sorting.
       // We'll skip complex relation sorting here and just rely on default or simple fields.
       orderByClause = undefined; // Will handle in memory if strictly required, or omit for now
@@ -91,42 +95,45 @@ export class ProductsService {
       orderByClause = { createdAt: 'desc' };
     }
 
-    return this.prisma.product.findMany({
-      where: whereClause,
-      include: {
-        category: true,
-        store: true,
-        reviews: {
-          select: { id: true, rating: true }
-        },
-        batches: {
-          where: {
-            expiryDate: { gt: new Date() },
+    return this.prisma.product
+      .findMany({
+        where: whereClause,
+        include: {
+          category: true,
+          store: true,
+          reviews: {
+            select: { id: true, rating: true },
+          },
+          certificates: true,
+          batches: {
+            where: {
+              expiryDate: { gt: new Date() },
+            },
           },
         },
-      },
-      orderBy: orderByClause,
-    }).then(products => {
-      // Manual post-fetch sorting for price if needed since it's nested
-      if (filters?.sortBy === 'price') {
-        return products.sort((a, b) => {
-          const priceA = a.batches?.[0]?.price || 0;
-          const priceB = b.batches?.[0]?.price || 0;
-          return filters.order === 'desc' ? priceB - priceA : priceA - priceB;
-        });
-      }
-      return products;
-    });
+        orderBy: orderByClause,
+      })
+      .then((products) => {
+        // Manual post-fetch sorting for price if needed since it's nested
+        if (filters?.sortBy === 'price') {
+          return products.sort((a, b) => {
+            const priceA = a.batches?.[0]?.price || 0;
+            const priceB = b.batches?.[0]?.price || 0;
+            return filters.order === 'desc' ? priceB - priceA : priceA - priceB;
+          });
+        }
+        return products;
+      });
   }
 
   findOne(id: string) {
     return this.prisma.product.findUnique({
       where: { id },
-      include: { 
+      include: {
         batches: {
-          where: { expiryDate: { gt: new Date() } }
+          where: { expiryDate: { gt: new Date() } },
         },
-        category: true, 
+        category: true,
         store: true,
         reviews: {
           include: {
@@ -134,13 +141,13 @@ export class ProductsService {
               select: {
                 id: true,
                 fullName: true,
-                avatarUrl: true
-              }
-            }
+                avatarUrl: true,
+              },
+            },
           },
-          orderBy: { createdAt: 'desc' }
+          orderBy: { createdAt: 'desc' },
         },
-        certificates: true
+        certificates: true,
       },
     });
   }

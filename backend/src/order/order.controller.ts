@@ -37,6 +37,14 @@ export class OrderController {
     return this.orderService.getUserOrders(userId);
   }
 
+  @Get('store')
+  getStoreOrders(@Request() req: any) {
+    // Chỉ Seller và Admin mới được xem đơn hàng của Store
+    checkRole(req, [Role.SELLER, Role.ADMIN]);
+    const userId = req.user.userId;
+    return this.orderService.getStoreOrders(userId);
+  }
+
   @Get(':id')
   getOrderById(@Request() req: any, @Param('id') orderId: string) {
     checkRole(req, [Role.BUYER]);
@@ -57,7 +65,7 @@ export class OrderController {
     );
   }
 
-    @Patch(':id/cancel')
+  @Patch(':id/cancel')
   cancelOrder(@Request() req: any, @Param('id') orderId: string) {
     checkRole(req, [Role.BUYER]);
     const userId = req.user.userId;

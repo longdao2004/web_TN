@@ -66,7 +66,11 @@ export class StoresService {
     });
   }
 
-  async findAll(filters?: { search?: string, province?: string, sort?: string }) {
+  async findAll(filters?: {
+    search?: string;
+    province?: string;
+    sort?: string;
+  }) {
     const whereClause: any = { deletedAt: null };
 
     if (filters?.search) {
