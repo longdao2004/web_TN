@@ -63,6 +63,7 @@ model Store {
   name        String
   description String?
   logoUrl     String?
+  coverUrl    String?
 
   ownerId String @unique
   owner   User   @relation(fields: [ownerId], references: [id])
@@ -226,3 +227,4 @@ model Review {
   createdAt DateTime  @default(now())
   deletedAt DateTime?
 }
+

@@ -105,11 +105,7 @@ export class ProductsService {
             select: { id: true, rating: true },
           },
           certificates: true,
-          batches: {
-            where: {
-              expiryDate: { gt: new Date() },
-            },
-          },
+          batches: true,
         },
         orderBy: orderByClause,
       })
@@ -130,9 +126,7 @@ export class ProductsService {
     return this.prisma.product.findUnique({
       where: { id },
       include: {
-        batches: {
-          where: { expiryDate: { gt: new Date() } },
-        },
+        batches: true,
         category: true,
         store: true,
         reviews: {

@@ -1,3 +1,4 @@
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import {
   Injectable,
   BadRequestException,
@@ -10,7 +11,10 @@ import { Role } from '../auth/role.enum';
 
 @Injectable()
 export class StoresService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinary: CloudinaryService,
+  ) {}
 
   async create(userId: string, createStoreDto: CreateStoreDto) {
     // Kiểm tra xem người dùng đã có cửa hàng chưa
@@ -58,11 +62,25 @@ export class StoresService {
     return store;
   }
 
-  async update(userId: string, updateStoreDto: UpdateStoreDto) {
+  async update(userId: string, updateStoreDto: UpdateStoreDto, files?: any) {
     const store = await this.getMyStore(userId);
+    let logoUrl = store.logoUrl;
+    if (files?.logo?.[0]) {
+      const uploadResult = await this.cloudinary.uploadImage(files.logo[0]);
+      logoUrl = uploadResult.url;
+    }
+    let coverUrl = (store as any).coverUrl;
+    if (files?.cover?.[0]) {
+      const uploadResult = await this.cloudinary.uploadImage(files.cover[0]);
+      coverUrl = uploadResult.url;
+    }
     return this.prisma.store.update({
       where: { id: store.id },
-      data: updateStoreDto,
+      data: {
+        ...updateStoreDto,
+        logoUrl,
+        coverUrl,
+      } as any,
     });
   }
 
@@ -138,3 +156,8 @@ export class StoresService {
     return { message: 'Đã khóa/xóa cửa hàng thành công' };
   }
 }
+
+
+
+
+

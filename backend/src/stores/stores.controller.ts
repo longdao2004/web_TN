@@ -17,6 +17,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { checkRole } from '../auth/auth.helper';
 import { Role } from '../auth/role.enum';
+import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
+import { UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 
 @ApiTags('stores')
 @Controller('stores')
@@ -40,8 +42,14 @@ export class StoresController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Patch('my-store')
-  update(@Req() req: any, @Body() updateStoreDto: UpdateStoreDto) {
-    return this.storesService.update(req.user.userId, updateStoreDto);
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'logo', maxCount: 1 }, { name: 'cover', maxCount: 1 }]))
+  update(
+    @Req() req: any,
+    @Body() updateStoreDto: UpdateStoreDto,
+    @UploadedFiles() files: any, // Đổi sang 'any' để hết báo lỗi đỏ
+  ) {
+    // Nhớ phải có chữ 'file' ở cuối cùng nhé:
+    return this.storesService.update(req.user.userId, updateStoreDto, files);
   }
 
   // Public API for buyers to see all stores
@@ -68,3 +76,6 @@ export class StoresController {
     return this.storesService.remove(id);
   }
 }
+
+
+
