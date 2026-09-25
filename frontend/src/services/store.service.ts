@@ -34,7 +34,7 @@ export const storeService = {
       slug: item.id,
       name: item.name,
       logo: item.logoUrl || '/images/products/cachuabi.avif',
-      banner: '/images/products/carot.avif',
+      banner: item.coverUrl || '/images/banners/chorau.avif',
       address: item.address || 'Chưa cập nhật',
       description: item.description || '',
       certificates: [],
@@ -55,7 +55,7 @@ export const storeService = {
       slug: item.id,
       name: item.name,
       logo: item.logoUrl || '/images/products/cachuabi.avif',
-      banner: '/images/products/carot.avif',
+      banner: item.coverUrl || '/images/products/carot.avif',
       address: item.address || 'Chưa cập nhật',
       description: item.description || 'Cửa hàng chưa có mô tả.',
       certificates: [],
@@ -79,11 +79,15 @@ export const storeService = {
     return res.json();
   },
 
-  updateMyStore: async (data: { name?: string; description?: string }) => {
+  updateMyStore: async (data: FormData) => {
+    // Không dùng getHeaders() mặc định vì FormData sẽ tự động tạo boundary header
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const res = await fetch(`${API_URL}/stores/my-store`, {
       method: 'PATCH',
-      headers: getHeaders(),
-      body: JSON.stringify(data),
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: data,
     });
     if (!res.ok) throw new Error('Lỗi cập nhật cửa hàng');
     return res.json();
