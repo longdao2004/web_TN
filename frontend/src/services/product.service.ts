@@ -139,5 +139,34 @@ export const productService = {
     }
     
     return res.json();
-  }
+  },
+
+    // Gọi API Xóa sản phẩm
+  updateProduct: async (id: string, data: FormData) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const res = await fetch(`${API_URL}/products/${id}`, {
+      method: "PATCH",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: data,
+    });
+    if (!res.ok) throw new Error("Lỗi khi cập nhật sản phẩm");
+    return res.json();
+  },
+
+  deleteProduct: async (id: string) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const res = await fetch(`${API_URL}/products/${id}`, {
+      method: "DELETE",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+    });
+    if (!res.ok) throw new Error("Lỗi khi xóa sản phẩm");
+    return res.json();
+  },
 };
+
+
+
