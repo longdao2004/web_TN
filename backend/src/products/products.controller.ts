@@ -107,13 +107,15 @@ export class ProductsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('images'))
   update(
     @Req() req: any,
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
+    @UploadedFile() file?: any,
   ) {
     checkRole(req, [Role.SELLER, Role.ADMIN]);
-    return this.productsService.update(id, updateProductDto);
+    return this.productsService.update(id, updateProductDto, file);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -123,3 +125,6 @@ export class ProductsController {
     return this.productsService.remove(id);
   }
 }
+
+
+

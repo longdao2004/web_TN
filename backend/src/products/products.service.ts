@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly cloudinary: CloudinaryService) {}
 
   create(createProductDto: CreateProductDto) {
     // Bóc tách dữ liệu lô hàng ra khỏi thông tin chung của sản phẩm
@@ -146,10 +147,28 @@ export class ProductsService {
     });
   }
 
-  update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, file?: any) {
+    const { price, stock, harvestDate, expiryDate, categoryId, storeId, ...productData } = updateProductDto as any;
+    let imageUrl = undefined;
+    if (file) {
+      const uploadResult = await this.cloudinary.uploadImage(file);
+      imageUrl = uploadResult.url;
+    }
+    
+    const batchUpdateData: any = {};
+    if (price !== undefined) batchUpdateData.price = Number(price);
+    if (stock !== undefined) batchUpdateData.quantity = Number(stock);
+    if (harvestDate) batchUpdateData.harvestDate = new Date(harvestDate);
+    if (expiryDate) batchUpdateData.expiryDate = new Date(expiryDate);
+
     return this.prisma.product.update({
       where: { id },
-      data: updateProductDto, // (Lưu ý: API Update này hiện chỉ cập nhật thông tin chung, chưa xử lý update lô hàng)
+      data: {
+        ...productData,
+        ...(imageUrl ? { imageUrl } : {}),
+        ...(categoryId ? { category: { connect: { id: categoryId } } } : {}),
+        ...(Object.keys(batchUpdateData).length > 0 ? { batches: { updateMany: { where: {}, data: batchUpdateData } } } : {}),
+      },
     });
   }
 
@@ -160,3 +179,7 @@ export class ProductsService {
     });
   }
 }
+
+
+
+
