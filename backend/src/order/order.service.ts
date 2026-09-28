@@ -211,15 +211,34 @@ export class OrderService {
   async updateOrderStatus(orderId: string, status: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
+      include: { items: true }
     });
 
     if (!order) {
       throw new NotFoundException('Không tìm thấy đơn hàng này!');
     }
 
+    if (status === 'CANCELLED' && order.status !== 'CANCELLED') {
+      return this.prisma.$transaction(async (tx) => {
+        const updatedOrder = await tx.order.update({
+          where: { id: orderId },
+          data: { status: 'CANCELLED' },
+        });
+        for (const item of order.items) {
+          if (item.productBatchId) {
+            await tx.productBatch.update({
+              where: { id: item.productBatchId },
+              data: { quantity: { increment: item.quantity } },
+            });
+          }
+        }
+        return updatedOrder;
+      });
+    }
+
     return this.prisma.order.update({
       where: { id: orderId },
-      data: { status: status as OrderStatus },
+      data: { status: status as any },
     });
   }
 

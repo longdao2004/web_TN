@@ -14,6 +14,10 @@ export class StatisticsController {
   @Get('overview')
   async getOverview(@Req() req: any) {
     checkRole(req, [Role.SELLER, Role.ADMIN]);
-    return this.statisticsService.getOverviewStats();
+    // truyền request user id vào service để lấy thống kê
+    return this.statisticsService.getOverviewStats(req.user.userId);
   }
 }
+
+
+
