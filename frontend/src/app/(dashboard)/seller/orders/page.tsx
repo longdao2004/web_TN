@@ -86,7 +86,7 @@ export default function SellerOrdersPage() {
                     <td className="p-4 font-medium text-gray-800">{order.id.slice(0, 8).toUpperCase()}</td>
                     <td className="p-4 text-gray-500">{new Date(order.createdAt).toLocaleString('vi-VN')}</td>
                     <td className="p-4 text-gray-800 font-medium">{order.user?.fullName || 'Khách Ẩn danh'}</td>
-                    <td className="p-4 font-bold text-emerald-600">{order.totalAmount?.toLocaleString('vi-VN')}đ</td>
+                    <td className="p-4 font-bold text-emerald-600">{(order.items?.reduce((sum, item) => sum + item.quantity * item.priceAtPurchase, 0) || 0).toLocaleString('vi-VN')}đ</td>
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusObj.color}`}>
                         {statusObj.text}
@@ -155,7 +155,7 @@ export default function SellerOrdersPage() {
               {/* Tổng kết tiền */}
               <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                 <p className="text-lg font-bold text-gray-800">Tổng thu:</p>
-                <p className="text-2xl font-bold text-emerald-600">{selectedOrder.totalAmount?.toLocaleString('vi-VN')}đ</p>
+                <p className="text-2xl font-bold text-emerald-600">{(selectedOrder.items?.reduce((sum, item) => sum + item.quantity * item.priceAtPurchase, 0) || 0).toLocaleString('vi-VN')}đ</p>
               </div>
             </div>
 
