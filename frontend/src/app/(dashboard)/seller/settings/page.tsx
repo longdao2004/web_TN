@@ -6,6 +6,10 @@ import { storeService } from '@/services/store.service';
 export default function SellerSettingsPage() {
   const [storeName, setStoreName] = useState('');
   const [description, setDescription] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [website, setWebsite] = useState('');
+  const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -22,6 +26,10 @@ export default function SellerSettingsPage() {
         const store = await storeService.getMyStore();
         setStoreName(store.name);
         setDescription(store.description || '');
+        setPhone(store.phone || '');
+        setEmail(store.email || '');
+        setWebsite(store.website || '');
+        setAddress(store.address || '');
         
         if (store.logoUrl) {
           setLogoPreview(store.logoUrl);
@@ -62,6 +70,10 @@ export default function SellerSettingsPage() {
       const formData = new FormData();
       formData.append('name', storeName);
       formData.append('description', description);
+      formData.append('phone', phone);
+      formData.append('email', email);
+      formData.append('website', website);
+      formData.append('address', address);
       if (logoFile) {
         formData.append('logo', logoFile);
       }
@@ -159,11 +171,23 @@ export default function SellerSettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Số điện thoại *</label>
-                <input type="text" defaultValue="0945678901" className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition" />
+                <input 
+                  type="text" 
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Nhập số điện thoại"
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition" 
+                  />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Email hỗ trợ</label>
-                <input type="email" defaultValue="hotro@mocchauxanh.com" className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition" />
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Nhập email hỗ trợ"
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition" 
+                />
               </div>
             </div>
           </div>

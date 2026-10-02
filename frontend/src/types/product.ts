@@ -31,6 +31,7 @@ export interface Product {
   category: string;
   certificate?: string[];
   stock: number;
+  isExpired?: boolean;
   isOrganic: boolean;
   isFeatured: boolean;
   isNew: boolean;

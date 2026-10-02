@@ -20,6 +20,7 @@ interface ProductCardProps {
     image: string;
     badges?: string[];
     unit: string;
+    isExpired?: boolean;
   };
   priority?: boolean;
 }
@@ -79,15 +80,31 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white transition-all hover:shadow-lg hover:-translate-y-1">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
-        <Link href={`/san-pham/${product.id}`}>
+        
+        <Link 
+          href={product.isExpired ? "#" : `/san-pham/${product.id}`}
+          onClick={(e) => product.isExpired && e.preventDefault()}
+          className="block w-full h-full relative"
+        >
           <Image
+            
             src={product.image}
             alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            
+            className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isExpired ? "blur-[2px] grayscale" : ""}`}
+            
             width={500}
             height={500}
             priority={priority}
+          
           />
+          {product.isExpired && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <span className="bg-red-600 text-white font-bold px-4 py-2 rounded shadow-lg text-sm">
+                ĐÃ HẾT HẠN
+              </span>
+            </div>
+          )}
         </Link>
 
         {/* Badges */}
@@ -108,14 +125,13 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
 
       {/* Product Info */}
       <div className="flex flex-1 flex-col p-4">
-        <Link
-          href={`/cua-hang/${product.store}`}
+        <Link href={product.isExpired ? "#" : `/cua-hang/${product.store}`} onClick={(e) => product.isExpired && e.preventDefault()}
           className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:underline mb-1"
         >
           {product.store}
         </Link>
 
-        <Link href={`/san-pham/${product.id}`}>
+        <Link href={product.isExpired ? "#" : `/san-pham/${product.id}`} onClick={(e) => product.isExpired && e.preventDefault()}>
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)] line-clamp-2 hover:text-[var(--color-primary)] transition-colors h-10">
             {product.name}
           </h3>
@@ -150,7 +166,7 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
             size="icon"
             className="h-9 w-9 rounded-full shadow-sm group/btn hover:bg-emerald-500 hover:text-white hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden"
             onClick={handleAddToCart}
-            disabled={isLoading}
+            disabled={isLoading || product.isExpired}
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin text-emerald-500 group-hover/btn:text-white" />

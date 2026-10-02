@@ -69,18 +69,34 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5">
+    <div className={`group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 `}>
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link href={`/san-pham/${product.slug || product.id}`}>
+        
+        <Link 
+          href={product.isExpired ? "#" : `/san-pham/${product.slug || product.id}`}
+          onClick={(e) => product.isExpired && e.preventDefault()}
+          className="block w-full h-full relative"
+        >
           <Image
+            
             src={product.image}
             alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            
+            className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isExpired ? "blur-[2px] grayscale" : ""}`}
+            
             loading="lazy"
             width={500}
             height={500}
+          
           />
+          {product.isExpired && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <span className="bg-red-600 text-white font-bold px-4 py-2 rounded shadow-lg text-sm">
+                ĐÃ HẾT HẠN
+              </span>
+            </div>
+          )}
         </Link>
 
         {/* Badges Overlay */}
@@ -112,8 +128,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
       <div className="flex flex-1 flex-col p-4">
         {/* Store & Location */}
         <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)] mb-1.5">
-          <Link
-            href={`/cua-hang/${product.storeName}`}
+          <Link href={product.isExpired ? "#" : `/cua-hang/${product.storeName}`} onClick={(e) => product.isExpired && e.preventDefault()}
             className="hover:text-[var(--color-primary)] hover:underline truncate max-w-[60%]"
           >
             {product.storeName}
@@ -125,7 +140,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
         </div>
 
         {/* Title */}
-        <Link href={`/san-pham/${product.slug || product.id}`}>
+        <Link href={product.isExpired ? "#" : `/san-pham/${product.slug || product.id}`} onClick={(e) => product.isExpired && e.preventDefault()}>
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)] line-clamp-2 hover:text-[var(--color-primary)] transition-colors h-10">
             {product.name}
           </h3>
@@ -163,11 +178,8 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           </div>
 
           <div className="flex items-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
-            <Link
-              href={`/san-pham/${product.slug || product.id}`}
-              className="flex-1"
-            >
-              <Button className="w-full h-9 text-xs" variant="primary">
+            <Link href={product.isExpired ? "#" : `/san-pham/${product.slug || product.id}`} className="flex-1" onClick={(e) => product.isExpired && e.preventDefault()}>
+              <Button className="w-full h-9 text-xs" variant="primary" disabled={product.isExpired}>
                 Xem chi tiết
               </Button>
             </Link>
@@ -176,7 +188,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
               variant="outline"
               className="h-9 w-9 shrink-0 group/btn hover:bg-emerald-500 hover:text-white hover:border-emerald-500 active:scale-95 transition-all duration-300 relative overflow-hidden"
               onClick={handleAddToCart}
-              disabled={isLoading}
+              disabled={isLoading || product.isExpired}
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-emerald-500 group-hover/btn:text-white" />

@@ -25,6 +25,8 @@ import {
 import { storeService } from '@/services/store.service';
 import { productService } from '@/services/product.service';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   try {

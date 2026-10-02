@@ -86,7 +86,8 @@ export const ProductActions = ({ product }: { product: Product }) => {
         onBuyNow={handleBuyNow}
         onFavorite={() => {}} // Removed from UI
         onShare={() => {}} // Removed from UI
-        disabled={product.stock === 0}
+        disabled={product.stock === 0 || product.isExpired}
+        isExpired={product.isExpired}
       />
     </div>
   );

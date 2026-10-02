@@ -8,6 +8,7 @@ interface ActionButtonsProps {
   onFavorite: () => void;
   onShare: () => void;
   disabled?: boolean;
+  isExpired?: boolean;
 }
 
 export const ActionButtons = ({
@@ -16,6 +17,7 @@ export const ActionButtons = ({
   onFavorite,
   onShare,
   disabled,
+  isExpired,
 }: ActionButtonsProps) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
@@ -27,7 +29,7 @@ export const ActionButtons = ({
         disabled={disabled}
       >
         <ShoppingCart className="mr-2 h-5 w-5" />
-        Thêm vào giỏ
+        {isExpired ? "🔴 ĐÃ HẾT HẠN" : "Thêm vào giỏ"}
       </Button>
 
       <Button
@@ -37,7 +39,7 @@ export const ActionButtons = ({
         onClick={onBuyNow}
         disabled={disabled}
       >
-        Mua ngay
+        {isExpired ? "Không thể mua" : "Mua ngay"}
       </Button>
     </div>
   );

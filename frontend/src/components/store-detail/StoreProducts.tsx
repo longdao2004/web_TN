@@ -29,7 +29,8 @@ export const StoreProducts = ({ products }: StoreProductsProps) => {
               reviews: product.reviewCount || 0,
               store: product.storeName || "Cửa hàng",
               image: product.image || "/images/products/cachuabi.avif",
-              unit: product.unit || "kg"
+              unit: product.unit || "kg",
+              isExpired: product.isExpired
             }} 
           />
         ))}
