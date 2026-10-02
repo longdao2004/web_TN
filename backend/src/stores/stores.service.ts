@@ -50,7 +50,7 @@ export class StoresService {
       where: { ownerId: userId, deletedAt: null },
       include: {
         _count: {
-          select: { products: true },
+          select: { products: { where: { deletedAt: null } } },
         },
       },
     });
@@ -113,7 +113,7 @@ export class StoresService {
           select: { fullName: true, email: true },
         },
         _count: {
-          select: { products: true },
+          select: { products: { where: { deletedAt: null } } },
         },
       },
       orderBy: orderByClause,
@@ -128,7 +128,7 @@ export class StoresService {
           select: { fullName: true, email: true },
         },
         _count: {
-          select: { products: true },
+          select: { products: { where: { deletedAt: null } } },
         },
       },
     });

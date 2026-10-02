@@ -101,7 +101,7 @@ export class ProductsService {
         where: whereClause,
         include: {
           category: true,
-          store: true,
+          store: { include: { _count: { select: { products: { where: { deletedAt: null } } } } } },
           reviews: {
             select: { id: true, rating: true },
           },
@@ -129,7 +129,7 @@ export class ProductsService {
       include: {
         batches: true,
         category: true,
-        store: true,
+        store: { include: { _count: { select: { products: { where: { deletedAt: null } } } } } },
         reviews: {
           include: {
             user: {

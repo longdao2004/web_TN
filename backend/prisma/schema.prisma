@@ -65,6 +65,12 @@ model Store {
   logoUrl     String?
   coverUrl    String?
 
+    // THÃŠM 4 DÃ’NG NÃ€Y VÃ€O:
+  phone       String?
+  email       String?
+  website     String?
+  address     String?
+
   ownerId String @unique
   owner   User   @relation(fields: [ownerId], references: [id])
 
@@ -123,6 +129,8 @@ model ProductBatch {
   expiryDate  DateTime
   quantity    Int
   price       Float
+  specification String?
+  storageCondition String?
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
@@ -194,7 +202,7 @@ model OrderItem {
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
-  // Nút thắt đã được gỡ: Liên kết thẳng với Lô hàng cụ thể
+  // NÃºt tháº¯t Ä‘Ã£ Ä‘Æ°á»£c gá»¡: LiÃªn káº¿t tháº³ng vá»›i LÃ´ hÃ ng cá»¥ thá»ƒ
   productBatchId String
   batch          ProductBatch @relation(fields: [productBatchId], references: [id])
 }
@@ -227,4 +235,5 @@ model Review {
   createdAt DateTime  @default(now())
   deletedAt DateTime?
 }
+
 
