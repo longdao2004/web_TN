@@ -163,7 +163,7 @@ export class OrderService {
     });
 
     if (!orders || orders.length === 0) {
-      throw new NotFoundException('Bạn chưa có đơn hàng nào!');
+      return [];
     }
 
     return orders;
