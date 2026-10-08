@@ -53,7 +53,7 @@ export const Header = () => {
               </button>
               <Link href="/" className="flex items-center gap-2">
                 <Image
-                  src="/images/logos/logo.png"
+                  src="/images/logos/screen.png"
                   alt="AgriMarket Logo"
                   width={240}
                   height={64}

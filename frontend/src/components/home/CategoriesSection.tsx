@@ -17,7 +17,7 @@ export const CategoriesSection = () => {
     const lowerName = name.toLowerCase();
     if (lowerName.includes("sữa")) return "/images/products/sua.jpg";
     if (lowerName.includes("sấy")) return "/images/products/hoaquasay.jpg";
-    if (lowerName.includes("vùng miền") || lowerName.includes("đặc sản")) return "/images/products/vingmien.jpg";
+    if (lowerName.includes("vùng miền") || lowerName.includes("đặc sản")) return "/images/products/hoaqua.avif";
     if (lowerName.includes("rau") || lowerName.includes("củ")) return "/images/categories/carot.avif";
     if (lowerName.includes("trái cây") || lowerName.includes("quả")) return "/images/categories/traicay.avif";
     if (lowerName.includes("thịt")) return "/images/categories/thit.avif";

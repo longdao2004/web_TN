@@ -1,37 +1,37 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { User, Mail, Phone, Lock, Loader2 } from 'lucide-react';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { Checkbox } from '../ui/Checkbox';
-import { PasswordInput } from './PasswordInput';
-import { SocialLogin } from './SocialLogin';
-import { AuthDivider } from './AuthDivider';
-import { authService } from '@/services/auth.service';
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { User, Mail, Phone, Lock, Loader2 } from "lucide-react";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
+import { Checkbox } from "../ui/Checkbox";
+import { PasswordInput } from "./PasswordInput";
+import { SocialLogin } from "./SocialLogin";
+import { AuthDivider } from "./AuthDivider";
+import { authService } from "@/services/auth.service";
 
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 export const RegisterForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
     agreeTerms: false,
   });
   const [errors, setErrors] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    agreeTerms: '',
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    agreeTerms: "",
   });
 
   const validate = () => {
@@ -40,68 +40,68 @@ export const RegisterForm = () => {
 
     // Họ và tên
     if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Vui lòng nhập họ và tên';
+      newErrors.fullName = "Vui lòng nhập họ và tên";
       isValid = false;
     } else {
-      newErrors.fullName = '';
+      newErrors.fullName = "";
     }
 
     // Email
     if (!formData.email) {
-      newErrors.email = 'Vui lòng nhập địa chỉ email';
+      newErrors.email = "Vui lòng nhập địa chỉ email";
       isValid = false;
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
-        newErrors.email = 'Email không hợp lệ';
+        newErrors.email = "Email không hợp lệ";
         isValid = false;
       } else {
-        newErrors.email = '';
+        newErrors.email = "";
       }
     }
 
     // Số điện thoại
     if (!formData.phone) {
-      newErrors.phone = 'Vui lòng nhập số điện thoại';
+      newErrors.phone = "Vui lòng nhập số điện thoại";
       isValid = false;
     } else {
       const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
-      if (!phoneRegex.test(formData.phone.replace(/\s+/g, ''))) {
-        newErrors.phone = 'Vui lòng nhập số điện thoại hợp lệ';
+      if (!phoneRegex.test(formData.phone.replace(/\s+/g, ""))) {
+        newErrors.phone = "Vui lòng nhập số điện thoại hợp lệ";
         isValid = false;
       } else {
-        newErrors.phone = '';
+        newErrors.phone = "";
       }
     }
 
     // Mật khẩu
     if (!formData.password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
+      newErrors.password = "Vui lòng nhập mật khẩu";
       isValid = false;
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
+      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự";
       isValid = false;
     } else {
-      newErrors.password = '';
+      newErrors.password = "";
     }
 
     // Xác nhận mật khẩu
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Vui lòng nhập lại mật khẩu';
+      newErrors.confirmPassword = "Vui lòng nhập lại mật khẩu";
       isValid = false;
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
       isValid = false;
     } else {
-      newErrors.confirmPassword = '';
+      newErrors.confirmPassword = "";
     }
 
     // Điều khoản
     if (!formData.agreeTerms) {
-      newErrors.agreeTerms = 'Vui lòng đồng ý với điều khoản sử dụng';
+      newErrors.agreeTerms = "Vui lòng đồng ý với điều khoản sử dụng";
       isValid = false;
     } else {
-      newErrors.agreeTerms = '';
+      newErrors.agreeTerms = "";
     }
 
     setErrors(newErrors);
@@ -110,7 +110,7 @@ export const RegisterForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
 
     setIsLoading(true);
@@ -120,16 +120,17 @@ export const RegisterForm = () => {
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
+        phone: formData.phone,
       });
 
-      toast.success('Đăng ký thành công!', {
-        description: 'Tài khoản của bạn đã được tạo thành công.'
+      toast.success("Đăng ký thành công!", {
+        description: "Tài khoản của bạn đã được tạo thành công.",
       });
       // Chuyển hướng tới trang đăng nhập sau khi đăng ký thành công
-      router.push('/dang-nhap');
+      router.push("/dang-nhap");
     } catch (error: any) {
-      toast.error('Đăng ký thất bại', {
-        description: error.message || 'Đã có lỗi xảy ra, vui lòng thử lại sau.'
+      toast.error("Đăng ký thất bại", {
+        description: error.message || "Đã có lỗi xảy ra, vui lòng thử lại sau.",
       });
     } finally {
       setIsLoading(false);
@@ -140,18 +141,20 @@ export const RegisterForm = () => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
     // Xóa lỗi khi người dùng nhập liệu
     if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-3xl font-bold tracking-tight text-gray-900">Đăng ký tài khoản</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+          Đăng ký tài khoản
+        </h2>
         <p className="mt-2 text-gray-600">
           Tạo tài khoản để bắt đầu mua sắm nông sản sạch.
         </p>
@@ -160,7 +163,10 @@ export const RegisterForm = () => {
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         {/* Full Name */}
         <div className="space-y-1">
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="fullName"
+            className="block text-sm font-medium text-gray-700"
+          >
             Họ và tên
           </label>
           <div className="relative">
@@ -175,9 +181,9 @@ export const RegisterForm = () => {
               placeholder="Nhập họ và tên..."
               value={formData.fullName}
               onChange={handleChange}
-              className={`pl-10 ${errors.fullName ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+              className={`pl-10 ${errors.fullName ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
               aria-invalid={!!errors.fullName}
-              aria-describedby={errors.fullName ? 'fullName-error' : undefined}
+              aria-describedby={errors.fullName ? "fullName-error" : undefined}
             />
           </div>
           {errors.fullName && (
@@ -189,7 +195,10 @@ export const RegisterForm = () => {
 
         {/* Email */}
         <div className="space-y-1">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
             Email
           </label>
           <div className="relative">
@@ -204,9 +213,9 @@ export const RegisterForm = () => {
               placeholder="Nhập địa chỉ email..."
               value={formData.email}
               onChange={handleChange}
-              className={`pl-10 ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+              className={`pl-10 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
               aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? 'email-error' : undefined}
+              aria-describedby={errors.email ? "email-error" : undefined}
             />
           </div>
           {errors.email && (
@@ -218,7 +227,10 @@ export const RegisterForm = () => {
 
         {/* Phone */}
         <div className="space-y-1">
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="phone"
+            className="block text-sm font-medium text-gray-700"
+          >
             Số điện thoại
           </label>
           <div className="relative">
@@ -233,9 +245,9 @@ export const RegisterForm = () => {
               placeholder="Nhập số điện thoại..."
               value={formData.phone}
               onChange={handleChange}
-              className={`pl-10 ${errors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+              className={`pl-10 ${errors.phone ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
               aria-invalid={!!errors.phone}
-              aria-describedby={errors.phone ? 'phone-error' : undefined}
+              aria-describedby={errors.phone ? "phone-error" : undefined}
             />
           </div>
           {errors.phone && (
@@ -247,7 +259,10 @@ export const RegisterForm = () => {
 
         {/* Password */}
         <div className="space-y-1">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700"
+          >
             Mật khẩu
           </label>
           <div className="relative">
@@ -261,9 +276,9 @@ export const RegisterForm = () => {
               placeholder="Nhập mật khẩu..."
               value={formData.password}
               onChange={handleChange}
-              className={`pl-10 ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+              className={`pl-10 ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
               aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? 'password-error' : undefined}
+              aria-describedby={errors.password ? "password-error" : undefined}
             />
           </div>
           {errors.password && (
@@ -275,7 +290,10 @@ export const RegisterForm = () => {
 
         {/* Confirm Password */}
         <div className="space-y-1">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-gray-700"
+          >
             Xác nhận mật khẩu
           </label>
           <div className="relative">
@@ -289,9 +307,11 @@ export const RegisterForm = () => {
               placeholder="Nhập lại mật khẩu..."
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`pl-10 ${errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+              className={`pl-10 ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}`}
               aria-invalid={!!errors.confirmPassword}
-              aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
+              aria-describedby={
+                errors.confirmPassword ? "confirmPassword-error" : undefined
+              }
             />
           </div>
           {errors.confirmPassword && (
@@ -312,16 +332,25 @@ export const RegisterForm = () => {
                 onChange={handleChange}
               />
             </div>
-            <label htmlFor="agreeTerms" className="text-sm text-gray-600 leading-snug cursor-pointer select-none">
-              Tôi đồng ý với{' '}
-              <Link href="#" className="font-medium text-emerald-600 hover:text-emerald-500 hover:underline">
+            <label
+              htmlFor="agreeTerms"
+              className="text-sm text-gray-600 leading-snug cursor-pointer select-none"
+            >
+              Tôi đồng ý với{" "}
+              <Link
+                href="#"
+                className="font-medium text-emerald-600 hover:text-emerald-500 hover:underline"
+              >
                 Điều khoản sử dụng
-              </Link>
-              {' '}và{' '}
-              <Link href="#" className="font-medium text-emerald-600 hover:text-emerald-500 hover:underline">
+              </Link>{" "}
+              và{" "}
+              <Link
+                href="#"
+                className="font-medium text-emerald-600 hover:text-emerald-500 hover:underline"
+              >
                 Chính sách bảo mật
-              </Link>
-              {' '}của AgriMarket.
+              </Link>{" "}
+              của AgriMarket.
             </label>
           </div>
           {errors.agreeTerms && (
@@ -342,7 +371,7 @@ export const RegisterForm = () => {
               Đang xử lý...
             </span>
           ) : (
-            'Đăng ký'
+            "Đăng ký"
           )}
         </Button>
       </form>
@@ -352,7 +381,7 @@ export const RegisterForm = () => {
       <SocialLogin />
 
       <div className="mt-8 text-center text-sm text-gray-600">
-        Đã có tài khoản?{' '}
+        Đã có tài khoản?{" "}
         <Link
           href="/dang-nhap"
           className="font-medium text-emerald-600 hover:text-emerald-500 hover:underline transition-colors"
