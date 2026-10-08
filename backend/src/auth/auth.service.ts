@@ -39,6 +39,7 @@ export class AuthService {
         password: hashedPassword,
         fullName: registerDto.fullName,
         role: 'BUYER',
+        phone: registerDto.phone,
       },
     });
 
