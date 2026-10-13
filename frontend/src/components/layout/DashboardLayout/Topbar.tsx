@@ -13,6 +13,7 @@ import {
 } from "@/components/ui";
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from "@/store/auth.store";
+import { SellerNotificationPopover } from "./SellerNotificationPopover";
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -72,15 +73,8 @@ export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Notifications */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative text-gray-500 hover:text-gray-900"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500"></span>
-        </Button>
+        {/* Notifications: Đã nâng cấp thành Popover động */}
+        <SellerNotificationPopover />
 
         {/* User Menu */}
         <Dropdown
