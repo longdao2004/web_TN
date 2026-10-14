@@ -1,17 +1,16 @@
-import React from 'react';
+import React from "react";
 import {
   HeroSection,
   CategoriesSection,
-  FeaturedProductsSection,
-  NewProductsSection,
+  ProductTabsSection, // <-- Khối Tabs Mới Xịn Xò
   PromoBannerSection,
   StoresSection,
   BuyingProcessSection,
   BenefitsSection,
   ReviewsSection,
   NewsSection,
-  NewsletterSection
-} from '@/components/home';
+  NewsletterSection,
+} from "@/components/home";
 
 export default function HomePage() {
   return (
@@ -19,9 +18,11 @@ export default function HomePage() {
       <HeroSection />
       <BenefitsSection />
       <CategoriesSection />
-      <FeaturedProductsSection />
+      
+      {/* KHỐI SẢN PHẨM TABS THÔNG MINH (THAY THẾ 2 KHỐI CŨ) */}
+      <ProductTabsSection />
+
       <PromoBannerSection />
-      <NewProductsSection />
       <StoresSection />
       <BuyingProcessSection />
       <ReviewsSection />

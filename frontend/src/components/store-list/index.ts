@@ -5,3 +5,4 @@ export * from './StoreCard';
 export * from './StoreGrid';
 export * from './FeaturedStores';
 export * from './StorePagination';
+export * from "./RegisterStoreBanner";

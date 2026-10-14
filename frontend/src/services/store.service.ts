@@ -97,5 +97,25 @@ export const storeService = {
     });
     if (!res.ok) throw new Error('Lỗi cập nhật cửa hàng');
     return res.json();
-  }
+  },
+
+    // THÊM HÀM NÀY: Dành cho Buyer đăng ký mở gian hàng mới
+  createStore: async (data: {
+    name: string;
+    description?: string;
+    address?: string;
+    phone?: string;
+    email?: string;
+  }) => {
+    const res = await fetch(`${API_URL}/stores`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Lỗi khi tạo cửa hàng');
+    }
+    return res.json();
+  },
 };

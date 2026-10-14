@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Store, Star, ChevronRight } from "lucide-react";
 import { Order } from "@/types/order";
-import Image from "next/image";
+import { Avatar } from "@/components/ui";
 
 interface StoreInformationProps {
   store: Order["store"];
@@ -19,18 +19,13 @@ export const StoreInformation = ({ store }: StoreInformationProps) => {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-100 shrink-0">
-          <Image
-            src={
-              store.logo ||
-              "/images/products/cayxuongrong.avif"
-            }
-            alt={store.name}
-            className="w-full h-full object-cover"
-            width={500}
-            height={500}
-          />
-        </div>
+        {/* Avatar hiển thị logo thật hoặc chữ cái đại diện */}
+        <Avatar
+          src={store.logo}
+          fallback={store.name}
+          size="xl"
+          className="border-2 border-gray-100 shrink-0"
+        />
 
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-gray-900 truncate">{store.name}</h3>

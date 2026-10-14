@@ -45,7 +45,9 @@ const generateOrderTimeline = (status: string): TimelineStep[] => {
     {
       id: "2",
       label: "Đang đóng gói",
-      isCompleted: ["PACKING", "SHIPPING", "COMPLETED", "DELIVERED"].includes(status),
+      isCompleted: ["PACKING", "SHIPPING", "COMPLETED", "DELIVERED"].includes(
+        status,
+      ),
       isActive: status === "PACKING",
     },
     {
@@ -66,7 +68,7 @@ const generateOrderTimeline = (status: string): TimelineStep[] => {
 export default function OrderTrackingPage() {
   const params = useParams();
   const id = params.id as string;
-  
+
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -74,7 +76,7 @@ export default function OrderTrackingPage() {
   const fetchOrder = async () => {
     try {
       const foundOrder = await orderService.getOrderById(id);
-      
+
       if (foundOrder) {
         // [Thực tế] Lấy thông tin cửa hàng thực tế từ sản phẩm trong đơn
         const firstStore = foundOrder.items?.[0]?.batch?.product?.store;
@@ -82,27 +84,39 @@ export default function OrderTrackingPage() {
         // Ánh xạ dữ liệu BE về định dạng FE cần
         setOrder({
           id: foundOrder.id,
+          code: `AGRI-${foundOrder.id.split("-")[0].toUpperCase()}`, // 👉 THÊM DÒNG NÀY ĐỂ HIỆN MÃ ĐƠN
           status: foundOrder.status,
-          createdAt: foundOrder.createdAt,
+          createdAt: new Intl.DateTimeFormat("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }).format(new Date(foundOrder.createdAt)), // (Tùy chọn: format ngày giờ đẹp mắt)
           totalAmount: foundOrder.totalAmount,
           products: foundOrder.items.map((item: any) => ({
             id: item.batch?.product?.id || item.productId,
             name: item.batch?.product?.name || "Sản phẩm",
             price: item.priceAtPurchase,
             quantity: item.quantity,
-            image: item.batch?.product?.imageUrl || "/images/products/cachuabi.avif",
+            image:
+              item.batch?.product?.imageUrl || "/images/products/cachuabi.avif",
           })),
           store: {
-            name: firstStore?.name || "Cửa hàng Nông sản", 
+            name: firstStore?.name || "Cửa hàng Nông sản",
             slug: firstStore?.id || "",
+            logo: firstStore?.logoUrl || undefined, // ✅ Dòng này bạn đã làm đúng rồi
           },
           deliveryInfo: {
             name: foundOrder.user?.fullName || "Khách hàng",
             phone: foundOrder.user?.phone || "Không có",
             address: foundOrder.shippingAddress || "Chưa cung cấp",
-            trackingNumber: `AGRI-${foundOrder.id.split('-')[0].toUpperCase()}`,
+            trackingNumber: `AGRI-${foundOrder.id.split("-")[0].toUpperCase()}`,
           },
-          paymentMethod: foundOrder.paymentMethod === "VNPAY" ? "VNPay" : "Thanh toán khi nhận hàng (COD)",
+          paymentMethod:
+            foundOrder.paymentMethod === "VNPAY"
+              ? "VNPay"
+              : "Thanh toán khi nhận hàng (COD)",
           shippingFee: 0,
           discount: 0,
         });
@@ -121,11 +135,17 @@ export default function OrderTrackingPage() {
   }, [id]);
 
   if (isLoading) {
-    return <div className="text-center py-12">Đang tải thông tin đơn hàng...</div>;
+    return (
+      <div className="text-center py-12">Đang tải thông tin đơn hàng...</div>
+    );
   }
 
   if (!order) {
-    return <div className="text-center py-12 text-red-500">Đơn hàng không tồn tại.</div>;
+    return (
+      <div className="text-center py-12 text-red-500">
+        Đơn hàng không tồn tại.
+      </div>
+    );
   }
 
   return (
@@ -140,7 +160,9 @@ export default function OrderTrackingPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/tai-khoan/don-hang">Đơn hàng của tôi</BreadcrumbLink>
+                <BreadcrumbLink href="/tai-khoan/don-hang">
+                  Đơn hàng của tôi
+                </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -161,8 +183,12 @@ export default function OrderTrackingPage() {
             <div className="lg:col-span-8 flex flex-col gap-6">
               <PurchasedProducts products={order.products} />
               <StoreInformation store={order.store} />
-              {(order.status === "COMPLETED" || order.status === "DELIVERED") && (
-                <ReviewSection status={order.status} products={order.products} />
+              {(order.status === "COMPLETED" ||
+                order.status === "DELIVERED") && (
+                <ReviewSection
+                  status={order.status}
+                  products={order.products}
+                />
               )}
             </div>
 
@@ -173,8 +199,8 @@ export default function OrderTrackingPage() {
             </div>
           </div>
 
-          <ActionButtons 
-            storeSlug={order.store?.slug} 
+          <ActionButtons
+            storeSlug={order.store?.slug}
             orderId={order.id}
             orderStatus={order.status}
             onOrderCancelled={() => fetchOrder()}

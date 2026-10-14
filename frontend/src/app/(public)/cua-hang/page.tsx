@@ -10,12 +10,11 @@ import {
 } from "@/components/ui";
 
 import {
-  StoreHero,
   StoreSearch,
-  StoreFilters,
   StoreGrid,
   FeaturedStores,
   StorePagination,
+  RegisterStoreBanner,
 } from "@/components/store-list";
 
 import { storeService } from "@/services/store.service";
@@ -23,15 +22,7 @@ import { storeService } from "@/services/store.service";
 export const metadata: Metadata = {
   title: "Danh sách Cửa hàng nông sản | AgriMarket",
   description:
-    "Khám phá hàng trăm cửa hàng, nhà vườn và hợp tác xã uy tín cung cấp nông sản sạch trên toàn quốc.",
-  openGraph: {
-    title: "Danh sách Cửa hàng nông sản | AgriMarket",
-    description:
-      "Khám phá hàng trăm cửa hàng, nhà vườn và hợp tác xã uy tín cung cấp nông sản sạch trên toàn quốc.",
-    images: [
-      "/images/products/thucan.avif",
-    ],
-  },
+    "Khám phá các nhà vườn, trang trại và hợp tác xã uy tín cung cấp nông sản sạch trên toàn quốc.",
 };
 
 type Props = {
@@ -43,35 +34,31 @@ export default async function StoreListPage({ searchParams }: Props) {
   let error = null;
 
   const resolvedParams = await searchParams;
-  const search = typeof resolvedParams.search === 'string' ? resolvedParams.search : undefined;
-  const province = typeof resolvedParams.province === 'string' ? resolvedParams.province : undefined;
-  const sort = typeof resolvedParams.sort === 'string' ? resolvedParams.sort : undefined;
+  const search = typeof resolvedParams.search === "string" ? resolvedParams.search : undefined;
 
   try {
-    stores = await storeService.getStores({ search, province, sort });
+    stores = await storeService.getStores({ search });
   } catch (err: any) {
     error = err.message || "Lỗi tải danh sách cửa hàng";
   }
 
   const featuredStores = stores.filter((s: any) => s.isFeatured);
 
-  // Phân trang ở Client side dựa vào searchParams
-  const page = typeof resolvedParams.page === 'string' ? Number(resolvedParams.page) : 1;
+  // Phân trang
+  const page = typeof resolvedParams.page === "string" ? Number(resolvedParams.page) : 1;
   const itemsPerPage = 8;
   const totalItems = stores.length;
-  
-  // Cắt mảng stores theo trang hiện tại
   const paginatedStores = stores.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
-    <div className="bg-gray-50/50 min-h-screen pb-12 overflow-x-hidden">
+    <div className="bg-gray-50/50 min-h-screen pb-16 overflow-x-hidden">
       <PageContainer>
-        {/* Đường dẫn (Breadcrumb) */}
+        {/* Đường dẫn Breadcrumb */}
         <div className="py-4 sm:py-6">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">Trang chủ </BreadcrumbLink>
+                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -81,8 +68,8 @@ export default async function StoreListPage({ searchParams }: Props) {
           </Breadcrumb>
         </div>
 
-        {/* Phần Hero (Banner) */}
-        <StoreHero />
+        {/* DUY NHẤT 1 BANNER MỚI TUYỆT ĐẸP Ở ĐẦU TRANG */}
+        <RegisterStoreBanner />
 
         {error ? (
           <div className="py-20 text-center text-red-500 bg-white rounded-xl shadow-sm border border-red-100 mt-6">
@@ -90,22 +77,16 @@ export default async function StoreListPage({ searchParams }: Props) {
           </div>
         ) : (
           <>
-            {/* Cửa hàng nổi bật */}
+            {/* Cửa hàng nổi bật (nếu có) */}
             {featuredStores.length > 0 && <FeaturedStores stores={featuredStores} />}
 
-            {/* Thanh tìm kiếm */}
-            <StoreSearch />
+            {/* Thanh tìm kiếm tên cửa hàng */}
+            
 
-            {/* Lưới nội dung chính */}
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mt-4">
-              {/* Thanh bên Bộ lọc */}
-              <div className="w-full lg:w-72 shrink-0">
-                <StoreFilters />
-              </div>
-
-              {/* Lưới Cửa hàng */}
-              <div className="flex-1 min-w-0">
-                <StoreGrid stores={paginatedStores} />
+            {/* Danh sách Cửa hàng Full-width */}
+            <div>
+              <StoreGrid stores={paginatedStores} />
+              <div className="mt-8">
                 <StorePagination totalItems={totalItems} itemsPerPage={itemsPerPage} />
               </div>
             </div>

@@ -9,3 +9,4 @@ export * from './BenefitsSection';
 export * from './ReviewsSection';
 export * from './NewsSection';
 export * from './NewsletterSection';
+export * from "./ProductTabsSection";

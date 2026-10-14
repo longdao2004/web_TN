@@ -25,7 +25,10 @@ interface ProductCardProps {
   priority?: boolean;
 }
 
-export const ProductCard = ({ product, priority = false }: ProductCardProps) => {
+export const ProductCard = ({
+  product,
+  priority = false,
+}: ProductCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
@@ -80,23 +83,18 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white transition-all hover:shadow-lg hover:-translate-y-1">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-100">
-        
-        <Link 
+        <Link
           href={product.isExpired ? "#" : `/san-pham/${product.id}`}
           onClick={(e) => product.isExpired && e.preventDefault()}
           className="block w-full h-full relative"
         >
           <Image
-            
             src={product.image}
             alt={product.name}
-            
             className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isExpired ? "blur-[2px] grayscale" : ""}`}
-            
             width={500}
             height={500}
             priority={priority}
-          
           />
           {product.isExpired && (
             <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -125,13 +123,18 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
 
       {/* Product Info */}
       <div className="flex flex-1 flex-col p-4">
-        <Link href={product.isExpired ? "#" : `/cua-hang/${product.store}`} onClick={(e) => product.isExpired && e.preventDefault()}
+        <Link
+          href={product.isExpired ? "#" : `/cua-hang/${product.store}`}
+          onClick={(e) => product.isExpired && e.preventDefault()}
           className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:underline mb-1"
         >
           {product.store}
         </Link>
 
-        <Link href={product.isExpired ? "#" : `/san-pham/${product.id}`} onClick={(e) => product.isExpired && e.preventDefault()}>
+        <Link
+          href={product.isExpired ? "#" : `/san-pham/${product.id}`}
+          onClick={(e) => product.isExpired && e.preventDefault()}
+        >
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)] line-clamp-2 hover:text-[var(--color-primary)] transition-colors h-10">
             {product.name}
           </h3>
@@ -145,37 +148,42 @@ export const ProductCard = ({ product, priority = false }: ProductCardProps) => 
           <span className="text-xs text-gray-400">({product.reviews})</span>
         </div>
 
-        <div className="mt-4 flex items-end justify-between">
-          <div>
-            <div className="flex items-end gap-2">
-              <span className="text-lg font-bold text-[var(--color-primary)]">
-                {formatPrice(product.price)}
-              </span>
-              <span className="text-xs text-gray-500 mb-1">
-                /{product.unit}
-              </span>
+        <div className="mt-auto pt-3 flex items-center justify-between gap-2">
+          {/* Cột giá tiền: Giá to ở trên, đơn vị tính ở dòng dưới để không bao giờ bị chật */}
+          <div className="flex flex-col min-w-0">
+            <span className="text-base sm:text-lg font-bold text-emerald-700 leading-tight truncate">
+              {formatPrice(product.price)}
+            </span>
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-gray-400">
+              <span className="truncate">/{product.unit}</span>
+              {product.originalPrice && (
+                <span className="line-through truncate">
+                  {formatPrice(product.originalPrice)}
+                </span>
+              )}
             </div>
-            {product.originalPrice && (
-              <span className="text-xs text-gray-400 line-through">
-                {formatPrice(product.originalPrice)}
-              </span>
-            )}
           </div>
 
-          <Button
-            size="icon"
-            className="h-9 w-9 rounded-full shadow-sm group/btn hover:bg-emerald-500 hover:text-white hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden"
-            onClick={handleAddToCart}
-            disabled={isLoading || product.isExpired}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-emerald-500 group-hover/btn:text-white" />
-            ) : (
-              <ShoppingCart className="h-4 w-4 transition-transform duration-300 group-active/btn:scale-75 group-active/btn:-translate-y-1" />
-            )}
-            <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-0 group-active/btn:animate-ping"></span>
-          </Button>
-        </div>
+  {/* Nút giỏ hàng nhỏ gọn, viền xám không màu, chỉ đổi xanh khi hover */}
+  <button
+    type="button"
+    onClick={handleAddToCart}
+    disabled={isLoading || product.isExpired}
+    className={`h-7 w-7 shrink-0 rounded-lg flex items-center justify-center border transition-all duration-200 ${
+      product.isExpired
+        ? "border-gray-200 bg-gray-50/50 text-gray-300 cursor-not-allowed"
+        : "border-gray-200 bg-white text-gray-500 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 active:scale-95 shadow-none"
+    }`}
+    title={product.isExpired ? "Sản phẩm đã hết hạn" : "Thêm vào giỏ"}
+  >
+    {isLoading ? (
+      <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600" />
+    ) : (
+      <ShoppingCart className="h-3.5 w-3.5 transition-colors" />
+    )}
+  </button>
+</div>
+
       </div>
     </div>
   );
