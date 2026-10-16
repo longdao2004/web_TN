@@ -17,6 +17,8 @@ export class ProductsService {
       price,
       categoryId,
       storeId,
+      specification,
+      storageCondition,
       ...productData
     } = createProductDto;
 
@@ -34,13 +36,15 @@ export class ProductsService {
             expiryDate: new Date(expiryDate),
             quantity: Number(quantity),
             price: Number(price),
+            specification,
+            storageCondition,
           },
         },
       },
       // Trả về kết quả kèm theo thông tin danh mục và lô hàng vừa tạo
       include: {
         category: true,
-        batches: true,
+        batches: { orderBy: { createdAt: 'desc' } },
       },
     });
   }
@@ -86,12 +90,9 @@ export class ProductsService {
 
     let orderByClause: any = { createdAt: 'desc' };
     if (filters?.sortBy === 'price') {
-      // NOTE: Sorting by relation aggregates (like max/min price in batches) can be complex in Prisma.
-      // This is a simplified approach, actual implementation might need sorting after fetch or raw query for exact price sorting.
-      // We'll skip complex relation sorting here and just rely on default or simple fields.
-      orderByClause = undefined; // Will handle in memory if strictly required, or omit for now
+      orderByClause = undefined;
     } else if (filters?.sortBy === 'rating') {
-      orderByClause = { soldCount: filters.order || 'desc' }; // Mock rating with soldCount
+      orderByClause = { soldCount: filters.order || 'desc' };
     } else if (filters?.sortBy === 'newest') {
       orderByClause = { createdAt: 'desc' };
     }
@@ -106,12 +107,11 @@ export class ProductsService {
             select: { id: true, rating: true },
           },
           certificates: true,
-          batches: true,
+          batches: { orderBy: { createdAt: 'desc' } },
         },
         orderBy: orderByClause,
       })
       .then((products) => {
-        // Manual post-fetch sorting for price if needed since it's nested
         if (filters?.sortBy === 'price') {
           return products.sort((a, b) => {
             const priceA = a.batches?.[0]?.price || 0;
@@ -127,7 +127,7 @@ export class ProductsService {
     return this.prisma.product.findUnique({
       where: { id },
       include: {
-        batches: true,
+        batches: { orderBy: { createdAt: 'desc' } },
         category: true,
         store: { include: { _count: { select: { products: { where: { deletedAt: null } } } } } },
         reviews: {
@@ -148,7 +148,7 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, file?: any) {
-    const { price, stock, harvestDate, expiryDate, categoryId, storeId, ...productData } = updateProductDto as any;
+    const { price, stock, harvestDate, expiryDate, categoryId, storeId, specification, storageCondition, ...productData } = updateProductDto as any;
     let imageUrl = undefined;
     if (file) {
       const uploadResult = await this.cloudinary.uploadImage(file);
@@ -160,16 +160,34 @@ export class ProductsService {
     if (stock !== undefined) batchUpdateData.quantity = Number(stock);
     if (harvestDate) batchUpdateData.harvestDate = new Date(harvestDate);
     if (expiryDate) batchUpdateData.expiryDate = new Date(expiryDate);
+    if (specification !== undefined) batchUpdateData.specification = specification;
+    if (storageCondition !== undefined) batchUpdateData.storageCondition = storageCondition;
 
-    return this.prisma.product.update({
+    // 🟢 1. Cập nhật thông tin cơ bản của sản phẩm
+    const updatedProduct = await this.prisma.product.update({
       where: { id },
       data: {
         ...productData,
         ...(imageUrl ? { imageUrl } : {}),
         ...(categoryId ? { category: { connect: { id: categoryId } } } : {}),
-        ...(Object.keys(batchUpdateData).length > 0 ? { batches: { updateMany: { where: {}, data: batchUpdateData } } } : {}),
       },
     });
+
+    // 🟢 2. Chỉ cập nhật Lô hàng MỚI NHẤT, giữ nguyên lịch sử của các lô cũ
+    if (Object.keys(batchUpdateData).length > 0) {
+      const latestBatch = await this.prisma.productBatch.findFirst({
+        where: { productId: id },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (latestBatch) {
+        await this.prisma.productBatch.update({
+          where: { id: latestBatch.id },
+          data: batchUpdateData,
+        });
+      }
+    }
+
+    return updatedProduct;
   }
 
   remove(id: string) {
@@ -179,7 +197,3 @@ export class ProductsService {
     });
   }
 }
-
-
-
-

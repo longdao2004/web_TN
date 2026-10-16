@@ -140,7 +140,21 @@ async function main() {
     });
   }
 
-  console.log('✅ Chạy Seed thành công! Database đã có 3 Seller (kèm 3 Store) và 2 Buyer.');
+  // 5. Tạo tài khoản Quản trị viên (ADMIN) hệ thống
+  console.log('🌱 Đang tạo tài khoản Quản trị viên (ADMIN)...');
+  await prisma.user.create({
+    data: {
+      email: 'admin@gmail.com',
+      password: await bcrypt.hash('123456', 10),
+      fullName: 'Quản Trị Viên Hệ Thống',
+      phone: '0988888888',
+      address: 'Hà Nội',
+      avatarUrl: 'https://ui-avatars.com/api/?name=Admin&background=059669&color=fff',
+      role: 'ADMIN',
+    },
+  });
+
+  console.log('✅ Chạy Seed thành công! Database đã có 1 Admin, 3 Seller (kèm 3 Store) và 2 Buyer.');
 }
 
 main()

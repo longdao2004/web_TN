@@ -15,4 +15,8 @@ export class CreateProductDto {
   expiryDate!: Date; // Hạn sử dụng
   quantity!: number; // Số lượng nhập kho
   price!: number; // Giá bán
+
+    // --- Bổ sung Quy cách & Điều kiện bảo quản ---
+  specification?: string;
+  storageCondition?: string;
 }
