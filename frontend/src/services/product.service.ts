@@ -4,7 +4,16 @@ import { ProductDetail } from '../types/product-detail';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export const productService = {
-  getProducts: async (filters?: { search?: string, categoryId?: string, storeId?: string, minPrice?: number, maxPrice?: number, sortBy?: string, order?: 'asc' | 'desc' }): Promise<any> => {
+  // 1. LẤY DANH SÁCH SẢN PHẨM (ĐÃ ĐỒNG BỘ HIỂN THỊ GIÁ LÔ MỚI NHẤT TRÊN THẺ)
+  getProducts: async (filters?: { 
+    search?: string, 
+    categoryId?: string, 
+    storeId?: string, 
+    minPrice?: number, 
+    maxPrice?: number, 
+    sortBy?: string, 
+    order?: 'asc' | 'desc' 
+  }): Promise<any> => {
     let url = `${API_URL}/products`;
     if (filters) {
       const params = new URLSearchParams();
@@ -23,42 +32,61 @@ export const productService = {
     const res = await fetch(url, { method: 'GET' });
     if (!res.ok) throw new Error('Lỗi khi lấy danh sách sản phẩm');
     const data = await res.json();
-    return data.map((item: any) => ({
-      id: item.id,
-      slug: item.id,
-      name: item.name,
-      image: item.imageUrl || '',
-      price: item.batches?.[0]?.price || 0,
-      isExpired: item.batches?.length > 0 && !(item.batches?.some((b: any) => new Date(b.expiryDate).getTime() > Date.now())),
-      stock: item.batches?.filter((b: any) => new Date(b.expiryDate).getTime() > Date.now()).reduce((acc: number, b: any) => acc + b.quantity, 0) || 0,
-      batches: item.batches || [],
-      certificates: item.certificates || [],
-      store: item.store?.name || 'Cửa hàng',
-      storeName: item.store?.name || 'Cửa hàng',
-      province: item.origin || 'Chưa cập nhật',
-      category: item.category?.name || '',
-      rating: item.reviews?.length > 0 ? (item.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / item.reviews.length).toFixed(1) : 5,
-      reviewCount: item.reviews?.length || 0,
-      reviews: item.reviews?.length || 0,
-      isOrganic: true,
-      isFeatured: false,
-      isNew: true,
-      unit: item.unit || 'kg',
-    }));
+    return data.map((item: any) => {
+      // 🟢 Sắp xếp lấy lô mới nhất cho từng sản phẩm ngoài danh sách
+      const sorted = (item.batches || []).slice().sort((a: any, b: any) => 
+        new Date(b.createdAt || b.harvestDate || 0).getTime() - new Date(a.createdAt || a.harvestDate || 0).getTime()
+      );
+      const latest = sorted[0];
+
+      return {
+        id: item.id,
+        slug: item.id,
+        name: item.name,
+        image: item.imageUrl || '',
+        price: latest?.price || 0, // ✅ Lấy giá của lô mới nhất
+        isExpired: item.batches?.length > 0 && !(item.batches?.some((b: any) => new Date(b.expiryDate).getTime() > Date.now())),
+        stock: item.batches?.filter((b: any) => new Date(b.expiryDate).getTime() > Date.now()).reduce((acc: number, b: any) => acc + b.quantity, 0) || 0,
+        batches: item.batches || [],
+        certificates: item.certificates || [],
+        store: item.store?.name || 'Cửa hàng',
+        storeName: item.store?.name || 'Cửa hàng',
+        province: item.origin || 'Chưa cập nhật',
+        category: item.category?.name || '',
+        rating: item.reviews?.length > 0 ? (item.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / item.reviews.length).toFixed(1) : 5,
+        reviewCount: item.reviews?.length || 0,
+        reviews: item.reviews?.length || 0,
+        isOrganic: true,
+        isFeatured: false,
+        isNew: true,
+        unit: item.unit || 'kg',
+      };
+    });
   },
 
+  // 2. CHI TIẾT SẢN PHẨM (LUÔN ƯU TIÊN LÔ HÀNG MỚI NHẤT)
   getProductBySlug: async (slug: string): Promise<ProductDetail> => {
     const res = await fetch(`${API_URL}/products/${slug}`, { method: 'GET' });
     if (!res.ok) throw new Error('Không tìm thấy sản phẩm');
     const item = await res.json();
+
+    // 🟢 BƯỚC 1: Sắp xếp lấy Lô hàng MỚI NHẤT lên đầu tiên
+    const sortedBatches = (item.batches || []).slice().sort((a: any, b: any) => {
+      const timeA = new Date(b.createdAt || b.harvestDate || 0).getTime();
+      const timeB = new Date(a.createdAt || a.harvestDate || 0).getTime();
+      return timeA - timeB; // Giảm dần: mới nhất đứng đầu
+    });
+    const latestBatch = sortedBatches[0]; // Lô hàng mới nhất
+
     return {
       id: item.id,
       slug: item.id,
       name: item.name,
       image: item.imageUrl || '',
       images: [item.imageUrl || ''],
-      price: item.batches?.[0]?.price || 0,
-      salePrice: item.batches?.[0]?.price || 0,
+      // 🟢 BƯỚC 2: Hiển thị đúng Giá của Lô hàng mới nhất
+      price: latestBatch?.price || 0,
+      salePrice: latestBatch?.price || 0,
       discount: 0,
       rating: 5,
       reviewCount: item.reviews?.length || 0,
@@ -84,7 +112,6 @@ export const productService = {
         logo: item.store?.logoUrl || '',
         address: item.store?.address || 'Đang cập nhật',
         rating: 5,
-        // Ít nhất phải hiển thị 1 sản phẩm thay vì 0
         productCount: item.store?._count?.products || item.store?.products?.length || 1,
         responseRate: 100,
         joinedAt: '',
@@ -95,14 +122,15 @@ export const productService = {
         image: cert.imageUrl,
         issuedBy: 'Bộ Nông Nghiệp',
       })) || [],
+      // 🟢 BƯỚC 3: Hiển thị đúng Ngày thu hoạch, Hạn dùng & Thông tin của Lô hàng mới nhất
       batch: {
-        id: item.batches?.[0]?.id || '',
-        harvestDate: item.batches?.[0]?.harvestDate || '',
+        id: latestBatch?.id || '',
+        harvestDate: latestBatch?.harvestDate || '',
         packDate: '',
-        expiryDate: item.batches?.[0]?.expiryDate || '',
+        expiryDate: latestBatch?.expiryDate || '',
         weight: '',
-        specification: item.batches?.[0]?.specification || 'Chưa cập nhật',
-        storageCondition: item.batches?.[0]?.storageCondition || 'Chưa cập nhật',
+        specification: latestBatch?.specification || 'Chưa cập nhật',
+        storageCondition: latestBatch?.storageCondition || 'Chưa cập nhật',
         origin: item.origin || '',
       },
       reviews: item.reviews?.map((r: any) => ({
@@ -119,18 +147,14 @@ export const productService = {
     };
   },
   
-  // HÀM MỚI: Thêm sản phẩm (Dùng FormData vì có upload ảnh)
+  // 3. THÊM SẢN PHẨM MỚI (FormData có upload ảnh)
   createProduct: async (formData: FormData) => {
-    // 1. Lấy token để xác thực Seller
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     
-    // 2. Bắn API
     const res = await fetch(`${API_URL}/products`, {
       method: 'POST',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        // LƯU Ý CỰC QUAN TRỌNG: Tuyệt đối KHÔNG set 'Content-Type': 'application/json' ở đây.
-        // Trình duyệt sẽ tự động nhận diện FormData và set Content-Type là multipart/form-data
       },
       body: formData,
     });
@@ -143,32 +167,30 @@ export const productService = {
     return res.json();
   },
 
-    // Gọi API Xóa sản phẩm
+  // 4. CẬP NHẬT SẢN PHẨM
   updateProduct: async (id: string, data: FormData) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const res = await fetch(`${API_URL}/products/${id}`, {
-      method: "PATCH",
+      method: 'PATCH',
       headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: data,
     });
-    if (!res.ok) throw new Error("Lỗi khi cập nhật sản phẩm");
+    if (!res.ok) throw new Error('Lỗi khi cập nhật sản phẩm');
     return res.json();
   },
 
+  // 5. XÓA SẢN PHẨM
   deleteProduct: async (id: string) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const res = await fetch(`${API_URL}/products/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
       headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
-    if (!res.ok) throw new Error("Lỗi khi xóa sản phẩm");
+    if (!res.ok) throw new Error('Lỗi khi xóa sản phẩm');
     return res.json();
   },
 };
-
-
-

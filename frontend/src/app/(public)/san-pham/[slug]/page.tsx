@@ -14,6 +14,8 @@ import {
   RelatedProducts,
 } from "@/components/product-detail";
 
+import { notFound } from "next/navigation";
+
 type Props = {
   params: Promise<{ slug: string }>;
 };
@@ -41,7 +43,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductDetailPage({ params }: Props) {
   const resolvedParams = await params;
-  const product = await productService.getProductBySlug(resolvedParams.slug);
+  let product: any;
+  try {
+    product = await productService.getProductBySlug(resolvedParams.slug);
+  } catch (err: any) {
+    notFound();
+  }
+
+  if (!product) {
+    notFound();
+  }
 
 
   return (

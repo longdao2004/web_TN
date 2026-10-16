@@ -21,6 +21,8 @@ export default function CreateProductPage() {
     harvestDate: "",
     expiryDate: "",
     categoryId: "",
+    specification: "",
+    storageCondition: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -95,7 +97,8 @@ export default function CreateProductPage() {
       // Chuyển ngày tháng về chuẩn ISO cho Backend dễ đọc
       data.append("harvestDate", new Date(formData.harvestDate).toISOString());
       data.append("expiryDate", new Date(formData.expiryDate).toISOString());
-
+      data.append("specification", formData.specification);
+      data.append("storageCondition", formData.storageCondition);
       data.append("categoryId", formData.categoryId);
       data.append("storeId", storeId);
       data.append("image", imageFile);
@@ -181,6 +184,37 @@ export default function CreateProductPage() {
 
             {/* ĐÂY LÀ 3 Ô NHẬP LIỆU BẠN BỊ THIẾU LÚC NÃY */}
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Thông tin Lô hàng nhập kho</h2>
+            
+            {/* 🟢 2 Ô NHẬP QUY CÁCH VÀ BẢO QUẢN */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Quy cách đóng gói
+                </label>
+                <input
+                  type="text"
+                  name="specification"
+                  value={formData.specification}
+                  onChange={handleChange}
+                  placeholder="VD: Hộp 500g, Túi hút chân không 1kg..."
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Điều kiện bảo quản
+                </label>
+                <input
+                  type="text"
+                  name="storageCondition"
+                  value={formData.storageCondition}
+                  onChange={handleChange}
+                  placeholder="VD: Bảo quản ngăn mát 2-8°C..."
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition"
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng (Tồn kho) <span className="text-red-500">*</span></label>

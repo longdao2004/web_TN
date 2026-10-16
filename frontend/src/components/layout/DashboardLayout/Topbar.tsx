@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from "@/store/auth.store";
 import { SellerNotificationPopover } from "./SellerNotificationPopover";
+import { storeService } from '@/services/store.service';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -25,6 +26,12 @@ export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
+  const [storeId, setStoreId] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    storeService.getMyStore()
+      .then((store) => setStoreId(store.id))
+      .catch(() => {});
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -84,14 +91,24 @@ export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
               <Avatar src={user?.avatarUrl || ""} fallback={user?.fullName?.charAt(0) || "U"} size="sm" />
             </div>
           }
-          items={[
+                    items={[
             { 
               label: "Trở về Trang chủ", 
               onClick: () => router.push("/") 
             },
+            {
+              label: "Xem gian hàng của tôi",
+              onClick: () => router.push(storeId ? `/cua-hang/${storeId}` : "/cua-hang"),
+            },
             { divider: true, label: "" },
-            { label: "Hồ sơ cá nhân", onClick: () => console.log("profile") },
-            { label: "Cài đặt", onClick: () => console.log("settings") },
+            { 
+              label: "Hồ sơ cá nhân", 
+              onClick: () => router.push("/tai-khoan/ho-so") 
+            },
+            { 
+              label: "Cài đặt Cửa hàng", 
+              onClick: () => router.push("/seller/settings") 
+            },
             { divider: true, label: "" },
             { label: "Đăng xuất", danger: true, onClick: handleLogout }, 
           ]}

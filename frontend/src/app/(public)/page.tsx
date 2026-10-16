@@ -2,7 +2,7 @@ import React from "react";
 import {
   HeroSection,
   CategoriesSection,
-  ProductTabsSection, // <-- Khối Tabs Mới Xịn Xò
+  ProductTabsSection, 
   PromoBannerSection,
   StoresSection,
   BuyingProcessSection,

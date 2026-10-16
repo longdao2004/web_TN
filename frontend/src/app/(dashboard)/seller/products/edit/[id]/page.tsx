@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, UploadCloud, Save, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, UploadCloud, Save } from "lucide-react";
 import { storeService } from "@/services/store.service";
 import { categoryService } from "@/services/category.service";
 import { productService } from "@/services/product.service";
@@ -22,6 +22,8 @@ export default function EditProductPage() {
     harvestDate: "",
     expiryDate: "",
     categoryId: "",
+    specification: "",
+    storageCondition: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -40,23 +42,32 @@ export default function EditProductPage() {
         const cats = await categoryService.getAllCategories();
         setCategories(cats);
 
-        const resProduct = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/products/${id}`); const product = await resProduct.json();
+        const resProduct = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/products/${id}`);
+        const product = await resProduct.json();
         
+        // Sắp xếp lấy lô mới nhất để hiển thị dữ liệu
+        const sortedBatches = (product.batches || []).slice().sort((a: any, b: any) => 
+          new Date(b.createdAt || b.harvestDate || 0).getTime() - new Date(a.createdAt || a.harvestDate || 0).getTime()
+        );
+        const latestBatch = sortedBatches[0];
+
         setFormData({
           name: product.name || "",
           description: product.description || "",
           origin: product.origin || "",
           unit: product.unit || "kg",
-          price: (product.batches?.[0]?.price || 0).toString(),
-          quantity: (product.batches?.[0]?.quantity || 0).toString(),
-          harvestDate: product.batches?.[0]?.harvestDate ? new Date(product.batches[0].harvestDate).toISOString().split("T")[0] : "",
-          expiryDate: product.batches?.[0]?.expiryDate ? new Date(product.batches[0].expiryDate).toISOString().split("T")[0] : "",
+          price: (latestBatch?.price || 0).toString(),
+          quantity: (latestBatch?.quantity || 0).toString(),
+          harvestDate: latestBatch?.harvestDate ? new Date(latestBatch.harvestDate).toISOString().split("T")[0] : "",
+          expiryDate: latestBatch?.expiryDate ? new Date(latestBatch.expiryDate).toISOString().split("T")[0] : "",
           categoryId: product.categoryId || (cats.length > 0 ? cats[0].id : ""),
+          specification: latestBatch?.specification || "",
+          storageCondition: latestBatch?.storageCondition || "",
         });
 
         if (product.imageUrl) {
-            setImagePreview(product.imageUrl);
-          }
+          setImagePreview(product.imageUrl);
+        }
 
       } catch (error) {
         console.error("Lỗi khởi tạo form:", error);
@@ -101,6 +112,8 @@ export default function EditProductPage() {
       if (formData.expiryDate) apiData.append("expiryDate", new Date(formData.expiryDate).toISOString());
       apiData.append("categoryId", formData.categoryId);
       apiData.append("storeId", storeId);
+      apiData.append("specification", formData.specification);
+      apiData.append("storageCondition", formData.storageCondition);
 
       if (imageFile) {
         apiData.append("images", imageFile);
@@ -137,6 +150,7 @@ export default function EditProductPage() {
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-8 space-y-8">
+          {/* 1. HÌNH ẢNH */}
           <div>
             <h2 className="text-lg font-semibold text-gray-800 mb-4">1. Hình ảnh Sản phẩm</h2>
             <div className="flex gap-4">
@@ -153,7 +167,10 @@ export default function EditProductPage() {
               </label>
             </div>
           </div>
+
           <hr className="border-gray-100" />
+
+          {/* 2. THÔNG TIN CƠ BẢN */}
           <div>
             <h2 className="text-lg font-semibold text-gray-800 mb-4">2. Thông tin Cơ bản</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -205,10 +222,13 @@ export default function EditProductPage() {
               </div>
             </div>
           </div>
+
           <hr className="border-gray-100" />
+
+          {/* 3. BÁN HÀNG & TỒN KHO */}
           <div>
             <h2 className="text-lg font-semibold text-gray-800 mb-4">3. Bán hàng & Tồn kho</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Giá bán (VNĐ) *</label>
                 <input
@@ -229,8 +249,10 @@ export default function EditProductPage() {
                 >
                   <option value="kg">Kg</option>
                   <option value="g">Gram</option>
-                  <option value="qua">Quả</option>
-                  <option value="thung">Thùng</option>
+                  <option value="hộp">Hộp</option>
+                  <option value="bó">Bó</option>
+                  <option value="quả">Quả</option>
+                  <option value="thùng">Thùng</option>
                 </select>
               </div>
               <div>
@@ -245,7 +267,59 @@ export default function EditProductPage() {
               </div>
             </div>
           </div>
+
+          <hr className="border-gray-100" />
+
+          {/* 4. LÔ HÀNG, QUY CÁCH & BẢO QUẢN (MỚI BỔ SUNG ĐẦY ĐỦ) */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">4. Thông tin Lô hàng & Bảo quản</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ngày thu hoạch</label>
+                <input
+                  type="date"
+                  name="harvestDate"
+                  value={formData.harvestDate}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Hạn sử dụng</label>
+                <input
+                  type="date"
+                  name="expiryDate"
+                  value={formData.expiryDate}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quy cách đóng gói</label>
+                <input
+                  type="text"
+                  name="specification"
+                  value={formData.specification}
+                  onChange={handleChange}
+                  placeholder="VD: Hộp 500g, Thùng 10kg..."
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Điều kiện bảo quản</label>
+                <input
+                  type="text"
+                  name="storageCondition"
+                  value={formData.storageCondition}
+                  onChange={handleChange}
+                  placeholder="VD: Bảo quản ngăn mát 2-8°C..."
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
+                />
+              </div>
+            </div>
+          </div>
         </div>
+
         <div className="bg-gray-50 p-6 border-t border-gray-100 flex justify-end">
           <button
             onClick={handleSave}

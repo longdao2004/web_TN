@@ -49,7 +49,7 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
           )}
         >
           <div className="prose prose-sm sm:prose-base max-w-none text-gray-700">
-            {product.description.split("\n").map((paragraph, idx) => (
+            {(product.description || "Chưa có mô tả chi tiết cho sản phẩm này.").split("\n").map((paragraph, idx) => (
               <p key={idx} className="mb-4 last:mb-0 leading-relaxed">
                 {paragraph}
               </p>
