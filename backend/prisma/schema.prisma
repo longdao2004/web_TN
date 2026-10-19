@@ -94,6 +94,7 @@ model Category {
 }
 
 model Product {
+  // Mã sản phẩm (Khóa chính): Prisma tự động tạo chuỗi UUID v4 duy nhất
   id          String  @id @default(uuid())
   name        String
   description String?
@@ -176,6 +177,7 @@ model CartItem {
 }
 
 model Order {
+  // Mã đơn hàng (Khóa chính): Prisma tự động tạo chuỗi UUID v4 duy nhất
   id              String      @id @default(uuid())
   totalAmount     Float
   shippingAddress String
