@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect } from 'react';
 import { Save, UploadCloud } from 'lucide-react';
 import { storeService } from '@/services/store.service';
+import { toast } from 'sonner';
 
 export default function SellerSettingsPage() {
   const [storeName, setStoreName] = useState('');
@@ -82,9 +83,9 @@ export default function SellerSettingsPage() {
       }
 
       await storeService.updateMyStore(formData);
-      alert("Cập nhật thông tin cửa hàng thành công!");
-    } catch (error) {
-      alert("Cập nhật thất bại. Vui lòng thử lại!");
+      toast.success("Cập nhật thông tin cửa hàng thành công!");
+    } catch (error: any) {
+      toast.error(error.message || "Cập nhật thất bại. Vui lòng thử lại!");
     } finally {
       setIsSaving(false);
     }
@@ -167,8 +168,20 @@ export default function SellerSettingsPage() {
           <hr className="border-gray-100" />
 
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">3. Thông tin Liên hệ</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">3. Thông tin Liên hệ & Địa chỉ</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Địa chỉ vườn / Nơi canh tác <span className="text-red-500">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="VD: Thôn 2, Xã Quý Sơn, Lục Ngạn, Bắc Giang"
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition" 
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Số điện thoại *</label>
                 <input 
@@ -177,7 +190,7 @@ export default function SellerSettingsPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Nhập số điện thoại"
                   className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition" 
-                  />
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Email hỗ trợ</label>
@@ -186,6 +199,16 @@ export default function SellerSettingsPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Nhập email hỗ trợ"
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition" 
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Website / Trang giới thiệu</label>
+                <input 
+                  type="text" 
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://cuahangcuaban.vn"
                   className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition" 
                 />
               </div>

@@ -39,8 +39,8 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           name: product.name,
           category: "Nông sản",
           image: product.image,
-          price: product.salePrice || product.price,
-          originalPrice: product.salePrice ? product.price : undefined,
+          price: product.price,
+          originalPrice: product.originalPrice,
           quantity: 1,
           maxQuantity: 10,
           store: {
@@ -100,11 +100,12 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
 
         {/* Badges Overlay */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {product.discount && product.discount > 0 && (
+          {/*  Dùng toán tử 3 ngôi để nếu không có giảm giá thì trả về null (React không render gì cả) */}
+          {product.discount && product.discount > 0 ? (
             <Badge variant="danger" size="sm" className="font-bold">
               -{product.discount}%
             </Badge>
-          )}
+          ) : null}
           {product.isOrganic && (
             <Badge
               className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold"
@@ -170,15 +171,15 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           <div>
             <div className="flex items-end gap-1.5 flex-wrap">
               <span className="text-lg font-bold text-[var(--color-primary)]">
-                {formatPrice(product.salePrice || product.price)}
+                {formatPrice(product.price)}
               </span>
               <span className="text-xs text-gray-500 mb-1">
                 /{product.unit}
               </span>
             </div>
-            {product.salePrice && (
+            {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-xs text-gray-400 line-through">
-                {formatPrice(product.price)}
+                {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>

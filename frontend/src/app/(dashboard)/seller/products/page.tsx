@@ -73,7 +73,14 @@ export default function SellerProductsPage() {
                 <td className="p-4 text-gray-500 font-mono text-xs">{product.id ? product.id.substring(0, 8).toUpperCase() : ""}</td>
                 <td className="p-4 font-medium text-gray-800 text-gray-900">{product.name}</td>
                 <td className="p-4 text-gray-600">{product.category}</td>
-                <td className="p-4 font-semibold text-emerald-600">{product.price.toLocaleString()}đ</td>
+                <td className="p-4">
+                  <div className="font-semibold text-emerald-600">{product.price.toLocaleString()}đ</div>
+                  {product.originalPrice && product.originalPrice > product.price && (
+                    <div className="text-xs text-gray-400 line-through font-normal">
+                      {product.originalPrice.toLocaleString()}đ
+                    </div>
+                  )}
+                </td>
                 <td className="p-4 text-gray-600">{product.stock}</td>
                 <td className="p-4">
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${product.stock > 0 ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>

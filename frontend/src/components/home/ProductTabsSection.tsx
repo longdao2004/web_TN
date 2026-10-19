@@ -1,18 +1,20 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Sparkles, Flame, Clock, Tag, ArrowRight } from "lucide-react";
+import { Sparkles, Flame, Clock, Tag, ArrowRight, AlertTriangle } from "lucide-react";
 import { PageContainer, Section } from "@/components/layout/core";
 import { ProductCard } from "./components/ProductCard";
 import { productService } from "@/services/product.service";
 
-type TabType = "all" | "newest" | "bestseller" | "sale";
+// 1. Thêm định nghĩa tab mới "expired"
+type TabType = "all" | "newest" | "bestseller" | "sale" | "expired";
 
 export const ProductTabsSection = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [isLoading, setIsLoading] = useState(true);
 
+  // 2. Tải toàn bộ danh sách sản phẩm từ API
   useEffect(() => {
     productService
       .getProducts()
@@ -21,33 +23,47 @@ export const ProductTabsSection = () => {
       .finally(() => setIsLoading(false));
   }, []);
 
-  // Lọc danh sách sản phẩm tức thì theo từng Tab
+  // 3. Phân loại và lọc danh sách sản phẩm theo từng Tab
   const filteredProducts = useMemo(() => {
-    let list = [...products];
+    // 🟢 Tách riêng sản phẩm còn hạn và sản phẩm đã hết hạn
+    const activeProducts = products.filter((p) => !p.isExpired);
+    const expiredProducts = products.filter((p) => p.isExpired);
+
     switch (activeTab) {
       case "newest":
-        // Sản phẩm mới nhất (giữ nguyên thứ tự mới nhất từ Backend)
-        return list.slice(0, 8);
+        // Sản phẩm CÒN HẠN mới lên kệ
+        return [...activeProducts].slice(0, 8);
+
       case "bestseller":
-        // Sản phẩm bán chạy nhất / đánh giá cao nhất
-        return list
+        // Sản phẩm CÒN HẠN bán chạy nhất / đánh giá cao nhất
+        return [...activeProducts]
           .sort((a, b) => (b.reviews || 0) - (a.reviews || 0) || (b.rating || 0) - (a.rating || 0))
           .slice(0, 8);
+
       case "sale":
-        // Sản phẩm đang có giá gốc giảm giá (khuyến mãi)
-        const saleList = list.filter((p) => p.originalPrice && p.originalPrice > p.price);
-        return (saleList.length > 0 ? saleList : list).slice(0, 8);
+        // Sản phẩm CÒN HẠN đang có ưu đãi giảm giá
+        return activeProducts
+          .filter((p) => p.originalPrice && p.originalPrice > p.price)
+          .slice(0, 8);
+
+      case "expired":
+        // 🔴 CHỈ HIỂN THỊ SẢN PHẨM ĐÃ HẾT HẠN
+        return expiredProducts.slice(0, 8);
+
       case "all":
       default:
-        return list.slice(0, 8);
+        // Tất cả sản phẩm CÒN HẠN (không chứa bất kỳ sản phẩm hết hạn nào)
+        return activeProducts.slice(0, 8);
     }
   }, [products, activeTab]);
 
+  // 4. Danh sách các Tab trên thanh điều hướng
   const tabs = [
     { id: "all", label: "Tất cả nông sản", icon: Sparkles },
     { id: "newest", label: "Mới lên kệ", icon: Clock },
     { id: "bestseller", label: "Bán chạy nhất", icon: Flame },
     { id: "sale", label: "Đang ưu đãi", icon: Tag },
+    { id: "expired", label: "Đã hết hạn", icon: AlertTriangle }, // Tab riêng biệt
   ];
 
   return (
@@ -76,22 +92,36 @@ export const ProductTabsSection = () => {
           </Link>
         </div>
 
-        {/* THANH TABS CHUYỂN ĐỔI THÔNG MINH */}
+        {/* THANH TABS CHUYỂN ĐỔI */}
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 no-scrollbar">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
+            const isExpiredTab = tab.id === "expired";
+
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all shrink-0 cursor-pointer ${
                   isActive
-                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20 scale-105"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200/80 hover:text-gray-900"
+                    ? isExpiredTab
+                      ? "bg-red-600 text-white shadow-md shadow-red-600/20 scale-105"
+                      : "bg-emerald-600 text-white shadow-md shadow-emerald-600/20 scale-105"
+                    : isExpiredTab
+                      ? "bg-red-50 text-red-600 hover:bg-red-100/80"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200/80 hover:text-gray-900"
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-500"}`} />
+                <Icon
+                  className={`w-4 h-4 ${
+                    isActive
+                      ? "text-white"
+                      : isExpiredTab
+                        ? "text-red-500"
+                        : "text-gray-500"
+                  }`}
+                />
                 {tab.label}
               </button>
             );
@@ -100,10 +130,12 @@ export const ProductTabsSection = () => {
 
         {/* LƯỚI SẢN PHẨM HIỂN THỊ */}
         {isLoading ? (
-          <div className="py-20 text-center text-gray-400">Đang tải nông sản tươi ngon...</div>
+          <div className="py-20 text-center text-gray-400">Đang tải nông sản...</div>
         ) : filteredProducts.length === 0 ? (
           <div className="py-16 text-center text-gray-400 bg-gray-50 rounded-2xl border border-gray-100">
-            Chưa có sản phẩm nào trong mục này.
+            {activeTab === "expired"
+              ? "Tuyệt vời! Hiện không có sản phẩm nào bị quá hạn sử dụng."
+              : "Chưa có sản phẩm nào trong mục này."}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:gap-6 animate-in fade-in duration-300">

@@ -2,10 +2,10 @@ import { UserProfile, UpdateProfileRequest } from '../types/user';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-const getHeaders = () => {
+const getHeaders = (isFormData: boolean = false) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   return {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
@@ -14,7 +14,7 @@ export const userService = {
   getProfile: async (): Promise<UserProfile> => {
     const res = await fetch(`${API_URL}/users/profile`, {
       method: 'GET',
-      headers: getHeaders(),
+      headers: getHeaders(false),
     });
     if (!res.ok) {
       if (res.status === 401 || res.status === 404) {
@@ -25,11 +25,12 @@ export const userService = {
     return res.json();
   },
 
-  updateProfile: async (data: UpdateProfileRequest): Promise<UserProfile> => {
+  updateProfile: async (data: FormData | UpdateProfileRequest): Promise<UserProfile> => {
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
     const res = await fetch(`${API_URL}/users/profile`, {
       method: 'PATCH',
-      headers: getHeaders(),
-      body: JSON.stringify(data),
+      headers: getHeaders(isFormData),
+      body: isFormData ? data : JSON.stringify(data),
     });
     if (!res.ok) {
       throw new Error('Lỗi khi cập nhật thông tin');

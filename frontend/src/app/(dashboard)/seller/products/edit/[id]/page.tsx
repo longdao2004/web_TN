@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
@@ -18,6 +18,7 @@ export default function EditProductPage() {
     origin: "",
     unit: "kg",
     price: "",
+    originalPrice: "",
     quantity: "",
     harvestDate: "",
     expiryDate: "",
@@ -51,12 +52,23 @@ export default function EditProductPage() {
         );
         const latestBatch = sortedBatches[0];
 
+        const rawP = latestBatch?.price || 0;
+        const rawO = latestBatch?.originalPrice || null;
+        let initPrice = rawP;
+        let initOriginalPrice = "";
+        if (rawO && rawO > 0 && rawO !== rawP) {
+          // Chuẩn hóa: Số nhỏ hơn là giá bán thực tế, số lớn hơn là giá gốc
+          initPrice = Math.min(rawP, rawO);
+          initOriginalPrice = Math.max(rawP, rawO).toString();
+        }
+
         setFormData({
           name: product.name || "",
           description: product.description || "",
           origin: product.origin || "",
           unit: product.unit || "kg",
-          price: (latestBatch?.price || 0).toString(),
+          price: initPrice.toString(),
+          originalPrice: initOriginalPrice,
           quantity: (latestBatch?.quantity || 0).toString(),
           harvestDate: latestBatch?.harvestDate ? new Date(latestBatch.harvestDate).toISOString().split("T")[0] : "",
           expiryDate: latestBatch?.expiryDate ? new Date(latestBatch.expiryDate).toISOString().split("T")[0] : "",
@@ -106,7 +118,18 @@ export default function EditProductPage() {
       apiData.append("description", formData.description);
       apiData.append("origin", formData.origin);
       apiData.append("unit", formData.unit);
-      apiData.append("price", formData.price);
+
+      // Chuẩn hóa thông minh trước khi gửi: số nhỏ hơn là giá bán thực tế, số lớn hơn là giá gốc
+      const p = Number(formData.price);
+      const op = formData.originalPrice ? Number(formData.originalPrice) : null;
+      if (op && op > 0 && p > 0 && p !== op) {
+        apiData.append("price", Math.min(p, op).toString());
+        apiData.append("originalPrice", Math.max(p, op).toString());
+      } else {
+        apiData.append("price", formData.price);
+        apiData.append("originalPrice", formData.originalPrice || "");
+      }
+
       apiData.append("stock", formData.quantity);
       if (formData.harvestDate) apiData.append("harvestDate", new Date(formData.harvestDate).toISOString());
       if (formData.expiryDate) apiData.append("expiryDate", new Date(formData.expiryDate).toISOString());
@@ -228,17 +251,44 @@ export default function EditProductPage() {
           {/* 3. BÁN HÀNG & TỒN KHO */}
           <div>
             <h2 className="text-lg font-semibold text-gray-800 mb-4">3. Bán hàng & Tồn kho</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Giá bán (VNĐ) *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Giá bán thực tế (VNĐ) <span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-gray-400 mb-2">Số tiền khách hàng phải thanh toán khi mua hàng</p>
                 <input
                   type="number"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  placeholder="VD: 94000"
                   className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Giá gốc niêm yết (VNĐ) <span className="text-gray-400 text-xs font-normal">(Tùy chọn)</span>
+                </label>
+                <p className="text-xs text-gray-400 mb-2">Giá ban đầu trước khi giảm (hiển thị gạch ngang ngoài cửa hàng)</p>
+                <input
+                  type="number"
+                  name="originalPrice"
+                  value={formData.originalPrice}
+                  onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  placeholder="VD: 100000 (Để trống nếu bán giá thường)"
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
+                />
+                {Number(formData.originalPrice) > 0 && Number(formData.price) > 0 && Number(formData.originalPrice) !== Number(formData.price) && (
+                  <p className="text-xs text-emerald-600 font-medium mt-1.5 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                    ✓ <strong>Ưu đãi:</strong> Bán <strong>{Math.min(Number(formData.price), Number(formData.originalPrice)).toLocaleString()}đ</strong> (Gốc gạch ngang {Math.max(Number(formData.price), Number(formData.originalPrice)).toLocaleString()}đ - Giảm {Math.round(((Math.max(Number(formData.price), Number(formData.originalPrice)) - Math.min(Number(formData.price), Number(formData.originalPrice))) / Math.max(Number(formData.price), Number(formData.originalPrice))) * 100)}%)
+                  </p>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Đơn vị tính</label>
                 <select
@@ -253,8 +303,10 @@ export default function EditProductPage() {
                   <option value="bó">Bó</option>
                   <option value="quả">Quả</option>
                   <option value="thùng">Thùng</option>
+                  <option value="lít">Lít</option>
                 </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng tồn kho *</label>
                 <input
@@ -262,6 +314,7 @@ export default function EditProductPage() {
                   name="quantity"
                   value={formData.quantity}
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
                 />
               </div>

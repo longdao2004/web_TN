@@ -42,8 +42,9 @@ export const storeService = {
       description: item.description || '',
       certificates: [],
       productsCount: item._count?.products || item.products?.length || 0,
-      rating: 5,
-      reviewsCount: 0,
+      // 🟢 Điểm đánh giá và tổng lượt đánh giá tính từ toàn bộ sản phẩm
+      rating: item.rating !== undefined ? item.rating : 5,
+      reviewsCount: item.reviewsCount !== undefined ? item.reviewsCount : 0,
       isFeatured: false,
     }));
   },
@@ -66,8 +67,9 @@ export const storeService = {
       description: item.description || 'Cửa hàng chưa có mô tả.',
       certificates: [],
       productsCount: item._count?.products || item.products?.length || 0,
-      rating: 5,
-      reviewsCount: 0,
+      // 🟢 Điểm đánh giá và tổng lượt đánh giá tính từ toàn bộ sản phẩm
+      rating: item.rating !== undefined ? item.rating : 5,
+      reviewsCount: item.reviewsCount !== undefined ? item.reviewsCount : 0,
       isFeatured: false,
       joinDate: item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : 'Đang cập nhật',
     };

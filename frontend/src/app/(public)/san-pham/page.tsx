@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageContainer, Section } from "@/components/layout/core";
 import {
@@ -13,6 +13,9 @@ import {
 } from "@/components/ui";
 import { FilterSidebar, SortBar, ProductGrid } from "@/components/products";
 import { productService } from "@/services/product.service";
+
+// Số lượng sản phẩm hiển thị trên mỗi trang (12 sản phẩm = lưới 4 cột x 3 hàng chuẩn đẹp)
+const ITEMS_PER_PAGE = 12;
 
 function ProductListContent() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -36,7 +39,21 @@ function ProductListContent() {
           order: (searchParams.get('order') as 'asc' | 'desc') || undefined,
         };
         const data = await productService.getProducts(filters);
-        setProducts(data);
+
+        // 🟢 [GỢI Ý 1 - SORT SINKING]: TỰ ĐỘNG ĐẨY SẢN PHẨM HẾT HẠN XUỐNG CUỐI
+        // - a.isExpired = false (còn hạn) -> ưu tiên lên đầu (-1)
+        // - b.isExpired = true (hết hạn) -> đẩy về sau (1)
+        // - Nếu cùng trạng thái hạn -> giữ nguyên thứ tự sắp xếp theo giá / đánh giá từ backend
+        const sortedData = [...data].sort((a: any, b: any) => {
+          if (a.isExpired !== b.isExpired) {
+            return a.isExpired ? 1 : -1;
+          }
+          return 0;
+        });
+
+        setProducts(sortedData);
+        // Mỗi khi người dùng bấm lọc hoặc tìm kiếm thì tự động đưa về trang 1
+        setCurrentPage(1);
       } catch (err: any) {
         setError(err.message || 'Lỗi tải danh sách sản phẩm');
       } finally {
@@ -45,6 +62,13 @@ function ProductListContent() {
     };
     fetchProducts();
   }, [searchParams]);
+
+  // 🟢 TÍNH TOÁN PHÂN TRANG: Cắt đúng 12 sản phẩm cho trang hiện tại
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return products.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [products, currentPage]);
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
@@ -119,15 +143,19 @@ function ProductListContent() {
                   onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
                 />
 
-                <ProductGrid products={products} />
+                {/* 🟢 Hiển thị danh sách sản phẩm của trang hiện tại */}
+                <ProductGrid products={paginatedProducts} />
 
-                <div className="mt-12 flex justify-center">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={Math.ceil(products.length / 10) || 1}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
+                {/* Thanh chuyển trang */}
+                {totalPages > 1 && (
+                  <div className="mt-12 flex justify-center">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
+                  </div>
+                )}
               </main>
             </div>
           )}

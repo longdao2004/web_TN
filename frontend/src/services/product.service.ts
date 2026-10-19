@@ -39,12 +39,34 @@ export const productService = {
       );
       const latest = sorted[0];
 
+      const rawPrice = latest?.price || 0;
+      const rawOriginalPrice = latest?.originalPrice || null;
+
+      let actualPrice = rawPrice;
+      let originalPrice: number | undefined = undefined;
+      let isDiscounted = false;
+      let discountPercent = 0;
+
+      // 🟢 Tự động nhận diện thông minh: Số nhỏ hơn là giá bán thực tế, số lớn hơn là giá gốc
+      if (rawOriginalPrice && rawOriginalPrice > 0 && rawOriginalPrice !== rawPrice) {
+        actualPrice = Math.min(rawPrice, rawOriginalPrice);
+        originalPrice = Math.max(rawPrice, rawOriginalPrice);
+        isDiscounted = true;
+        discountPercent = Math.round(((originalPrice - actualPrice) / originalPrice) * 100);
+      }
+
       return {
         id: item.id,
         slug: item.id,
         name: item.name,
         image: item.imageUrl || '',
-        price: latest?.price || 0, // ✅ Lấy giá của lô mới nhất
+        price: actualPrice, // Giá bán thực tế (khách trả)
+        originalPrice: isDiscounted ? originalPrice : undefined, //  Giá gốc niêm yết (gạch ngang)
+        salePrice: isDiscounted ? actualPrice : undefined,
+        discount: isDiscounted ? discountPercent : undefined, // chỉ hiển thị khi có khuyến mãi
+        badges: isDiscounted
+          ? [`-${discountPercent}%`, "Khuyến mãi"]
+          : [],
         isExpired: item.batches?.length > 0 && !(item.batches?.some((b: any) => new Date(b.expiryDate).getTime() > Date.now())),
         stock: item.batches?.filter((b: any) => new Date(b.expiryDate).getTime() > Date.now()).reduce((acc: number, b: any) => acc + b.quantity, 0) || 0,
         batches: item.batches || [],
@@ -78,16 +100,31 @@ export const productService = {
     });
     const latestBatch = sortedBatches[0]; // Lô hàng mới nhất
 
+    const rawBatchPrice = latestBatch?.price || 0;
+    const rawBatchOriginalPrice = latestBatch?.originalPrice || null;
+    let detailActualPrice = rawBatchPrice;
+    let detailOriginalPrice: number | undefined = undefined;
+    let isDetailDiscounted = false;
+    let detailDiscountPercent = 0;
+
+    if (rawBatchOriginalPrice && rawBatchOriginalPrice > 0 && rawBatchOriginalPrice !== rawBatchPrice) {
+      detailActualPrice = Math.min(rawBatchPrice, rawBatchOriginalPrice);
+      detailOriginalPrice = Math.max(rawBatchPrice, rawBatchOriginalPrice);
+      isDetailDiscounted = true;
+      detailDiscountPercent = Math.round(((detailOriginalPrice - detailActualPrice) / detailOriginalPrice) * 100);
+    }
+
     return {
       id: item.id,
       slug: item.id,
       name: item.name,
       image: item.imageUrl || '',
       images: [item.imageUrl || ''],
-      // 🟢 BƯỚC 2: Hiển thị đúng Giá của Lô hàng mới nhất
-      price: latestBatch?.price || 0,
-      salePrice: latestBatch?.price || 0,
-      discount: 0,
+      // 🟢 BƯỚC 2: Hiển thị đúng Giá của Lô hàng mới nhất & Giá gốc ưu đãi
+      price: isDetailDiscounted ? detailOriginalPrice! : detailActualPrice,
+      salePrice: isDetailDiscounted ? detailActualPrice : undefined,
+      originalPrice: isDetailDiscounted ? detailOriginalPrice : undefined,
+      discount: detailDiscountPercent,
       rating: 5,
       reviewCount: item.reviews?.length || 0,
       storeName: item.store?.name || 'Cửa hàng',

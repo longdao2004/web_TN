@@ -35,9 +35,11 @@ export default async function StoreListPage({ searchParams }: Props) {
 
   const resolvedParams = await searchParams;
   const search = typeof resolvedParams.search === "string" ? resolvedParams.search : undefined;
+  const province = typeof resolvedParams.province === "string" ? resolvedParams.province : undefined;
+  const sort = typeof resolvedParams.sort === "string" ? resolvedParams.sort : undefined;
 
   try {
-    stores = await storeService.getStores({ search });
+    stores = await storeService.getStores({ search, province, sort });
   } catch (err: any) {
     error = err.message || "Lỗi tải danh sách cửa hàng";
   }
