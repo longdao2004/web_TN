@@ -69,6 +69,7 @@ export default function SellerProductsPage() {
           <tbody>
             {products.map((product) => (
               <tr key={product.id} className="border-b border-gray-50 hover:bg-emerald-50/30 transition">
+                {/* TẠO MÃ SẢN PHẨM: Lấy 8 ký tự đầu của UUID làm mã SP hiển thị trên bảng */}
                 <td className="p-4 text-gray-500 font-mono text-xs">{product.id ? product.id.substring(0, 8).toUpperCase() : ""}</td>
                 <td className="p-4 font-medium text-gray-800 text-gray-900">{product.name}</td>
                 <td className="p-4 text-gray-600">{product.category}</td>

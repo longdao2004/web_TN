@@ -115,6 +115,7 @@ export default function SellerOrdersPage() {
                     className="border-b border-gray-50 hover:bg-gray-50/50 transition"
                   >
                     <td className="p-4 font-medium text-gray-800">
+                      {/* TẠO MÃ ĐƠN HÀNG: Cắt 8 ký tự đầu của UUID làm mã đơn hàng hiển thị */}
                       {order.id.slice(0, 8).toUpperCase()}
                     </td>
                     <td className="p-4 text-gray-500">

@@ -84,7 +84,8 @@ export default function OrderTrackingPage() {
         // Ánh xạ dữ liệu BE về định dạng FE cần
         setOrder({
           id: foundOrder.id,
-          code: `AGRI-${foundOrder.id.split("-")[0].toUpperCase()}`, // 👉 THÊM DÒNG NÀY ĐỂ HIỆN MÃ ĐƠN
+          // TẠO MÃ ĐƠN HÀNG: Cắt phần đầu UUID, in hoa và thêm tiền tố 'AGRI-' (Ví dụ: AGRI-A1B2C3D4)
+          code: `AGRI-${foundOrder.id.split("-")[0].toUpperCase()}`,
           status: foundOrder.status,
           createdAt: new Intl.DateTimeFormat("vi-VN", {
             day: "2-digit",

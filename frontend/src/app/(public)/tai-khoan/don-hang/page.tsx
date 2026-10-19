@@ -93,6 +93,7 @@ export default function OrderHistoryPage() {
             <div className="p-4 border-b border-[var(--color-border)] flex flex-wrap gap-4 items-center justify-between bg-gray-50/50">
               <div>
                 <p className="text-sm text-gray-500 mb-1">Mã đơn hàng</p>
+                {/* TẠO MÃ ĐƠN HÀNG: Cắt phần đầu UUID trước dấu '-' và viết in hoa */}
                 <p className="font-semibold text-gray-900 text-sm">{order.id.split("-")[0].toUpperCase()}</p>
               </div>
               <div>

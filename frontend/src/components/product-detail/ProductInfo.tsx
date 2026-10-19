@@ -51,7 +51,7 @@ export const ProductInfo = ({ product }: ProductInfoProps) => {
         <div className="text-gray-500">
           Mã SP:{" "}
           <span className="font-semibold text-gray-900">
-            {/* Cắt ngắn ID để làm mã sản phẩm cho gọn */}
+            {/* TẠO MÃ SẢN PHẨM: Cắt 8 ký tự đầu của UUID và in hoa để làm mã sản phẩm ngắn gọn, dễ nhìn */}
             {product.id.substring(0, 8).toUpperCase()}
           </span>
         </div>

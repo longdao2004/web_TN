@@ -76,8 +76,8 @@ export const OrderSuccessClient = () => {
         // Map backend data to frontend expected format
         const mappedOrder = {
           id: data.id,
-          // Bổ sung các trường dữ liệu mà component OrderSummary đang gọi (để tránh lỗi undefined)
-          code: data.id.split("-")[0].toUpperCase(), // Tạo mã đơn hàng ngắn từ UUID
+          // TẠO MÃ ĐƠN HÀNG: Cắt phần đầu UUID (8 ký tự trước dấu '-') và viết in hoa
+          code: data.id.split("-")[0].toUpperCase(),
           createdAt: new Date(data.createdAt).toLocaleDateString("vi-VN"), // Chuyển đổi ngày đặt hàng
           totalAmount: data.totalAmount, // <-- Fix lỗi: Component gọi totalAmount thay vì total
 
