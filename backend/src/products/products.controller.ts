@@ -54,6 +54,7 @@ export class ProductsController {
         origin: { type: 'string', example: 'Mộc Châu, Sơn La' },
         unit: { type: 'string', example: 'kg' },
         price: { type: 'number', example: 35000 },
+        originalPrice: { type: 'number', example: 45000 },
         quantity: { type: 'number', example: 50 },
         categoryId: {
           type: 'string',

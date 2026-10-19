@@ -15,12 +15,21 @@ export class ProductsService {
       expiryDate,
       quantity,
       price,
+      originalPrice,
       categoryId,
       storeId,
       specification,
       storageCondition,
       ...productData
     } = createProductDto;
+
+    // Chuẩn hóa giá thông minh: Giá nhỏ hơn luôn là giá bán thực tế, giá lớn hơn là giá gốc niêm yết
+    let finalPrice = Number(price);
+    let finalOriginalPrice: number | null = null;
+    if (originalPrice && Number(originalPrice) > 0 && Number(originalPrice) !== Number(price)) {
+      finalPrice = Math.min(Number(price), Number(originalPrice));
+      finalOriginalPrice = Math.max(Number(price), Number(originalPrice));
+    }
 
     // Prisma Nested Writes: Tạo Product và ProductBatch trong cùng một Transaction
     return this.prisma.product.create({
@@ -35,7 +44,8 @@ export class ProductsService {
             harvestDate: new Date(harvestDate),
             expiryDate: new Date(expiryDate),
             quantity: Number(quantity),
-            price: Number(price),
+            price: finalPrice,
+            originalPrice: finalOriginalPrice,
             specification,
             storageCondition,
           },
@@ -148,15 +158,27 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, file?: any) {
-    const { price, stock, harvestDate, expiryDate, categoryId, storeId, specification, storageCondition, ...productData } = updateProductDto as any;
+    const { price, originalPrice, stock, harvestDate, expiryDate, categoryId, storeId, specification, storageCondition, ...productData } = updateProductDto as any;
     let imageUrl = undefined;
     if (file) {
       const uploadResult = await this.cloudinary.uploadImage(file);
-      imageUrl = uploadResult.url;
+      imageUrl = uploadResult.secure_url || uploadResult.url;
     }
     
     const batchUpdateData: any = {};
-    if (price !== undefined) batchUpdateData.price = Number(price);
+    // Chuẩn hóa thông minh: số nhỏ hơn luôn là giá bán thực tế, số lớn hơn là giá gốc niêm yết
+    if (price !== undefined || originalPrice !== undefined) {
+      const p = price !== undefined ? Number(price) : undefined;
+      const op = (originalPrice !== undefined && originalPrice !== "" && Number(originalPrice) > 0) ? Number(originalPrice) : null;
+
+      if (p !== undefined && op !== null && p !== op) {
+        batchUpdateData.price = Math.min(p, op);
+        batchUpdateData.originalPrice = Math.max(p, op);
+      } else {
+        if (p !== undefined) batchUpdateData.price = p;
+        if (originalPrice !== undefined) batchUpdateData.originalPrice = op;
+      }
+    }
     if (stock !== undefined) batchUpdateData.quantity = Number(stock);
     if (harvestDate) batchUpdateData.harvestDate = new Date(harvestDate);
     if (expiryDate) batchUpdateData.expiryDate = new Date(expiryDate);

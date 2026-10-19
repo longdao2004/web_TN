@@ -92,7 +92,10 @@ export class StoresService {
     const whereClause: any = { deletedAt: null };
 
     if (filters?.search) {
-      whereClause.name = { contains: filters.search, mode: 'insensitive' };
+      whereClause.OR = [
+        { name: { contains: filters.search, mode: 'insensitive' } },
+        { address: { contains: filters.search, mode: 'insensitive' } },
+      ];
     }
     if (filters?.province) {
       whereClause.address = { contains: filters.province, mode: 'insensitive' };
@@ -100,13 +103,13 @@ export class StoresService {
 
     let orderByClause: any = { createdAt: 'desc' };
     if (filters?.sort === 'rating') {
-      // Sắp xếp giả cho đánh giá vì đánh giá chưa phải dữ liệu thật
       orderByClause = { createdAt: 'desc' };
     } else if (filters?.sort === 'newest') {
       orderByClause = { createdAt: 'desc' };
     }
 
-    return this.prisma.store.findMany({
+    // 🟢 Tải danh sách cửa hàng kèm theo reviews của tất cả sản phẩm
+    const stores = await this.prisma.store.findMany({
       where: whereClause,
       include: {
         owner: {
@@ -115,8 +118,34 @@ export class StoresService {
         _count: {
           select: { products: { where: { deletedAt: null } } },
         },
+        products: {
+          where: { deletedAt: null },
+          select: {
+            reviews: {
+              where: { deletedAt: null },
+              select: { rating: true },
+            },
+          },
+        },
       },
       orderBy: orderByClause,
+    });
+
+    // 🟢 Tính toán điểm trung bình sao và tổng lượt đánh giá của toàn bộ cửa hàng
+    return stores.map((store) => {
+      const allReviews = store.products?.flatMap((p) => p.reviews) || [];
+      const reviewsCount = allReviews.length;
+      const rating =
+        reviewsCount > 0
+          ? Number((allReviews.reduce((sum, r) => sum + r.rating, 0) / reviewsCount).toFixed(1))
+          : 5.0;
+
+      const { products, ...rest } = store;
+      return {
+        ...rest,
+        rating,
+        reviewsCount,
+      };
     });
   }
 
@@ -130,6 +159,15 @@ export class StoresService {
         _count: {
           select: { products: { where: { deletedAt: null } } },
         },
+        products: {
+          where: { deletedAt: null },
+          select: {
+            reviews: {
+              where: { deletedAt: null },
+              select: { rating: true },
+            },
+          },
+        },
       },
     });
 
@@ -137,7 +175,20 @@ export class StoresService {
       throw new NotFoundException('Không tìm thấy cửa hàng');
     }
 
-    return store;
+    // 🟢 Tính điểm đánh giá cho trang chi tiết cửa hàng
+    const allReviews = store.products?.flatMap((p) => p.reviews) || [];
+    const reviewsCount = allReviews.length;
+    const rating =
+      reviewsCount > 0
+        ? Number((allReviews.reduce((sum, r) => sum + r.rating, 0) / reviewsCount).toFixed(1))
+        : 5.0;
+
+    const { products, ...rest } = store;
+    return {
+      ...rest,
+      rating,
+      reviewsCount,
+    };
   }
 
   async remove(id: string) {

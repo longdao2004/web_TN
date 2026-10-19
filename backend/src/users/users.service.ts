@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service'; // 1. Import CloudinaryService
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinary: CloudinaryService, // 2. Tiêm CloudinaryService vào constructor
+  ) {}
 
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -30,7 +34,8 @@ export class UsersService {
     return user;
   }
 
-  async updateProfile(userId: string, updateUserDto: UpdateUserDto) {
+  // 3. Nhận thêm tham số file ảnh từ Controller
+  async updateProfile(userId: string, updateUserDto: UpdateUserDto, file?: any) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
     });
@@ -38,9 +43,19 @@ export class UsersService {
       throw new NotFoundException('Không tìm thấy người dùng');
     }
 
+    // Nếu người dùng có chọn ảnh mới, tải ảnh lên Cloudinary và lấy URL
+    let avatarUrl = user.avatarUrl;
+    if (file) {
+      const uploadResult = await this.cloudinary.uploadImage(file);
+      avatarUrl = uploadResult.url;
+    }
+
     return this.prisma.user.update({
       where: { id: userId },
-      data: updateUserDto,
+      data: {
+        ...updateUserDto,
+        ...(avatarUrl ? { avatarUrl } : {}), // Cập nhật avatarUrl mới
+      },
       select: {
         id: true,
         email: true,

@@ -36,15 +36,15 @@ async function main() {
     },
     {
       user: { fullName: 'Lê Văn Cường', email: 'cuongle@gmail.com', phone: '0923456789', address: 'Cao Phong, Hòa Bình' },
-      store: { name: 'Vườn Cam Cường Phát', desc: 'Nhà vườn trồng cam chuẩn hữu cơ.' },
+      store: { name: 'Hoa quả Cường Lê', desc: 'Nhà vườn trồng cam chuẩn hữu cơ.' },
       category: { name: 'Đặc sản vùng miền', desc: 'Nông sản thế mạnh của từng địa phương.' },
-      product: { name: 'Cam Canh Cao Phong', origin: 'Hòa Bình', unit: 'kg', price: 45000, qty: 500, image: '/images/products/camcp.jpg' }
+      product: { name: 'Cam Canh Cao Phong', origin: 'Hòa Bình', unit: 'kg', price: 45000, originalPrice: 60000, qty: 500, image: '/images/products/camcp.jpg' }
     },
     {
       user: { fullName: 'Phạm Thu Hương', email: 'huongpham@gmail.com', phone: '0934567890', address: 'Lục Ngạn, Bắc Giang' },
-      store: { name: 'Hợp tác xã Vải Thiều', desc: 'Phân phối vải thiều sấy khô và tươi.' },
+      store: { name: 'Nông sản sấy Thu Hương', desc: 'Phân phối vải thiều sấy khô và tươi.' },
       category: { name: 'Nông sản sấy', desc: 'Trái cây và rau củ sấy khô bảo quản lâu.' },
-      product: { name: 'Vải thiều sấy khô', origin: 'Lục Ngạn, Bắc Giang', unit: 'kg', price: 85000, qty: 150, image: '/images/products/vaithieu.jpg' }
+      product: { name: 'Vải thiều sấy khô', origin: 'Lục Ngạn, Bắc Giang', unit: 'kg', price: 85000, originalPrice: 110000, qty: 150, image: '/images/products/vaithieu.jpg' }
     },
     {
       user: { fullName: 'Hoàng Minh Tuấn', email: 'tuanhoang@gmail.com', phone: '0945678901', address: 'Mộc Châu, Sơn La' },
@@ -89,6 +89,10 @@ async function main() {
         name: data.store.name,
         description: data.store.desc,
         logoUrl: `https://ui-avatars.com/api/?name=${data.store.name.replace(/ /g, '+')}&background=random`,
+        address: data.user.address,
+        phone: data.user.phone,
+        email: data.user.email,
+        website: `https://${data.store.name.toLowerCase().replace(/ /g, '')}.vn`,
         ownerId: user.id,
       }
     });
@@ -111,6 +115,7 @@ async function main() {
             expiryDate: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000), 
             quantity: data.product.qty,
             price: data.product.price,
+            originalPrice: (data.product as any).originalPrice || null,
           }
         },
         reviews: {

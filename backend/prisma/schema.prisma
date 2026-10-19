@@ -130,6 +130,7 @@ model ProductBatch {
   expiryDate  DateTime
   quantity    Int
   price       Float
+  originalPrice Float?
   specification String?
   storageCondition String?
 

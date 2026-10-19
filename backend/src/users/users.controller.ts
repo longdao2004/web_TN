@@ -7,7 +7,10 @@ import {
   Delete,
   UseGuards,
   Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -30,8 +33,13 @@ export class UsersController {
   }
 
   @Patch('profile')
-  updateProfile(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.updateProfile(req.user.userId, updateUserDto);
+  @UseInterceptors(FileInterceptor('avatar'))
+  updateProfile(
+    @Req() req: any,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() file?: any,
+  ) {
+    return this.usersService.updateProfile(req.user.userId, updateUserDto, file);
   }
 
   @Get()

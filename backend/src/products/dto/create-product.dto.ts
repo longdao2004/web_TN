@@ -15,6 +15,7 @@ export class CreateProductDto {
   expiryDate!: Date; // Hạn sử dụng
   quantity!: number; // Số lượng nhập kho
   price!: number; // Giá bán
+  originalPrice?: number; // Giá gốc khi có ưu đãi (VD: 50000)
 
     // --- Bổ sung Quy cách & Điều kiện bảo quản ---
   specification?: string;
