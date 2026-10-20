@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, Star, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge, Button } from "@/components/ui";
+import { Badge } from "@/components/ui";
 import { useCartStore } from "@/store/useCartStore";
 import Image from "next/image";
 
@@ -21,6 +21,7 @@ interface ProductCardProps {
     badges?: string[];
     unit: string;
     isExpired?: boolean;
+    isNewBatch?: boolean;
   };
   priority?: boolean;
 }
@@ -105,16 +106,22 @@ export const ProductCard = ({
           )}
         </Link>
 
-        {/* Badges */}
-        {product.badges && product.badges.length > 0 && (
-          <div className="absolute top-3 left-3 flex flex-col gap-1">
+        {/* 🟢 Badges: Tô màu xanh ngọc nổi bật cho "Lô mới về" */}
+        {product.badges && product.badges.length > 0 && !product.isExpired && (
+          <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
             {product.badges.map((badge, idx) => (
               <Badge
                 key={idx}
-                variant={badge === "Khuyến mãi" ? "danger" : "primary"}
+                className={
+                  badge === "Lô mới về"
+                    ? "bg-emerald-600 text-white font-extrabold shadow-sm"
+                    : badge === "Khuyến mãi" || badge.startsWith("-")
+                      ? "bg-red-500 text-white font-bold"
+                      : "bg-blue-600 text-white font-bold"
+                }
                 size="sm"
               >
-                {badge}
+                {badge === "Lô mới về" ? `🌿 ${badge}` : badge}
               </Badge>
             ))}
           </div>
@@ -149,14 +156,14 @@ export const ProductCard = ({
         </div>
 
         <div className="mt-auto pt-3 flex items-center justify-between gap-2">
-          {/* Cột giá tiền: Giá to ở trên, đơn vị tính ở dòng dưới để không bao giờ bị chật */}
+          {/* Cột giá tiền */}
           <div className="flex flex-col min-w-0">
             <span className="text-base sm:text-lg font-bold text-emerald-700 leading-tight truncate">
               {formatPrice(product.price)}
             </span>
             <div className="flex items-center gap-1.5 mt-0.5 text-xs text-gray-400">
               <span className="truncate">/{product.unit}</span>
-              {product.originalPrice && (
+              {product.originalPrice && product.originalPrice > product.price && (
                 <span className="line-through truncate">
                   {formatPrice(product.originalPrice)}
                 </span>
@@ -164,26 +171,25 @@ export const ProductCard = ({
             </div>
           </div>
 
-  {/* Nút giỏ hàng nhỏ gọn, viền xám không màu, chỉ đổi xanh khi hover */}
-  <button
-    type="button"
-    onClick={handleAddToCart}
-    disabled={isLoading || product.isExpired}
-    className={`h-7 w-7 shrink-0 rounded-lg flex items-center justify-center border transition-all duration-200 ${
-      product.isExpired
-        ? "border-gray-200 bg-gray-50/50 text-gray-300 cursor-not-allowed"
-        : "border-gray-200 bg-white text-gray-500 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 active:scale-95 shadow-none"
-    }`}
-    title={product.isExpired ? "Sản phẩm đã hết hạn" : "Thêm vào giỏ"}
-  >
-    {isLoading ? (
-      <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600" />
-    ) : (
-      <ShoppingCart className="h-3.5 w-3.5 transition-colors" />
-    )}
-  </button>
-</div>
-
+          {/* Nút giỏ hàng */}
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isLoading || product.isExpired}
+            className={`h-7 w-7 shrink-0 rounded-lg flex items-center justify-center border transition-all duration-200 ${
+              product.isExpired
+                ? "border-gray-200 bg-gray-50/50 text-gray-300 cursor-not-allowed"
+                : "border-gray-200 bg-white text-gray-500 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 active:scale-95 shadow-none"
+            }`}
+            title={product.isExpired ? "Sản phẩm đã hết hạn" : "Thêm vào giỏ"}
+          >
+            {isLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600" />
+            ) : (
+              <ShoppingCart className="h-3.5 w-3.5 transition-colors" />
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

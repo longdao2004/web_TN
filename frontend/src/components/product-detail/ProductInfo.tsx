@@ -17,8 +17,13 @@ export const ProductInfo = ({ product }: ProductInfoProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Badges */}
+      {/* 🟢 Badges: Bổ sung huy hiệu Lô mới về */}
       <div className="flex items-center gap-2 flex-wrap">
+        {product.isNewBatch && !product.isExpired && (
+          <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-xs">
+            🌿 Lô mới về
+          </span>
+        )}
         {product.isOrganic && (
           <Badge className="bg-emerald-500 text-white font-bold" size="sm">
             Hữu cơ
@@ -51,7 +56,6 @@ export const ProductInfo = ({ product }: ProductInfoProps) => {
         <div className="text-gray-500">
           Mã SP:{" "}
           <span className="font-semibold text-gray-900">
-            {/* TẠO MÃ SẢN PHẨM: Cắt 8 ký tự đầu của UUID và in hoa để làm mã sản phẩm ngắn gọn, dễ nhìn */}
             {product.id.substring(0, 8).toUpperCase()}
           </span>
         </div>

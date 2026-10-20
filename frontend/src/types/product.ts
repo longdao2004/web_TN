@@ -37,4 +37,6 @@ export interface Product {
   isFeatured: boolean;
   isNew: boolean;
   unit: string;
+  isNewBatch?: boolean;
+  badges?: string[];
 }

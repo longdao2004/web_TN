@@ -4,7 +4,7 @@ import { ProductDetail } from '../types/product-detail';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export const productService = {
-  // 1. LẤY DANH SÁCH SẢN PHẨM (ĐÃ ĐỒNG BỘ HIỂN THỊ GIÁ LÔ MỚI NHẤT TRÊN THẺ)
+  // 1. LẤY DANH SÁCH SẢN PHẨM (ĐỒNG BỘ GIÁ VÀ NHẬN DIỆN LÔ MỚI NHẤT)
   getProducts: async (filters?: { 
     search?: string, 
     categoryId?: string, 
@@ -55,18 +55,28 @@ export const productService = {
         discountPercent = Math.round(((originalPrice - actualPrice) / originalPrice) * 100);
       }
 
+      // 🟢 KIỂM TRA LÔ MỚI VỀ:
+      // 1. Lô mới nhất phải còn hạn sử dụng
+      const isLatestActive = latest && new Date(latest.expiryDate).getTime() > Date.now();
+      // 2. Lô được thu hoạch/nhập kho trong vòng 7 ngày gần nhất (hoặc là đợt hàng thứ 2 trở lên gối đầu)
+      const batchTime = new Date(latest?.createdAt || latest?.harvestDate || 0).getTime();
+      const isWithin7Days = Date.now() - batchTime < 7 * 24 * 60 * 60 * 1000;
+      const isNewBatch = Boolean(isLatestActive && (isWithin7Days || (item.batches?.length > 1)));
+
       return {
         id: item.id,
         slug: item.id,
         name: item.name,
         image: item.imageUrl || '',
         price: actualPrice, // Giá bán thực tế (khách trả)
-        originalPrice: isDiscounted ? originalPrice : undefined, //  Giá gốc niêm yết (gạch ngang)
+        originalPrice: isDiscounted ? originalPrice : undefined, // Giá gốc niêm yết (gạch ngang)
         salePrice: isDiscounted ? actualPrice : undefined,
-        discount: isDiscounted ? discountPercent : undefined, // chỉ hiển thị khi có khuyến mãi
-        badges: isDiscounted
-          ? [`-${discountPercent}%`, "Khuyến mãi"]
-          : [],
+        discount: isDiscounted ? discountPercent : undefined, // Chỉ hiện khi có giảm giá (tránh hiện số 0 xấu)
+        badges: [
+          ...(isDiscounted ? [`-${discountPercent}%`, "Khuyến mãi"] : []),
+          ...(isNewBatch ? ["Lô mới về"] : []),
+        ],
+        isNewBatch: isNewBatch, // Cờ nhận diện đợt hàng mới để hiện huy hiệu
         isExpired: item.batches?.length > 0 && !(item.batches?.some((b: any) => new Date(b.expiryDate).getTime() > Date.now())),
         stock: item.batches?.filter((b: any) => new Date(b.expiryDate).getTime() > Date.now()).reduce((acc: number, b: any) => acc + b.quantity, 0) || 0,
         batches: item.batches || [],
@@ -114,6 +124,12 @@ export const productService = {
       detailDiscountPercent = Math.round(((detailOriginalPrice - detailActualPrice) / detailOriginalPrice) * 100);
     }
 
+    // 🟢 KIỂM TRA LÔ MỚI VỀ CHO TRANG CHI TIẾT
+    const isLatestActiveDetail = latestBatch && new Date(latestBatch.expiryDate).getTime() > Date.now();
+    const batchTimeDetail = new Date(latestBatch?.createdAt || latestBatch?.harvestDate || 0).getTime();
+    const isWithin7DaysDetail = Date.now() - batchTimeDetail < 7 * 24 * 60 * 60 * 1000;
+    const isNewBatchDetail = Boolean(isLatestActiveDetail && (isWithin7DaysDetail || (item.batches?.length > 1)));
+
     return {
       id: item.id,
       slug: item.id,
@@ -124,7 +140,12 @@ export const productService = {
       price: isDetailDiscounted ? detailOriginalPrice! : detailActualPrice,
       salePrice: isDetailDiscounted ? detailActualPrice : undefined,
       originalPrice: isDetailDiscounted ? detailOriginalPrice : undefined,
-      discount: detailDiscountPercent,
+      discount: isDetailDiscounted ? detailDiscountPercent : undefined,
+      isNewBatch: isNewBatchDetail,
+      badges: [
+        ...(isDetailDiscounted ? [`-${detailDiscountPercent}%`, "Khuyến mãi"] : []),
+        ...(isNewBatchDetail ? ["Lô mới về"] : []),
+      ],
       rating: 5,
       reviewCount: item.reviews?.length || 0,
       storeName: item.store?.name || 'Cửa hàng',

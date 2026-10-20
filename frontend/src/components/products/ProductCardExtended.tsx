@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Star, Heart, MapPin, Loader2 } from "lucide-react";
+import { ShoppingCart, Star, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge, Button } from "@/components/ui";
 import { Product } from "@/types/product";
@@ -98,14 +98,22 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           )}
         </Link>
 
-        {/* Badges Overlay */}
+        {/* 🟢 Badges Overlay: Đã tích hợp nhãn Lô mới về & Sửa lỗi số 0 */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {/*  Dùng toán tử 3 ngôi để nếu không có giảm giá thì trả về null (React không render gì cả) */}
+          {/* Huy hiệu Lô mới về */}
+          {product.isNewBatch && !product.isExpired && (
+            <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-md animate-pulse">
+              🌿 Lô mới về
+            </span>
+          )}
+
+          {/* Huy hiệu giảm giá (dùng toán tử 3 ngôi chống hiện số 0) */}
           {product.discount && product.discount > 0 ? (
             <Badge variant="danger" size="sm" className="font-bold">
               -{product.discount}%
             </Badge>
           ) : null}
+
           {product.isOrganic && (
             <Badge
               className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold"
@@ -114,14 +122,13 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
               Hữu cơ
             </Badge>
           )}
+
           {product.isNew && (
             <Badge variant="primary" size="sm" className="font-bold">
               Mới
             </Badge>
           )}
         </div>
-
-        {/* Nút Yêu thích đã bị gỡ bỏ do tính năng này chưa hoàn thiện */}
       </div>
 
       {/* Product Info */}
