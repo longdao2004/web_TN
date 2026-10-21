@@ -71,7 +71,7 @@ export default function SellerProductsPage() {
               <tr key={product.id} className="border-b border-gray-50 hover:bg-emerald-50/30 transition">
                 {/* TẠO MÃ SẢN PHẨM: Lấy 8 ký tự đầu của UUID làm mã SP hiển thị trên bảng */}
                 <td className="p-4 text-gray-500 font-mono text-xs">{product.id ? product.id.substring(0, 8).toUpperCase() : ""}</td>
-                <td className="p-4 font-medium text-gray-800 text-gray-900">{product.name}</td>
+                <td className="p-4 font-medium text-gray-900">{product.name}</td>
                 <td className="p-4 text-gray-600">{product.category}</td>
                 <td className="p-4">
                   <div className="font-semibold text-emerald-600">{product.price.toLocaleString()}đ</div>
@@ -87,21 +87,24 @@ export default function SellerProductsPage() {
                     {product.stock > 0 ? "Đang bán" : "Hết hàng"}
                   </span>
                 </td>
-                <td className="p-4 flex items-center gap-3">
-                  <Link
-                    href={`/seller/products/edit/${product.id}`}
-                    className="text-gray-400 hover:text-emerald-600 transition cursor-pointer"
-                    title="Sửa"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </Link>
-                  <button
-                    className="text-gray-400 hover:text-red-500 transition cursor-pointer"
-                    title="Xóa"
-                    onClick={() => handleDelete(product.id, product.name)}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                {/*  CĂN GIỮA ĐỒNG BỘ CỘT THAO TÁC */}
+                <td className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-3">
+                    <Link
+                      href={`/seller/products/edit/${product.id}`}
+                      className="text-gray-400 hover:text-emerald-600 transition cursor-pointer"
+                      title="Sửa"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </Link>
+                    <button
+                      className="text-gray-400 hover:text-red-500 transition cursor-pointer"
+                      title="Xóa"
+                      onClick={() => handleDelete(product.id, product.name)}
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

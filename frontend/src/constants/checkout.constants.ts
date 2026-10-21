@@ -10,13 +10,13 @@ export const SHIPPING_METHODS: ShippingMethod[] = [
     id: 'ship-standard',
     name: 'Giao hàng tiêu chuẩn',
     estimatedTime: '2 - 3 ngày làm việc',
-    price: 30000,
+    price: 25000,
   },
   {
     id: 'ship-express',
     name: 'Giao hàng hỏa tốc (Nông sản tươi)',
     estimatedTime: 'Nhận hàng trong 2H',
-    price: 55000,
+    price: 50000,
   },
 ];
 

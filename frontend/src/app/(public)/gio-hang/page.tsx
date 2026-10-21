@@ -20,6 +20,7 @@ import {
   EmptyCart,
   DeleteConfirmModal,
 } from "@/components/cart";
+import { SHIPPING_METHODS } from "@/constants/checkout.constants"; 
 
 export default function CartPage() {
   const router = useRouter();
@@ -75,8 +76,9 @@ export default function CartPage() {
       }
     }
 
-    // Mặc định phí ship tạm tính 30.000đ
-    let shippingFee = subTotal > 500000 || subTotal === 0 ? 0 : 30000;
+    // Mặc định phí ship tạm tính 
+    const defaultShippingPrice = SHIPPING_METHODS[0]?.price || 25000;
+    let shippingFee = subTotal > 500000 || subTotal === 0 ? 0 : defaultShippingPrice;
     if (appliedVoucher?.code === "FREESHIP") {
       shippingFee = Math.max(0, shippingFee - appliedVoucher.discountValue);
       discount = 0;
