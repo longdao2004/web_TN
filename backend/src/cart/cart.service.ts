@@ -60,6 +60,7 @@ export class CartService {
           include: {
             product: {
               include: {
+                store: true,
                 batches: {
                   orderBy: { createdAt: 'desc' }, // Lấy lô hàng mới nhất lên đầu
                 },
@@ -95,6 +96,17 @@ export class CartService {
         quantity: item.quantity,
         pricePerUnit: currentPrice,
         subTotal: currentPrice * item.quantity, // Thành tiền của món này
+        store: item.product.store
+          ? {
+              id: item.product.store.id,
+              name: item.product.store.name,
+              slug: item.product.store.id,
+            }
+          : {
+              id: 'unknown',
+              name: 'Cửa hàng nông sản',
+              slug: 'cua-hang',
+            },
       };
     });
 

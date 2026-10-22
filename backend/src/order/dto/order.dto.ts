@@ -18,4 +18,11 @@ export class CreateOrderDto {
 
   @ApiProperty({ required: false, description: 'Số lượng nếu Mua Ngay' })
   quantity?: number;
+
+  @ApiProperty({
+    required: false,
+    description: 'Danh sách ID các mục trong giỏ hàng được chọn để thanh toán',
+    type: [String],
+  })
+  cartItemIds?: string[];
 }

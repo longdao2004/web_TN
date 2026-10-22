@@ -59,6 +59,12 @@ export class OrderService {
           data: { quantity: latestBatch.quantity - quantity },
         });
 
+        // 🟢 Tăng số lượng đã bán của sản phẩm (cho Mua ngay)
+        await tx.product.update({
+          where: { id: product.id },
+          data: { soldCount: { increment: quantity } },
+        });
+
         return {
           message: 'Đặt hàng thành công!',
           orderId: order.id,
@@ -88,8 +94,17 @@ export class OrderService {
       throw new BadRequestException('Giỏ hàng của bạn đang trống!');
     }
 
+    // 🟢 Lọc chỉ những món trong giỏ hàng được khách chọn mua (nếu có truyền cartItemIds)
+    let checkoutItems = cart.items;
+    if (dto.cartItemIds && dto.cartItemIds.length > 0) {
+      checkoutItems = cart.items.filter((item) => dto.cartItemIds!.includes(item.id));
+      if (checkoutItems.length === 0) {
+        throw new BadRequestException('Không tìm thấy sản phẩm được chọn trong giỏ hàng!');
+      }
+    }
+
     let totalAmount = 0;
-    cart.items.forEach((item) => {
+    checkoutItems.forEach((item) => {
       const latestBatch = item.product.batches[0];
       const price = latestBatch ? latestBatch.price : 0;
       totalAmount += price * item.quantity;
@@ -103,7 +118,7 @@ export class OrderService {
           status: 'PENDING',
           shippingAddress: dto.shippingAddress,
           items: {
-            create: cart.items.map((item) => {
+            create: checkoutItems.map((item) => {
               const latestBatch = item.product.batches[0];
               const price = latestBatch ? latestBatch.price : 0;
               return {
@@ -117,7 +132,7 @@ export class OrderService {
         },
       });
 
-      for (const item of cart.items) {
+      for (const item of checkoutItems) {
         const latestBatch = item.product.batches[0];
         // Kiểm tra tồn kho trước khi trừ
         if (latestBatch) {
@@ -131,9 +146,22 @@ export class OrderService {
             data: { quantity: latestBatch.quantity - item.quantity }, // trừ tồn kho
           });
         }
+
+        // 🟢 Tăng số lượng đã bán của sản phẩm (cho Đặt hàng từ giỏ)
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { soldCount: { increment: item.quantity } },
+        });
       }
 
-      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+      // 🟢 CHỈ XÓA CÁC SẢN PHẨM ĐÃ ĐƯỢC MUA KHỎI GIỎ HÀNG (Giữ lại các món chưa chọn)
+      const boughtItemIds = checkoutItems.map((item) => item.id);
+      await tx.cartItem.deleteMany({
+        where: {
+          cartId: cart.id,
+          id: { in: boughtItemIds },
+        },
+      });
 
       return {
         message: 'Đặt hàng thành công!',

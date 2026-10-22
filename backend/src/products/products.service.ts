@@ -101,7 +101,8 @@ export class ProductsService {
     let orderByClause: any = { createdAt: 'desc' };
     if (filters?.sortBy === 'price') {
       orderByClause = undefined;
-    } else if (filters?.sortBy === 'rating') {
+    // 🟢 Nhận diện cả 'bestseller' (Bán chạy) và 'rating' (Đánh giá) để sắp xếp theo số lượng bán
+    } else if (filters?.sortBy === 'bestseller' || filters?.sortBy === 'rating') {
       orderByClause = { soldCount: filters.order || 'desc' };
     } else if (filters?.sortBy === 'newest') {
       orderByClause = { createdAt: 'desc' };
