@@ -24,22 +24,27 @@ export const SortBar = ({ totalItems, onOpenMobileFilter }: SortBarProps) => {
 
   const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    
-    if (value === 'default') {
-      params.delete('sort');
-      params.delete('order');
-    } else if (value === 'price_asc') {
-      params.set('sort', 'price');
-      params.set('order', 'asc');
-    } else if (value === 'price_desc') {
-      params.set('sort', 'price');
-      params.set('order', 'desc');
-    } else if (value === 'newest') {
-      params.set('sort', 'newest');
-      params.delete('order');
-    } else if (value === 'rating' || value === 'bestseller') {
-      params.set('sort', 'rating');
-      params.set('order', 'desc');
+
+    if (value === "default") {
+      params.delete("sort");
+      params.delete("order");
+    } else if (value === "price_asc") {
+      params.set("sort", "price");
+      params.set("order", "asc");
+    } else if (value === "price_desc") {
+      params.set("sort", "price");
+      params.set("order", "desc");
+    } else if (value === "newest") {
+      params.set("sort", "newest");
+      params.delete("order");
+    } else if (value === "bestseller") {
+      // Lưu đúng từ khóa bestseller khi bấm Bán chạy
+      params.set("sort", "bestseller");
+      params.set("order", "desc");
+    } else if (value === "rating") {
+      // Lưu đúng từ khóa rating khi bấm Đánh giá cao
+      params.set("sort", "rating");
+      params.set("order", "desc");
     }
 
     router.push(`/san-pham?${params.toString()}`);
@@ -48,23 +53,28 @@ export const SortBar = ({ totalItems, onOpenMobileFilter }: SortBarProps) => {
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const search = formData.get('search') as string;
+    const search = formData.get("search") as string;
     const params = new URLSearchParams(searchParams.toString());
     if (search) {
-      params.set('search', search);
+      params.set("search", search);
     } else {
-      params.delete('search');
+      params.delete("search");
     }
     router.push(`/san-pham?${params.toString()}`);
   };
 
-  const currentSort = searchParams.get('sort');
-  const currentOrder = searchParams.get('order');
-  let selectValue = 'default';
-  if (currentSort === 'price' && currentOrder === 'asc') selectValue = 'price_asc';
-  else if (currentSort === 'price' && currentOrder === 'desc') selectValue = 'price_desc';
-  else if (currentSort === 'newest') selectValue = 'newest';
-  else if (currentSort === 'rating') selectValue = 'rating';
+  const currentSort = searchParams.get("sort");
+  const currentOrder = searchParams.get("order");
+  let selectValue = "default";
+  if (currentSort === "price" && currentOrder === "asc")
+    selectValue = "price_asc";
+  else if (currentSort === "price" && currentOrder === "desc")
+    selectValue = "price_desc";
+  else if (currentSort === "newest") selectValue = "newest";
+  // 🟢 Nhận diện đúng mục Bán chạy để hiển thị trên ô chọn
+  else if (currentSort === "bestseller") selectValue = "bestseller";
+  // 🟢 Nhận diện đúng mục Đánh giá cao để hiển thị trên ô chọn
+  else if (currentSort === "rating") selectValue = "rating";
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white border border-[var(--color-border)] rounded-xl shadow-sm mb-6">
@@ -89,7 +99,7 @@ export const SortBar = ({ totalItems, onOpenMobileFilter }: SortBarProps) => {
         <form onSubmit={handleSearch} className="hidden md:block w-64 relative">
           <input
             name="search"
-            defaultValue={searchParams.get('search') || ''}
+            defaultValue={searchParams.get("search") || ""}
             placeholder="Tìm trong kết quả..."
             className="w-full h-10 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-sm text-gray-900 bg-white"
           />

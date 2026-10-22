@@ -32,7 +32,7 @@ export const productService = {
     const res = await fetch(url, { method: 'GET' });
     if (!res.ok) throw new Error('Lỗi khi lấy danh sách sản phẩm');
     const data = await res.json();
-    return data.map((item: any) => {
+    const result = data.map((item: any) => {
       // 🟢 Sắp xếp lấy lô mới nhất cho từng sản phẩm ngoài danh sách
       const sorted = (item.batches || []).slice().sort((a: any, b: any) => 
         new Date(b.createdAt || b.harvestDate || 0).getTime() - new Date(a.createdAt || a.harvestDate || 0).getTime()
@@ -85,15 +85,40 @@ export const productService = {
         storeName: item.store?.name || 'Cửa hàng',
         province: item.origin || 'Chưa cập nhật',
         category: item.category?.name || '',
-        rating: item.reviews?.length > 0 ? (item.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / item.reviews.length).toFixed(1) : 5,
+        // 🟢 Chuẩn hóa điểm số sao kiểu số
+        rating: item.reviews?.length > 0 ? Number((item.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / item.reviews.length).toFixed(1)) : 5,
         reviewCount: item.reviews?.length || 0,
         reviews: item.reviews?.length || 0,
+        soldCount: item.soldCount || 0, // 🟢 Số lượng đã bán
         isOrganic: true,
         isFeatured: false,
         isNew: true,
         unit: item.unit || 'kg',
       };
     });
+
+    // 🟢 Nếu người dùng chọn "Đánh giá cao":
+    // Ưu tiên sản phẩm có đánh giá thật từ người mua (reviewCount > 0) lên trước, sau đó so sánh số sao
+    if (filters?.sortBy === 'rating') {
+      result.sort((a: any, b: any) => {
+        // 1. Sản phẩm có đánh giá thật (> 0) luôn đứng trước sản phẩm 0 đánh giá
+        if ((b.reviewCount > 0) !== (a.reviewCount > 0)) {
+          return b.reviewCount > 0 ? 1 : -1;
+        }
+        // 2. So sánh điểm sao trung bình từ cao xuống thấp
+        const diff = Number(b.rating) - Number(a.rating);
+        if (diff !== 0) return diff;
+        // 3. Nếu cùng số sao thì ưu tiên sản phẩm có nhiều lượt đánh giá hơn
+        return (b.reviewCount || 0) - (a.reviewCount || 0);
+      });
+    }
+
+    // 🟢 Nếu người dùng chọn "Bán chạy": Sắp xếp theo số lượng đã bán (soldCount) từ cao xuống thấp
+    if (filters?.sortBy === 'bestseller') {
+      result.sort((a: any, b: any) => (b.soldCount || 0) - (a.soldCount || 0));
+    }
+
+    return result;
   },
 
   // 2. CHI TIẾT SẢN PHẨM (LUÔN ƯU TIÊN LÔ HÀNG MỚI NHẤT)
@@ -146,8 +171,10 @@ export const productService = {
         ...(isDetailDiscounted ? [`-${detailDiscountPercent}%`, "Khuyến mãi"] : []),
         ...(isNewBatchDetail ? ["Lô mới về"] : []),
       ],
-      rating: 5,
+      // 🟢 Điểm sao chuẩn xác cho trang chi tiết (kiểu number)
+      rating: item.reviews?.length > 0 ? Number((item.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / item.reviews.length).toFixed(1)) : 5,
       reviewCount: item.reviews?.length || 0,
+      soldCount: item.soldCount || 0,
       storeName: item.store?.name || 'Cửa hàng',
       province: item.origin || 'Chưa cập nhật',
       category: item.category?.name || '',

@@ -32,7 +32,7 @@ export const CartItem = ({
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 p-4 border border-gray-100 rounded-2xl bg-white hover:border-[var(--color-primary-light)] transition-colors group">
-      {/* Left controls & Image */}
+      {/* Cột trái: Checkbox và Ảnh sản phẩm */}
       <div className="flex items-center gap-4">
         <label className="flex items-center cursor-pointer shrink-0">
           <input
@@ -56,11 +56,11 @@ export const CartItem = ({
         </Link>
       </div>
 
-      {/* Main Info */}
+      {/* Thông tin chính của sản phẩm */}
       <div className="flex-1 flex flex-col justify-between">
         <div className="flex justify-between items-start gap-4">
           <div>
-            {/* Category & Certificates */}
+            {/* Danh mục và Chứng nhận */}
             <div className="flex flex-wrap items-center gap-2 mb-1.5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
                 {item.category}
@@ -77,14 +77,14 @@ export const CartItem = ({
               ))}
             </div>
 
-            {/* Title */}
+            {/* Tên sản phẩm */}
             <Link href={`/san-pham/${item.slug}`}>
               <h3 className="font-bold text-gray-900 text-sm sm:text-base line-clamp-2 hover:text-[var(--color-primary)] transition-colors">
                 {item.name}
               </h3>
             </Link>
 
-            {/* Store */}
+            {/* Tên cửa hàng */}
             <Link
               href={`/cua-hang/${item.store.slug}`}
               className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 hover:text-[var(--color-primary)] transition-colors w-fit"
@@ -103,7 +103,7 @@ export const CartItem = ({
           </button>
         </div>
 
-        {/* Pricing & Quantity */}
+        {/* Giá tiền và Số lượng */}
         <div className="flex flex-wrap items-end justify-between gap-4 mt-4">
           <div className="flex flex-col">
             {item.originalPrice && (
@@ -132,7 +132,7 @@ export const CartItem = ({
           </div>
         </div>
 
-        {/* Mobile Total */}
+        {/* Tổng tiền trên mobile */}
         <div className="sm:hidden mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
           <span className="text-xs font-medium text-gray-500">Thành tiền:</span>
           <span className="font-bold text-gray-900 text-lg">

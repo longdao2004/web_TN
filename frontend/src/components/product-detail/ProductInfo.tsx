@@ -45,7 +45,8 @@ export const ProductInfo = ({ product }: ProductInfoProps) => {
       <div className="flex flex-wrap items-center gap-4 text-sm">
         <div className="flex items-center gap-1.5">
           <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-          <span className="font-bold text-gray-900">{product.rating}</span>
+          {/* 🟢 Đồng bộ hiển thị số sao có 1 chữ số thập phân (5.0) */}
+          <span className="font-bold text-gray-900">{Number(product.rating || 5).toFixed(1)}</span>
           <span className="text-gray-500">
             ({product.reviewCount} đánh giá)
           </span>

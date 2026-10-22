@@ -36,7 +36,13 @@ export const orderService = {
     return res.json();
   },
 
-    createOrder: async (data: { shippingAddress: string; phone: string; productId?: string; quantity?: number }) => {
+    createOrder: async (data: {
+    shippingAddress: string;
+    phone: string;
+    productId?: string;
+    quantity?: number;
+    cartItemIds?: string[];
+  }) => {
     const res = await fetch(`${API_URL}/orders`, {
       method: 'POST',
       headers: getHeaders(),

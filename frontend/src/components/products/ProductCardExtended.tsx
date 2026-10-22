@@ -165,8 +165,9 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           <div className="flex items-center">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
           </div>
+          {/* 🟢 Đồng bộ hiển thị số sao luôn có 1 chữ số thập phân (5.0 thay vì 5) */}
           <span className="text-xs font-bold text-gray-700">
-            {product.rating}
+            {Number(product.rating || 5).toFixed(1)}
           </span>
           <span className="text-xs text-gray-400">
             ({product.reviewCount} đánh giá)

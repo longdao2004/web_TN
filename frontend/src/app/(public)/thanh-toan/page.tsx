@@ -41,13 +41,23 @@ function CheckoutContent() {
     buyNowItem,
     clearCart,
     clearBuyNowItem,
+    fetchCart,
   } = useCartStore();
 
   const isBuyNow = searchParams.get("type") === "buynow";
-  const items = useMemo(
-    () => (isBuyNow ? (buyNowItem ? [buyNowItem] : []) : cartItems),
-    [isBuyNow, buyNowItem, cartItems],
-  );
+  const itemsParam = searchParams.get("items");
+  const selectedItemIds = useMemo(() => {
+    return itemsParam ? itemsParam.split(",").filter(Boolean) : [];
+  }, [itemsParam]);
+
+  const items = useMemo(() => {
+    if (isBuyNow) return buyNowItem ? [buyNowItem] : [];
+    // 🟢 Nếu có truyền danh sách ID các món được chọn từ giỏ hàng, chỉ thanh toán các món đó
+    if (selectedItemIds.length > 0) {
+      return cartItems.filter((item) => selectedItemIds.includes(item.id));
+    }
+    return cartItems;
+  }, [isBuyNow, buyNowItem, cartItems, selectedItemIds]);
 
   const [isMounted, setIsMounted] = useState(false);
   const [phoneText, setPhoneText] = useState("");
@@ -148,6 +158,7 @@ function CheckoutContent() {
         phone: string;
         productId?: string;
         quantity?: number;
+        cartItemIds?: string[];
       } = {
         shippingAddress: addressText,
         phone: phoneText,
@@ -156,6 +167,9 @@ function CheckoutContent() {
       if (isBuyNow && items.length > 0) {
         payload.productId = items[0].id || (items[0] as any).productId;
         payload.quantity = items[0].quantity;
+      } else {
+        // 🟢 Truyền danh sách ID các món được chọn trong giỏ hàng để Backend chỉ xử lý và xóa các món này
+        payload.cartItemIds = items.map((i) => i.id);
       }
 
       const orderRes = await orderService.createOrder(payload);
@@ -174,7 +188,8 @@ function CheckoutContent() {
       if (isBuyNow) {
         clearBuyNowItem();
       } else {
-        clearCart();
+        // 🟢 Cập nhật lại giỏ hàng (chỉ lấy các sản phẩm chưa mua còn lại trong DB)
+        await fetchCart();
       }
 
       if (provider === "VNPAY" && paymentRes.url) {

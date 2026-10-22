@@ -39,4 +39,5 @@ export interface Product {
   unit: string;
   isNewBatch?: boolean;
   badges?: string[];
+  soldCount?: number;
 }

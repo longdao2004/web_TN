@@ -38,6 +38,89 @@ export default function CartPage() {
 
   const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
+
+  // 🟢 Tự động khởi tạo khi tải giỏ hàng: Chọn các món của 1 cửa hàng để tránh xung đột
+  useEffect(() => {
+    if (items.length > 0) {
+      setSelectedItemIds((prev) => {
+        const validPrev = prev.filter((id) => items.some((item) => item.id === id));
+        if (validPrev.length > 0) {
+          const prevItems = items.filter((i) => validPrev.includes(i.id));
+          const prevStoreKeys = Array.from(
+            new Set(prevItems.map((i) => i.store?.id || i.store?.name))
+          );
+          if (prevStoreKeys.length <= 1) {
+            return validPrev;
+          }
+        }
+        // Mặc định chọn tất cả sản phẩm của cửa hàng đầu tiên trong giỏ
+        const firstStoreKey = items[0]?.store?.id || items[0]?.store?.name;
+        const firstStoreItems = items.filter(
+          (i) => (i.store?.id || i.store?.name) === firstStoreKey
+        );
+        return firstStoreItems.map((i) => i.id);
+      });
+    } else {
+      setSelectedItemIds([]);
+    }
+  }, [items]);
+
+  // 🟢 Xử lý khi người dùng tích chọn / bỏ chọn từng sản phẩm
+  const handleSelectItem = (id: string, selected: boolean) => {
+    const targetItem = items.find((i) => i.id === id);
+    if (!targetItem) return;
+
+    if (selected) {
+      // Lấy danh sách cửa hàng của các sản phẩm đang được chọn
+      const currentlySelectedItems = items.filter((i) => selectedItemIds.includes(i.id));
+      const selectedStoreKeys = Array.from(
+        new Set(currentlySelectedItems.map((i) => i.store?.id || i.store?.name))
+      );
+
+      const targetStoreKey = targetItem.store?.id || targetItem.store?.name;
+
+      // Nếu đang chọn món của cửa hàng khác: Bật thông báo cho người dùng biết
+      if (selectedStoreKeys.length > 0 && !selectedStoreKeys.includes(targetStoreKey)) {
+        toast.warning(
+          "Website hiện chưa hỗ trợ thanh toán nhiều sản phẩm của các cửa hàng khác nhau trong cùng một đơn. Vui lòng chọn và thanh toán sản phẩm của từng cửa hàng!",
+          { duration: 5000 }
+        );
+        return;
+      }
+
+      setSelectedItemIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    } else {
+      setSelectedItemIds((prev) => prev.filter((itemId) => itemId !== id));
+    }
+  };
+
+  // 🟢 Xử lý khi người dùng bấm "Chọn tất cả"
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      // Kiểm tra xem giỏ hàng có sản phẩm từ nhiều cửa hàng khác nhau không
+      const allStoreKeys = Array.from(
+        new Set(items.map((i) => i.store?.id || i.store?.name))
+      );
+
+      if (allStoreKeys.length > 1) {
+        // Thông báo cho người dùng biết web không hỗ trợ thanh toán nhiều cửa hàng cùng lúc
+        toast.warning(
+          "Website hiện chưa hỗ trợ thanh toán nhiều sản phẩm của các cửa hàng khác nhau trong cùng một đơn. Hệ thống đã chọn các sản phẩm của một cửa hàng để bạn thanh toán trước!",
+          { duration: 5000 }
+        );
+        const firstStoreKey = allStoreKeys[0];
+        const firstStoreItems = items.filter(
+          (i) => (i.store?.id || i.store?.name) === firstStoreKey
+        );
+        setSelectedItemIds(firstStoreItems.map((i) => i.id));
+      } else {
+        setSelectedItemIds(items.map((i) => i.id));
+      }
+    } else {
+      setSelectedItemIds([]);
+    }
+  };
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
     updateQuantity(id, quantity);
@@ -54,9 +137,19 @@ export default function CartPage() {
     }
   };
 
-  // Tính toán dữ liệu giỏ hàng đồng bộ 100%
+  // 🟢 Lọc danh sách các sản phẩm đang được chọn
+  const selectedItems = useMemo(
+    () => items.filter((item) => selectedItemIds.includes(item.id)),
+    [items, selectedItemIds]
+  );
+
+  // 🟢 Tính toán dữ liệu giỏ hàng đồng bộ CHỈ CHO CÁC SẢN PHẨM ĐƯỢC CHỌN
   const summaryData = useMemo<CartSummaryData>(() => {
-    const subTotal = items.reduce(
+    if (selectedItems.length === 0) {
+      return { subTotal: 0, discount: 0, shippingFee: 0, tax: 0, total: 0 };
+    }
+
+    const subTotal = selectedItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
@@ -88,11 +181,33 @@ export default function CartPage() {
     const total = Math.max(0, subTotal + shippingFee + tax - discount);
 
     return { subTotal, discount, shippingFee, tax, total };
-  }, [items, appliedVoucher]);
+  }, [selectedItems, appliedVoucher]);
 
   const itemToDeleteName = useMemo(() => {
     return items.find((i) => i.id === deleteItemId)?.name;
   }, [deleteItemId, items]);
+
+  // 🟢 Xử lý chuyển sang trang thanh toán: Truyền danh sách ID các món được chọn
+  const handleProceedToCheckout = () => {
+    if (selectedItemIds.length === 0) {
+      toast.warning("Vui lòng chọn ít nhất 1 sản phẩm để tiến hành thanh toán!");
+      return;
+    }
+
+    // Kiểm tra an toàn trước khi chuyển sang thanh toán
+    const selectedStores = Array.from(
+      new Set(selectedItems.map((i) => i.store?.id || i.store?.name))
+    );
+    if (selectedStores.length > 1) {
+      toast.warning(
+        "Website hiện chưa hỗ trợ thanh toán nhiều sản phẩm của các cửa hàng khác nhau trong cùng một đơn. Vui lòng chọn và thanh toán sản phẩm của từng cửa hàng!",
+        { duration: 5000 }
+      );
+      return;
+    }
+
+    router.push(`/thanh-toan?items=${selectedItemIds.join(",")}`);
+  };
 
   // Giỏ hàng trống
   if (items.length === 0) {
@@ -148,9 +263,9 @@ export default function CartPage() {
           <div className="lg:col-span-8 flex flex-col gap-6">
             <CartList
               items={items}
-              selectedItemIds={items.map((i) => i.id)}
-              onSelectAll={() => {}}
-              onSelectItem={() => {}}
+              selectedItemIds={selectedItemIds}
+              onSelectAll={handleSelectAll}
+              onSelectItem={handleSelectItem}
               onUpdateQuantity={handleUpdateQuantity}
               onDeleteItem={requestDelete}
             />
@@ -165,8 +280,8 @@ export default function CartPage() {
 
             <CartSummary
               data={summaryData}
-              selectedCount={items.length}
-              onCheckout={() => router.push("/thanh-toan")}
+              selectedCount={selectedItemIds.length}
+              onCheckout={handleProceedToCheckout}
               onContinueShopping={() => router.push("/san-pham")}
             />
           </div>

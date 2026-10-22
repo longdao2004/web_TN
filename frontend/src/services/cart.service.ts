@@ -30,11 +30,11 @@ export const cartService = {
         price: item.pricePerUnit,
         quantity: item.quantity,
         maxQuantity: 99, // Fallback since backend doesn't return maxQuantity in cart
-        store: {
+        store: item.store || {
           id: '1',
-          name: 'Cửa hàng',
-          slug: 'cua-hang'
-        }
+          name: 'Cửa hàng nông sản',
+          slug: 'cua-hang',
+        },
       }))
     };
   },

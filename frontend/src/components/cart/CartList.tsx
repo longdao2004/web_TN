@@ -24,7 +24,7 @@ export const CartList = ({
 
   return (
     <div className="bg-white rounded-3xl border border-[var(--color-border)] shadow-sm overflow-hidden">
-      {/* Header */}
+      {/* Header chọn tất cả */}
       <div className="p-5 border-b border-[var(--color-border)] flex items-center justify-between bg-gray-50/50">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
@@ -39,7 +39,7 @@ export const CartList = ({
         </label>
       </div>
 
-      {/* List */}
+      {/* Danh sách sản phẩm trong giỏ hàng */}
       <div className="p-4 sm:p-6 space-y-4">
         {items.map((item) => (
           <CartItem
