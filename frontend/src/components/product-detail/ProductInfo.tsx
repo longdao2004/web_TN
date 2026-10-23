@@ -17,8 +17,14 @@ export const ProductInfo = ({ product }: ProductInfoProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 🟢 Badges: Bổ sung huy hiệu Lô mới về */}
+      {/* 🟢 Badges: Bổ sung huy hiệu Lô mới về / Hết hạn */}
       <div className="flex items-center gap-2 flex-wrap">
+        {/* 🔴 Huy hiệu bo tròn báo Hết hạn */}
+        {product.isExpired && (
+          <span className="inline-flex items-center gap-1 bg-red-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-xs">
+            Hết hạn
+          </span>
+        )}
         {product.isNewBatch && !product.isExpired && (
           <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-xs">
             🌿 Lô mới về

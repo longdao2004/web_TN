@@ -11,9 +11,14 @@ import Image from "next/image";
 
 interface ProductCardExtendedProps {
   product: Product;
+  // 🟢 Hỗ trợ cờ tải ưu tiên cho các sản phẩm đầu trang
+  priority?: boolean;
 }
 
-export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
+export const ProductCardExtended = ({
+  product,
+  priority = false,
+}: ProductCardExtendedProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
@@ -45,7 +50,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           maxQuantity: 10,
           store: {
             id: "store-1",
-            name: product.storeName || "Cửa hàng",
+            name: product.storeName || (product as any).store || "Cửa hàng",
             slug: "cua-hang",
           },
         },
@@ -75,27 +80,19 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
         <Link
-          href={
-            product.isExpired ? "#" : `/san-pham/${product.slug || product.id}`
-          }
-          onClick={(e) => product.isExpired && e.preventDefault()}
+          href={`/san-pham/${product.slug || product.id}`}
           className="block w-full h-full relative"
         >
+          {/* 🟢 Giữ màu sắc ảnh gốc tự nhiên, không làm mờ hay xám xịt */}
           <Image
             src={product.image}
             alt={product.name}
-            className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isExpired ? "blur-[2px] grayscale" : ""}`}
-            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading={priority ? undefined : "lazy"}
+            priority={priority}
             width={500}
             height={500}
           />
-          {product.isExpired && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span className="bg-red-600 text-white font-bold px-4 py-2 rounded shadow-lg text-sm">
-                ĐÃ HẾT HẠN
-              </span>
-            </div>
-          )}
         </Link>
 
         {/* 🟢 Badges Overlay: Đã tích hợp nhãn Lô mới về & Sửa lỗi số 0 */}
@@ -129,6 +126,15 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
             </Badge>
           )}
         </div>
+
+        {/* 🔴 Huy hiệu bo tròn báo Hết hạn ở góc trên bên phải (đồng bộ kiểu dáng bo tròn với bên trái) */}
+        {product.isExpired && (
+          <div className="absolute top-3 right-3 z-20">
+            <span className="inline-flex items-center bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-md">
+              Hết hạn
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Product Info */}
@@ -136,24 +142,20 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
         {/* Store & Location */}
         <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)] mb-1.5">
           <Link
-            href={product.isExpired ? "#" : `/cua-hang/${product.storeName}`}
-            onClick={(e) => product.isExpired && e.preventDefault()}
+            href={`/cua-hang/${product.storeName || (product as any).store || "Cửa hàng"}`}
             className="hover:text-[var(--color-primary)] hover:underline truncate max-w-[60%]"
           >
-            {product.storeName}
+            {product.storeName || (product as any).store || "Cửa hàng"}
           </Link>
           <div className="flex items-center gap-0.5 truncate">
             <MapPin className="h-3 w-3" />
-            <span>{product.province}</span>
+            <span>{product.province || (product as any).origin || "Việt Nam"}</span>
           </div>
         </div>
 
         {/* Title */}
         <Link
-          href={
-            product.isExpired ? "#" : `/san-pham/${product.slug || product.id}`
-          }
-          onClick={(e) => product.isExpired && e.preventDefault()}
+          href={`/san-pham/${product.slug || product.id}`}
         >
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)] line-clamp-2 hover:text-[var(--color-primary)] transition-colors h-10">
             {product.name}
@@ -170,7 +172,7 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
             {Number(product.rating || 5).toFixed(1)}
           </span>
           <span className="text-xs text-gray-400">
-            ({product.reviewCount} đánh giá)
+            ({product.reviewCount !== undefined ? product.reviewCount : (product as any).reviews || 0} đánh giá)
           </span>
         </div>
 
@@ -193,19 +195,14 @@ export const ProductCardExtended = ({ product }: ProductCardExtendedProps) => {
           </div>
 
           <div className="flex items-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
+            {/* 🟢 Cho phép click xem chi tiết sản phẩm kể cả khi hết hạn để minh bạch nguồn gốc */}
             <Link
-              href={
-                product.isExpired
-                  ? "#"
-                  : `/san-pham/${product.slug || product.id}`
-              }
+              href={`/san-pham/${product.slug || product.id}`}
               className="flex-1"
-              onClick={(e) => product.isExpired && e.preventDefault()}
             >
               <Button
                 className="w-full h-9 text-xs"
                 variant="primary"
-                disabled={product.isExpired}
               >
                 Xem chi tiết
               </Button>

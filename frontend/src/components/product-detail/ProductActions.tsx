@@ -76,11 +76,15 @@ export const ProductActions = ({ product }: { product: Product }) => {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Bộ chọn số lượng (Tự động vô hiệu hóa nếu hết hàng hoặc hết hạn) */}
       <QuantitySelector
         stock={product.stock}
         quantity={quantity}
         onChange={setQuantity}
+        disabled={product.stock === 0 || product.isExpired}
+        isExpired={product.isExpired}
       />
+      {/* Các nút hành động Mua / Thêm giỏ (Tự động vô hiệu hóa nếu hết hàng hoặc hết hạn) */}
       <ActionButtons
         onAddToCart={handleAddToCart}
         onBuyNow={handleBuyNow}

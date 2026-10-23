@@ -118,6 +118,15 @@ export const productService = {
       result.sort((a: any, b: any) => (b.soldCount || 0) - (a.soldCount || 0));
     }
 
+    // 🟢 Nếu người dùng chọn sắp xếp theo giá tiền (tăng dần / giảm dần)
+    if (filters?.sortBy === 'price') {
+      result.sort((a: any, b: any) => {
+        const priceA = a.price || 0;
+        const priceB = b.price || 0;
+        return filters.order === 'desc' ? priceB - priceA : priceA - priceB;
+      });
+    }
+
     return result;
   },
 
