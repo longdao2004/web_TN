@@ -15,23 +15,35 @@ interface CartState {
   clearBuyNowItem: () => void;
 }
 
+const getInitialBuyNowItem = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const item = sessionStorage.getItem('buyNowItem');
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    console.error('Lỗi đọc buyNowItem từ sessionStorage:', error);
+    return null;
+  }
+};
+
 export const useCartStore = create<CartState>((set) => ({
   items: [],
   totalItems: 0,
-  buyNowItem: null,
+  // Khởi tạo: Đọc an toàn từ sessionStorage nếu có sẵn để giữ trạng thái khi F5
+  buyNowItem: getInitialBuyNowItem(),
 
   fetchCart: async () => {
     try {
       const data = await cartService.getCart();
-      set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
-    } catch (e) {
-      if (e instanceof Error && e.message === 'UNAUTHORIZED') {
-        // Khách chưa đăng nhập không có giỏ hàng, chỉ set giỏ rỗng êm ái
-        set({ items: [], totalItems: 0 });
-      } else {
-        console.error(e);
-        set({ items: [], totalItems: 0 });
-      }
+      set({
+        items: data.items,
+        totalItems: data.items.reduce(
+          (acc: number, item: CartItem) => acc + item.quantity,
+          0,
+        ),
+      });
+    } catch {
+      set({ items: [], totalItems: 0 });
     }
   },
 
@@ -39,7 +51,13 @@ export const useCartStore = create<CartState>((set) => ({
     try {
       await cartService.addToCart(newItem.id, quantity);
       const data = await cartService.getCart();
-      set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
+      set({
+        items: data.items,
+        totalItems: data.items.reduce(
+          (acc: number, item: CartItem) => acc + item.quantity,
+          0,
+        ),
+      });
       return true;
     } catch (e) {
       console.error(e);
@@ -51,7 +69,13 @@ export const useCartStore = create<CartState>((set) => ({
     try {
       await cartService.removeCartItem(id);
       const data = await cartService.getCart();
-      set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
+      set({
+        items: data.items,
+        totalItems: data.items.reduce(
+          (acc: number, item: CartItem) => acc + item.quantity,
+          0,
+        ),
+      });
     } catch (e) {
       console.error(e);
     }
@@ -61,15 +85,31 @@ export const useCartStore = create<CartState>((set) => ({
     try {
       await cartService.updateCartItem(id, quantity);
       const data = await cartService.getCart();
-      set({ items: data.items, totalItems: data.items.reduce((acc: number, item: CartItem) => acc + item.quantity, 0) });
+      set({
+        items: data.items,
+        totalItems: data.items.reduce(
+          (acc: number, item: CartItem) => acc + item.quantity,
+          0,
+        ),
+      });
     } catch (e) {
       console.error(e);
     }
   },
 
   clearCart: () => set({ items: [], totalItems: 0 }),
-  
-  setBuyNowItem: (item) => set({ buyNowItem: item }),
-  
-  clearBuyNowItem: () => set({ buyNowItem: null })
+
+  setBuyNowItem: (item) => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('buyNowItem', JSON.stringify(item));
+    }
+    set({ buyNowItem: item });
+  },
+
+  clearBuyNowItem: () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('buyNowItem');
+    }
+    set({ buyNowItem: null });
+  },
 }));

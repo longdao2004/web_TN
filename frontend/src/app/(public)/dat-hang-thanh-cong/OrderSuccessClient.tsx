@@ -92,15 +92,21 @@ export const OrderSuccessClient = () => {
           subtotal: data.totalAmount, // Assuming no shipping fee field in DB yet
           shippingFee: 0,
           discount: 0,
-          products: data.items.map((item: any) => ({
-            id: item.batch.product.id,
-            name: item.batch.product.name,
-            price: item.priceAtPurchase,
-            quantity: item.quantity,
-            image:
-              item.batch.product.imageUrl || "/images/products/cachuabi.avif",
-            store: item.batch?.product?.store?.name || "Cửa hàng Nông sản",
-          })),
+                    products: (data.items || []).map((item: any) => {
+            const product = item.product || item.batch?.product || {};
+            return {
+              id: product.id || item.productId || item.id,
+              name: product.name || "Sản phẩm",
+              price: item.priceAtPurchase || 0,
+              quantity: item.quantity || 1,
+              image:
+                product.imageUrl || "/images/products/cachuabi.avif",
+              store:
+                data.store?.name ||
+                product.store?.name ||
+                "Cửa hàng Nông sản",
+            };
+          }),
           deliveryInfo: {
             name: data.user?.fullName || "Khách hàng", // Đã lấy được tên thật của Khách từ DB
             phone: data.user?.phone || "Không có", // Lấy số điện thoại từ Profile người dùng

@@ -26,9 +26,9 @@ export const ProductActions = ({ product }: { product: Product }) => {
     quantity: quantity,
     maxQuantity: product.stock,
     store: {
-      id: "store-1",
-      name: product.storeName || "Cửa hàng",
-      slug: product.storeName || "store-1",
+      id: (product as any).store?.id || (product as any).storeId || "store-1",
+      name: product.storeName || (product as any).store?.name || "Cửa hàng",
+      slug: (product as any).store?.id || (product as any).storeId || "cua-hang",
     },
   });
 
@@ -50,7 +50,7 @@ export const ProductActions = ({ product }: { product: Product }) => {
         },
       });
     } catch (err: any) {
-      toast.error("Không thể thêm vào giỏ hàng");
+      toast.error(err?.message || "Không thể thêm vào giỏ hàng");
     }
   };
 

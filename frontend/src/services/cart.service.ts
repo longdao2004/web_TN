@@ -42,7 +42,8 @@ export const cartService = {
     const res = await fetch(`${API_URL}/cart/items`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ productId, quantity }) });
     if (!res.ok) {
       if (res.status === 401) throw new Error('UNAUTHORIZED');
-      throw new Error('Không thể thêm vào giỏ hàng');
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || 'Không thể thêm vào giỏ hàng');
     }
     return res.json();
   },

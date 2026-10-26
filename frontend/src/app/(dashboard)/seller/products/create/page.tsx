@@ -158,6 +158,7 @@ export default function CreateProductPage() {
       payload.append("name", formData.name.trim());
       payload.append("description", formData.description.trim());
       payload.append("origin", formData.origin.trim() || "Việt Nam");
+      payload.append("unit", formData.unit || "kg");
       // Chuẩn hóa giá thông minh: Số nhỏ hơn luôn là giá bán thực tế, số lớn hơn là giá gốc
       const p = Number(formData.price);
       const op = formData.originalPrice ? Number(formData.originalPrice) : null;

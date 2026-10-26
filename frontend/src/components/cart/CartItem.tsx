@@ -86,7 +86,13 @@ export const CartItem = ({
 
             {/* Tên cửa hàng */}
             <Link
-              href={`/cua-hang/${item.store.slug}`}
+              href={
+                item.store?.id && item.store.id !== '1' && item.store.id !== 'unknown'
+                  ? `/cua-hang/${item.store.id}`
+                  : item.store?.slug && item.store.slug !== 'cua-hang'
+                    ? `/cua-hang/${item.store.slug}`
+                    : '/cua-hang'
+              }
               className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 hover:text-[var(--color-primary)] transition-colors w-fit"
             >
               <StoreIcon className="h-3.5 w-3.5" />

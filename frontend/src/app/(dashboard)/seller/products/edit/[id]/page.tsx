@@ -130,6 +130,7 @@ export default function EditProductPage() {
         apiData.append("originalPrice", formData.originalPrice || "");
       }
 
+      apiData.append("quantity", formData.quantity);
       apiData.append("stock", formData.quantity);
       if (formData.harvestDate) apiData.append("harvestDate", new Date(formData.harvestDate).toISOString());
       if (formData.expiryDate) apiData.append("expiryDate", new Date(formData.expiryDate).toISOString());

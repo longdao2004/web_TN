@@ -195,7 +195,7 @@ export default function SellerOrdersPage() {
                 </p>
                 <p className="text-sm text-gray-700 flex items-center gap-2">
                   <Phone className="w-4 h-4 text-gray-400" />{" "}
-                  {selectedOrder.user?.phone}
+                  {selectedOrder.phone || selectedOrder.user?.phone || "Chưa cung cấp"}
                 </p>
                 <p className="text-sm text-gray-700 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-gray-400" />{" "}

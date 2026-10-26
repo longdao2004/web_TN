@@ -177,7 +177,8 @@ export default function CartPage() {
       discount = 0;
     }
 
-    const tax = Math.round(subTotal * 0.08); // 8% VAT
+    // Chính sách hỗ trợ: Nông sản sạch được miễn thuế VAT (0%), đồng bộ với trang thanh toán
+    const tax = 0;
     const total = Math.max(0, subTotal + shippingFee + tax - discount);
 
     return { subTotal, discount, shippingFee, tax, total };

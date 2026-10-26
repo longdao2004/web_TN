@@ -78,8 +78,8 @@ export default function OrderTrackingPage() {
       const foundOrder = await orderService.getOrderById(id);
 
       if (foundOrder) {
-        // [Thực tế] Lấy thông tin cửa hàng thực tế từ sản phẩm trong đơn
-        const firstStore = foundOrder.items?.[0]?.batch?.product?.store;
+        // [Thực tế] Lấy thông tin cửa hàng thực tế từ đơn hàng hoặc sản phẩm trong đơn
+        const firstStore = foundOrder.store || foundOrder.items?.[0]?.product?.store;
 
         // Ánh xạ dữ liệu BE về định dạng FE cần
         setOrder({
@@ -95,18 +95,21 @@ export default function OrderTrackingPage() {
             minute: "2-digit",
           }).format(new Date(foundOrder.createdAt)), // (Tùy chọn: format ngày giờ đẹp mắt)
           totalAmount: foundOrder.totalAmount,
-          products: foundOrder.items.map((item: any) => ({
-            id: item.batch?.product?.id || item.productId,
-            name: item.batch?.product?.name || "Sản phẩm",
-            price: item.priceAtPurchase,
-            quantity: item.quantity,
-            image:
-              item.batch?.product?.imageUrl || "/images/products/cachuabi.avif",
-          })),
+          products: (foundOrder.items || []).map((item: any) => {
+            const product = item.product || item.batch?.product;
+            return {
+              id: product?.id || item.productId || item.id,
+              name: product?.name || "Sản phẩm",
+              price: item.priceAtPurchase || 0,
+              quantity: item.quantity || 1,
+              image:
+                product?.imageUrl || "/images/products/cachuabi.avif",
+            };
+          }),
           store: {
             name: firstStore?.name || "Cửa hàng Nông sản",
             slug: firstStore?.id || "",
-            logo: firstStore?.logoUrl || undefined, // ✅ Dòng này bạn đã làm đúng rồi
+            logo: firstStore?.logoUrl || undefined,
           },
           deliveryInfo: {
             name: foundOrder.user?.fullName || "Khách hàng",

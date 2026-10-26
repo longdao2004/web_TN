@@ -37,7 +37,7 @@ export const ProductTabsSection = () => {
       case "bestseller":
         // Sản phẩm CÒN HẠN bán chạy nhất / đánh giá cao nhất
         return [...activeProducts]
-          .sort((a, b) => (b.reviews || 0) - (a.reviews || 0) || (b.rating || 0) - (a.rating || 0))
+          .sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0) || (b.rating || 0) - (a.rating || 0))
           .slice(0, 8);
 
       case "sale":

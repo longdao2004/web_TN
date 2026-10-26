@@ -29,10 +29,10 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
             &copy; {new Date().getFullYear()} AgriMarket. All rights reserved.
           </p>
           <div className="mt-2 flex justify-center gap-4">
-            <Link href="/terms" className="hover:text-[var(--color-primary)]">
+            <Link href="#" className="hover:text-[var(--color-primary)]">
               Điều khoản
             </Link>
-            <Link href="/privacy" className="hover:text-[var(--color-primary)]">
+            <Link href="#" className="hover:text-[var(--color-primary)]">
               Bảo mật
             </Link>
           </div>

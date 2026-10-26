@@ -115,18 +115,18 @@ export default function OrderHistoryPage() {
             </div>
             
             <div className="p-4 sm:p-6 flex flex-col gap-4">
-              {order.items.map((item, idx) => (
+              {(order.items || []).map((item, idx) => (
                 <div key={idx} className="flex gap-4">
                   <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                     <Image
-                      src={item.product.imageUrl}
-                      alt={item.product.name}
+                      src={item.product?.imageUrl || "/images/products/cachuabi.avif"}
+                      alt={item.product?.name || "Sản phẩm"}
                       fill
                       className="object-cover"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 line-clamp-2">{item.product.name}</h3>
+                    <h3 className="font-medium text-gray-900 line-clamp-2">{item.product?.name || "Sản phẩm"}</h3>
                     <p className="text-sm text-gray-500 mt-1">x{item.quantity}</p>
                   </div>
                   <div className="text-right shrink-0">

@@ -42,17 +42,15 @@ export const productService = {
       const rawPrice = latest?.price || 0;
       const rawOriginalPrice = latest?.originalPrice || null;
 
-      let actualPrice = rawPrice;
+      const actualPrice = rawPrice;
       let originalPrice: number | undefined = undefined;
       let isDiscounted = false;
       let discountPercent = 0;
-
-      // 🟢 Tự động nhận diện thông minh: Số nhỏ hơn là giá bán thực tế, số lớn hơn là giá gốc
-      if (rawOriginalPrice && rawOriginalPrice > 0 && rawOriginalPrice !== rawPrice) {
-        actualPrice = Math.min(rawPrice, rawOriginalPrice);
-        originalPrice = Math.max(rawPrice, rawOriginalPrice);
+      // Đúng chuẩn nghiệp vụ: rawPrice là giá bán, rawOriginalPrice là giá gốc niêm yết
+      if (rawOriginalPrice && rawOriginalPrice > rawPrice) {
+        originalPrice = rawOriginalPrice;
         isDiscounted = true;
-        discountPercent = Math.round(((originalPrice - actualPrice) / originalPrice) * 100);
+        discountPercent = Math.round(((rawOriginalPrice - actualPrice) / rawOriginalPrice) * 100);
       }
 
       // 🟢 KIỂM TRA LÔ MỚI VỀ:
@@ -81,6 +79,7 @@ export const productService = {
         stock: item.batches?.filter((b: any) => new Date(b.expiryDate).getTime() > Date.now()).reduce((acc: number, b: any) => acc + b.quantity, 0) || 0,
         batches: item.batches || [],
         certificates: item.certificates || [],
+        storeId: item.storeId || item.store?.id || '',
         store: item.store?.name || 'Cửa hàng',
         storeName: item.store?.name || 'Cửa hàng',
         province: item.origin || 'Chưa cập nhật',
@@ -146,16 +145,14 @@ export const productService = {
 
     const rawBatchPrice = latestBatch?.price || 0;
     const rawBatchOriginalPrice = latestBatch?.originalPrice || null;
-    let detailActualPrice = rawBatchPrice;
+    const detailActualPrice = rawBatchPrice;
     let detailOriginalPrice: number | undefined = undefined;
     let isDetailDiscounted = false;
     let detailDiscountPercent = 0;
-
-    if (rawBatchOriginalPrice && rawBatchOriginalPrice > 0 && rawBatchOriginalPrice !== rawBatchPrice) {
-      detailActualPrice = Math.min(rawBatchPrice, rawBatchOriginalPrice);
-      detailOriginalPrice = Math.max(rawBatchPrice, rawBatchOriginalPrice);
+    if (rawBatchOriginalPrice && rawBatchOriginalPrice > rawBatchPrice) {
+      detailOriginalPrice = rawBatchOriginalPrice;
       isDetailDiscounted = true;
-      detailDiscountPercent = Math.round(((detailOriginalPrice - detailActualPrice) / detailOriginalPrice) * 100);
+      detailDiscountPercent = Math.round(((rawBatchOriginalPrice - detailActualPrice) / rawBatchOriginalPrice) * 100);
     }
 
     // 🟢 KIỂM TRA LÔ MỚI VỀ CHO TRANG CHI TIẾT

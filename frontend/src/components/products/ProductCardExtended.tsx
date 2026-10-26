@@ -49,9 +49,9 @@ export const ProductCardExtended = ({
           quantity: 1,
           maxQuantity: 10,
           store: {
-            id: "store-1",
-            name: product.storeName || (product as any).store || "Cửa hàng",
-            slug: "cua-hang",
+            id: product.storeId || (product as any).store?.id || "store-1",
+            name: product.storeName || (product as any).store?.name || (product as any).store || "Cửa hàng",
+            slug: product.storeId || (product as any).store?.id || "cua-hang",
           },
         },
         1,
@@ -66,7 +66,7 @@ export const ProductCardExtended = ({
         toast.error("Vui lòng đăng nhập để mua hàng");
         router.push("/dang-nhap");
       } else {
-        toast.error("Không thể thêm vào giỏ hàng");
+        toast.error(err?.message || "Không thể thêm vào giỏ hàng");
       }
     } finally {
       setIsLoading(false);
@@ -142,10 +142,14 @@ export const ProductCardExtended = ({
         {/* Store & Location */}
         <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)] mb-1.5">
           <Link
-            href={`/cua-hang/${product.storeName || (product as any).store || "Cửa hàng"}`}
+            href={
+              product.storeId || (product as any).store?.id
+                ? `/cua-hang/${product.storeId || (product as any).store?.id}`
+                : '#'
+            }
             className="hover:text-[var(--color-primary)] hover:underline truncate max-w-[60%]"
           >
-            {product.storeName || (product as any).store || "Cửa hàng"}
+            {product.storeName || (product as any).store?.name || (product as any).store || "Cửa hàng"}
           </Link>
           <div className="flex items-center gap-0.5 truncate">
             <MapPin className="h-3 w-3" />

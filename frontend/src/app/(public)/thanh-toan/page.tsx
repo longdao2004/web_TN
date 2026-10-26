@@ -126,19 +126,12 @@ function CheckoutContent() {
       }
     }
 
-    const selectedShipping = SHIPPING_METHODS.find(
+    const selectedMethod = SHIPPING_METHODS.find(
       (m) => m.id === shippingMethodId,
     );
-    let shippingFee = selectedShipping ? selectedShipping.price : 0;
-
-    if (appliedVoucher?.code === "FREESHIP") {
-      shippingFee = Math.max(0, shippingFee - appliedVoucher.discountValue);
-      discount = 0;
-    }
-
-    const tax = Math.round(subTotal * 0.08); // 8% VAT
-    const total = Math.max(0, subTotal + shippingFee + tax - discount);
-
+    const shippingFee = selectedMethod ? selectedMethod.price : 25000;
+    const tax = 0;
+    const total = Math.max(0, subTotal - discount + shippingFee);
     return { subTotal, discount, shippingFee, tax, total };
   }, [items, appliedVoucher, shippingMethodId]);
 

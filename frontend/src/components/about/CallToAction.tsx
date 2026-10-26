@@ -20,7 +20,7 @@ export const CallToAction = () => {
             </Button>
           </Link>
           
-          <Link href="/register" className="w-full sm:w-auto">
+          <Link href="/dang-ky" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 px-8 h-14 text-lg font-semibold rounded-full">
               Đăng ký tài khoản
               <UserPlus className="ml-2 w-5 h-5" />

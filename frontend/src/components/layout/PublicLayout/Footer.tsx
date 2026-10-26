@@ -26,16 +26,16 @@ export const Footer = () => {
               Về chúng tôi
             </h4>
             <nav className="flex flex-col gap-2 text-sm text-[var(--color-text-secondary)]">
-              <Link href="/about" className="hover:text-[var(--color-primary)]">
+              <Link href="/gioi-thieu" className="hover:text-[var(--color-primary)]">
                 Giới thiệu
               </Link>
               <Link
-                href="/careers"
+                href="/gioi-thieu"
                 className="hover:text-[var(--color-primary)]"
               >
                 Tuyển dụng
               </Link>
-              <Link href="/news" className="hover:text-[var(--color-primary)]">
+              <Link href="/tin-tuc" className="hover:text-[var(--color-primary)]">
                 Tin tức
               </Link>
             </nav>
@@ -47,17 +47,17 @@ export const Footer = () => {
               Hỗ trợ khách hàng
             </h4>
             <nav className="flex flex-col gap-2 text-sm text-[var(--color-text-secondary)]">
-              <Link href="/faq" className="hover:text-[var(--color-primary)]">
+              <Link href="/lien-he" className="hover:text-[var(--color-primary)]">
                 Trung tâm trợ giúp
               </Link>
               <Link
-                href="/shipping"
+                href="#"
                 className="hover:text-[var(--color-primary)]"
               >
                 Chính sách giao hàng
               </Link>
               <Link
-                href="/returns"
+                href="#"
                 className="hover:text-[var(--color-primary)]"
               >
                 Chính sách đổi trả
@@ -84,10 +84,10 @@ export const Footer = () => {
             &copy; {new Date().getFullYear()} AgriMarket. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
-            <Link href="/terms" className="hover:text-[var(--color-primary)]">
+            <Link href="#" className="hover:text-[var(--color-primary)]">
               Điều khoản
             </Link>
-            <Link href="/privacy" className="hover:text-[var(--color-primary)]">
+            <Link href="#" className="hover:text-[var(--color-primary)]">
               Bảo mật
             </Link>
           </div>

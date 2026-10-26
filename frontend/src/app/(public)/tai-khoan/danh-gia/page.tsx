@@ -111,9 +111,9 @@ export default function MyReviewsPage() {
               <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
                   <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100">
-                    <Image src={review.product.imageUrl} alt={review.product.name} fill className="object-cover" />
+                    <Image src={review.product?.imageUrl || "/images/products/cachuabi.avif"} alt={review.product?.name || "Sản phẩm"} fill className="object-cover" />
                   </div>
-                  <h3 className="font-semibold text-gray-900">{review.product.name}</h3>
+                  <h3 className="font-semibold text-gray-900">{review.product?.name || "Sản phẩm"}</h3>
                 </div>
                 
                 <div>
@@ -157,10 +157,10 @@ export default function MyReviewsPage() {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
                     <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
-                      <Image src={review.product.imageUrl} alt={review.product.name} fill className="object-cover" />
+                      <Image src={review.product?.imageUrl || "/images/products/cachuabi.avif"} alt={review.product?.name || "Sản phẩm"} fill className="object-cover" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 line-clamp-1">{review.product.name}</h3>
+                      <h3 className="font-semibold text-gray-900 line-clamp-1">{review.product?.name || "Sản phẩm"}</h3>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {new Intl.DateTimeFormat("vi-VN", {
                           day: "2-digit",

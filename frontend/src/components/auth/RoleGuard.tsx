@@ -30,7 +30,7 @@ export const RoleGuard = ({ children, allowedRole }: { children: React.ReactNode
       router.push('/dang-nhap');
       return;
     }
-    if (user && user.role !== allowedRole) {
+    if (user && user.role !== allowedRole && user.role !== 'ADMIN') {
       router.push('/');
     }
   }, [user, token, router, allowedRole, isMounted]);
@@ -49,7 +49,7 @@ export const RoleGuard = ({ children, allowedRole }: { children: React.ReactNode
     );
   }
 
-  if (user && user.role === allowedRole) {
+  if (user && (user.role === allowedRole || user.role === 'ADMIN')) {
     return <>{children}</>;
   }
 

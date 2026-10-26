@@ -27,6 +27,8 @@ export interface Product {
   discount?: number;
   rating: number;
   reviewCount: number;
+  storeId?: string;
+  store?: string | { id?: string; name?: string };
   storeName: string;
   province: string;
   category: string;
