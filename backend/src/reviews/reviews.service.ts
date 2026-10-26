@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Role } from '../auth/role.enum';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class ReviewsService {
@@ -15,9 +16,10 @@ export class ReviewsService {
 
   /**
    * Tạo đánh giá mới cho sản phẩm.
-   * Logic quan trọng:
-   * - Phải đảm bảo sản phẩm tồn tại trước khi cho phép đánh giá.
-   * - (Tùy chọn mở rộng sau này: Có thể query bảng Order/OrderItem để kiểm tra user đã thực sự mua hàng chưa).
+   * Logic bảo mật & nghiệp vụ:
+   * 1. Sản phẩm phải tồn tại.
+   * 2. Người dùng phải từng mua sản phẩm này trong đơn hàng COMPLETED.
+   * 3. Mỗi người dùng chỉ được đánh giá 1 lần cho 1 sản phẩm (tránh spam).
    */
   async create(userId: string, createReviewDto: CreateReviewDto) {
     // 1. Kiểm tra sản phẩm có tồn tại hay không
@@ -28,7 +30,40 @@ export class ReviewsService {
       throw new NotFoundException('Sản phẩm không tồn tại');
     }
 
-    // 2. Lưu đánh giá vào CSDL
+    // 2. Chặn đánh giá trùng lặp: Kiểm tra người dùng đã đánh giá sản phẩm này chưa
+    const existingReview = await this.prisma.review.findFirst({
+      where: {
+        userId,
+        productId: createReviewDto.productId,
+        deletedAt: null,
+      },
+    });
+    if (existingReview) {
+      throw new BadRequestException(
+        'Bạn đã đánh giá sản phẩm này rồi! Vui lòng chỉnh sửa đánh giá hiện tại nếu muốn thay đổi ý kiến.',
+      );
+    }
+
+    // 3. Kiểm tra xem người dùng đã thực sự mua và nhận hàng thành công chưa
+    const hasBoughtAndCompleted = await this.prisma.order.findFirst({
+      where: {
+        userId,
+        status: OrderStatus.COMPLETED,
+        items: {
+          some: {
+            productId: createReviewDto.productId,
+          },
+        },
+      },
+    });
+
+    if (!hasBoughtAndCompleted) {
+      throw new ForbiddenException(
+        'Bạn chỉ có thể đánh giá sản phẩm sau khi đã mua và nhận hàng thành công (Đơn hàng Hoàn thành)!',
+      );
+    }
+
+    // 4. Lưu đánh giá vào CSDL
     return this.prisma.review.create({
       data: {
         userId,
@@ -42,7 +77,7 @@ export class ReviewsService {
   async findAll() {
     return this.prisma.review.findMany({
       where: { deletedAt: null },
-      take: 10, // Lấy 10 đánh giá mới nhất toàn hệ thống để show ở trang chủ
+      take: 10,
       include: {
         user: { select: { fullName: true, avatarUrl: true } },
         product: { select: { name: true, imageUrl: true } },
@@ -63,27 +98,18 @@ export class ReviewsService {
     });
   }
 
-  /**
-   * Lấy danh sách đánh giá CỦA 1 SẢN PHẨM CỤ THỂ
-   * Ở đây tôi kết hợp join bảng User (người viết đánh giá) nhưng
-   * chỉ lấy fullName và avatarUrl để hiển thị lên UI.
-   */
   async findByProduct(productId: string) {
     return this.prisma.review.findMany({
       where: { productId, deletedAt: null },
       include: {
         user: {
-          select: { fullName: true, avatarUrl: true }, // Chỉ select các trường an toàn
+          select: { fullName: true, avatarUrl: true },
         },
       },
-      orderBy: { createdAt: 'desc' }, // Đánh giá mới nhất hiện lên trên
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  /**
-   * Người dùng tự sửa đánh giá của mình.
-   * Logic quan trọng: Phải kiểm tra quyền sở hữu (userId của token == userId của review).
-   */
   async update(
     userId: string,
     reviewId: string,
@@ -97,7 +123,6 @@ export class ReviewsService {
       throw new NotFoundException('Không tìm thấy đánh giá');
     }
 
-    // Ngăn chặn việc sửa đánh giá của người khác
     if (review.userId !== userId) {
       throw new ForbiddenException('Bạn không có quyền sửa đánh giá này');
     }
@@ -108,10 +133,6 @@ export class ReviewsService {
     });
   }
 
-  /**
-   * Xóa đánh giá (Soft Delete).
-   * Logic quan trọng: Cho phép chính người viết xóa HOẶC Admin xóa nếu nội dung vi phạm.
-   */
   async remove(userId: string, userRole: string, reviewId: string) {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId, deletedAt: null },
@@ -121,17 +142,13 @@ export class ReviewsService {
       throw new NotFoundException('Không tìm thấy đánh giá');
     }
 
-    // Điều kiện gắt gao: Phải là chính chủ HOẶC là ADMIN thì mới được xóa
     if (review.userId !== userId && userRole !== Role.ADMIN) {
       throw new ForbiddenException('Bạn không có quyền xóa đánh giá này');
     }
 
-    // Thực hiện Xóa mềm (Soft delete)
-    await this.prisma.review.update({
+    return this.prisma.review.update({
       where: { id: reviewId },
       data: { deletedAt: new Date() },
     });
-
-    return { message: 'Đã xóa đánh giá thành công' };
   }
 }

@@ -1,10 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum } from 'class-validator';
+import { OrderStatus } from '@prisma/client';
 
 export class UpdateOrderStatusDto {
   @ApiProperty({
-    example: 'CONFIRMED',
-    description:
-      'Trạng thái đơn: PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED',
+    enum: OrderStatus,
+    example: OrderStatus.PACKING,
+    description: 'Trạng thái đơn: PENDING, PACKING, SHIPPING, COMPLETED, CANCELLED',
   })
-  status!: string;
+  @IsEnum(OrderStatus, { message: 'Trạng thái đơn hàng không hợp lệ!' })
+  status!: OrderStatus;
 }

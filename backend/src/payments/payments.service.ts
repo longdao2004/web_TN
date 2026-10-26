@@ -41,16 +41,33 @@ export class PaymentsService {
 
     // 1. Trường hợp chọn COD (Thanh toán khi nhận hàng)
     if (createPaymentDto.provider === PaymentProvider.COD) {
-      if (!order.payment) {
+      // Tìm các đơn hàng PENDING của người dùng chưa có bản ghi Payment (hỗ trợ giỏ hàng tách nhiều shop)
+      const relatedOrders = await this.prisma.order.findMany({
+        where: {
+          userId,
+          status: OrderStatus.PENDING,
+          payment: null,
+        },
+      });
+
+      const ordersToPay =
+        relatedOrders.length > 0
+          ? relatedOrders
+          : !order.payment
+            ? [order]
+            : [];
+
+      for (const ord of ordersToPay) {
         await this.prisma.payment.create({
           data: {
-            orderId: order.id,
+            orderId: ord.id,
             provider: PaymentProvider.COD,
-            amount: order.totalAmount,
+            amount: ord.totalAmount,
             isSuccess: false, // Thanh toán khi nhận hàng nên mặc định false
           },
         });
       }
+
       return {
         message:
           'Đã chọn phương thức thanh toán COD. Vui lòng thanh toán khi nhận hàng.',
@@ -169,9 +186,39 @@ export class PaymentsService {
 
         return { code: '00', message: 'Thanh toán thành công', orderId };
       } else {
+        // Thanh toán thất bại hoặc khách đã bấm Hủy trên cổng VNPay:
+        // Tự động hoàn lại tồn kho và chuyển trạng thái đơn sang CANCELLED
+        const order = await this.prisma.order.findUnique({
+          where: { id: orderId },
+          include: { items: true },
+        });
+
+        if (order && order.status === OrderStatus.PENDING) {
+          await this.prisma.$transaction(async (tx) => {
+            await tx.order.update({
+              where: { id: orderId },
+              data: { status: OrderStatus.CANCELLED },
+            });
+
+            for (const item of order.items) {
+              if (item.productBatchId) {
+                await tx.productBatch.update({
+                  where: { id: item.productBatchId },
+                  data: { quantity: { increment: item.quantity } },
+                });
+              }
+              await tx.product.update({
+                where: { id: item.productId },
+                data: { soldCount: { decrement: item.quantity } },
+              });
+            }
+          });
+        }
+
         return {
           code: responseCode,
-          message: 'Thanh toán thất bại hoặc khách hàng đã hủy',
+          message:
+            'Thanh toán thất bại hoặc khách hàng đã hủy (đã hoàn lại tồn kho)',
           orderId,
         };
       }
@@ -193,7 +240,10 @@ export class PaymentsService {
     }
     str.sort();
     for (key = 0; key < str.length; key++) {
-      sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, '+');
+      sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(
+        /%20/g,
+        '+',
+      );
     }
     return sorted;
   }

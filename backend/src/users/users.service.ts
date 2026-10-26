@@ -35,7 +35,7 @@ export class UsersService {
   }
 
   // 3. Nhận thêm tham số file ảnh từ Controller
-  async updateProfile(userId: string, updateUserDto: UpdateUserDto, file?: any) {
+    async updateProfile(userId: string, updateUserDto: UpdateUserDto, file?: any) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
     });
@@ -43,18 +43,22 @@ export class UsersService {
       throw new NotFoundException('Không tìm thấy người dùng');
     }
 
-    // Nếu người dùng có chọn ảnh mới, tải ảnh lên Cloudinary và lấy URL
     let avatarUrl = user.avatarUrl;
     if (file) {
       const uploadResult = await this.cloudinary.uploadImage(file);
       avatarUrl = uploadResult.url;
     }
 
+    // Bóc tách tường minh các trường được phép sửa, tuyệt đối không lấy 'role'
+    const { fullName, phone, address } = updateUserDto;
+
     return this.prisma.user.update({
       where: { id: userId },
       data: {
-        ...updateUserDto,
-        ...(avatarUrl ? { avatarUrl } : {}), // Cập nhật avatarUrl mới
+        ...(fullName !== undefined ? { fullName } : {}),
+        ...(phone !== undefined ? { phone } : {}),
+        ...(address !== undefined ? { address } : {}),
+        ...(avatarUrl ? { avatarUrl } : {}),
       },
       select: {
         id: true,

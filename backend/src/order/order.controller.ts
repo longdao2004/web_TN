@@ -42,14 +42,16 @@ export class OrderController {
     // Chỉ Seller và Admin mới được xem đơn hàng của Store
     checkRole(req, [Role.SELLER, Role.ADMIN]);
     const userId = req.user.userId;
-    return this.orderService.getStoreOrders(userId);
+    const userRole = req.user.role;
+    return this.orderService.getStoreOrders(userId, userRole);
   }
 
   @Get(':id')
   getOrderById(@Request() req: any, @Param('id') orderId: string) {
-    checkRole(req, [Role.BUYER]);
+    checkRole(req, [Role.BUYER, Role.SELLER, Role.ADMIN]);
     const userId = req.user.userId;
-    return this.orderService.getOrderById(orderId, userId);
+    const userRole = req.user.role;
+    return this.orderService.getOrderById(orderId, userId, userRole);
   }
 
   @Patch(':id/status')
@@ -62,6 +64,8 @@ export class OrderController {
     return this.orderService.updateOrderStatus(
       orderId,
       updateOrderStatusDto.status,
+      req.user.userId,
+      req.user.role,
     );
   }
 

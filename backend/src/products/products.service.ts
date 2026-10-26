@@ -1,15 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Role } from '../auth/role.enum';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService, private readonly cloudinary: CloudinaryService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinary: CloudinaryService,
+  ) {}
 
-  create(createProductDto: CreateProductDto) {
-    // Bóc tách dữ liệu lô hàng ra khỏi thông tin chung của sản phẩm
+  // 1. TẠO SẢN PHẨM MỚI (Tự động gán storeId theo tài khoản Seller)
+    // 1. TẠO SẢN PHẨM MỚI (Tự động gán storeId theo tài khoản Seller)
+  async create(
+    createProductDto: CreateProductDto,
+    userId: string,
+    userRole: Role,
+  ) {
+    let storeId = createProductDto.storeId;
+
+    // Nếu là Seller, bắt buộc lấy storeId của chính họ để tránh gán nhầm sang shop khác
+    if (userRole === Role.SELLER) {
+      const store = await this.prisma.store.findUnique({
+        where: { ownerId: userId },
+      });
+      if (!store) {
+        throw new ForbiddenException('Bạn chưa có cửa hàng để tạo sản phẩm!');
+      }
+      storeId = store.id;
+    }
+
     const {
       harvestDate,
       expiryDate,
@@ -17,28 +43,21 @@ export class ProductsService {
       price,
       originalPrice,
       categoryId,
-      storeId,
+      storeId: _, //  BÓC TÁCH storeId RA ĐỂ KHÔNG BỊ LỌT VÀO productData
       specification,
       storageCondition,
       ...productData
     } = createProductDto;
 
-    // Chuẩn hóa giá thông minh: Giá nhỏ hơn luôn là giá bán thực tế, giá lớn hơn là giá gốc niêm yết
-    let finalPrice = Number(price);
-    let finalOriginalPrice: number | null = null;
-    if (originalPrice && Number(originalPrice) > 0 && Number(originalPrice) !== Number(price)) {
-      finalPrice = Math.min(Number(price), Number(originalPrice));
-      finalOriginalPrice = Math.max(Number(price), Number(originalPrice));
-    }
+    // Chuẩn hóa giá: Giá bán thực tế và giá gốc
+    const finalPrice = Number(price);
+    const finalOriginalPrice = originalPrice ? Number(originalPrice) : null;
 
-    // Prisma Nested Writes: Tạo Product và ProductBatch trong cùng một Transaction
     return this.prisma.product.create({
       data: {
         ...productData,
-        // Liên kết khóa ngoại
         category: { connect: { id: categoryId } },
         store: { connect: { id: storeId } },
-        // Tạo luôn lô hàng đầu tiên đi kèm
         batches: {
           create: {
             harvestDate: new Date(harvestDate),
@@ -51,7 +70,6 @@ export class ProductsService {
           },
         },
       },
-      // Trả về kết quả kèm theo thông tin danh mục và lô hàng vừa tạo
       include: {
         category: true,
         batches: { orderBy: { createdAt: 'desc' } },
@@ -59,10 +77,11 @@ export class ProductsService {
     });
   }
 
+  // 2. LẤY DANH SÁCH SẢN PHẨM (Có lọc và sắp xếp)
   findAll(filters?: {
     search?: string;
     categoryId?: string;
-    storeId?: string; // Bổ sung lọc theo cửa hàng
+    storeId?: string;
     minPrice?: number;
     maxPrice?: number;
     sortBy?: string;
@@ -70,15 +89,12 @@ export class ProductsService {
   }) {
     const whereClause: any = { deletedAt: null };
 
-    // Tìm kiếm theo tên sản phẩm (không phân biệt hoa thường)
     if (filters?.search) {
       whereClause.name = { contains: filters.search, mode: 'insensitive' };
     }
-    // Lọc theo danh mục
     if (filters?.categoryId) {
       whereClause.categoryId = filters.categoryId;
     }
-    // Lọc sản phẩm thuộc về một cửa hàng cụ thể (Dùng cho Khối chi tiết cửa hàng ở Frontend)
     if (filters?.storeId) {
       whereClause.storeId = filters.storeId;
     }
@@ -101,7 +117,6 @@ export class ProductsService {
     let orderByClause: any = { createdAt: 'desc' };
     if (filters?.sortBy === 'price') {
       orderByClause = undefined;
-    // 🟢 Nhận diện cả 'bestseller' (Bán chạy) và 'rating' (Đánh giá) để sắp xếp theo số lượng bán
     } else if (filters?.sortBy === 'bestseller' || filters?.sortBy === 'rating') {
       orderByClause = { soldCount: filters.order || 'desc' };
     } else if (filters?.sortBy === 'newest') {
@@ -113,7 +128,13 @@ export class ProductsService {
         where: whereClause,
         include: {
           category: true,
-          store: { include: { _count: { select: { products: { where: { deletedAt: null } } } } } },
+          store: {
+            include: {
+              _count: {
+                select: { products: { where: { deletedAt: null } } },
+              },
+            },
+          },
           reviews: {
             select: { id: true, rating: true },
           },
@@ -134,13 +155,20 @@ export class ProductsService {
       });
   }
 
+  // 3. XEM CHI TIẾT SẢN PHẨM
   findOne(id: string) {
     return this.prisma.product.findUnique({
       where: { id },
       include: {
         batches: { orderBy: { createdAt: 'desc' } },
         category: true,
-        store: { include: { _count: { select: { products: { where: { deletedAt: null } } } } } },
+        store: {
+          include: {
+            _count: {
+              select: { products: { where: { deletedAt: null } } },
+            },
+          },
+        },
         reviews: {
           include: {
             user: {
@@ -158,35 +186,66 @@ export class ProductsService {
     });
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto, file?: any) {
-    const { price, originalPrice, stock, harvestDate, expiryDate, categoryId, storeId, specification, storageCondition, ...productData } = updateProductDto as any;
+  // 4. CẬP NHẬT SẢN PHẨM (Kiểm tra quyền sở hữu BOLA/IDOR)
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+    userId: string,
+    userRole: Role,
+    file?: any,
+  ) {
+    const product = await this.prisma.product.findUnique({
+      where: { id, deletedAt: null },
+      include: { store: true },
+    });
+    if (!product) {
+      throw new NotFoundException('Sản phẩm không tồn tại!');
+    }
+
+    // BẢO MẬT: Chỉ chủ shop sở hữu hoặc ADMIN mới được sửa sản phẩm này
+    if (userRole !== Role.ADMIN && product.store.ownerId !== userId) {
+      throw new ForbiddenException(
+        'Bạn không có quyền chỉnh sửa sản phẩm này!',
+      );
+    }
+
+    const {
+      price,
+      originalPrice,
+      quantity,
+      stock,
+      harvestDate,
+      expiryDate,
+      categoryId,
+      storeId,
+      specification,
+      storageCondition,
+      ...productData
+    } = updateProductDto as any;
+
     let imageUrl = undefined;
     if (file) {
       const uploadResult = await this.cloudinary.uploadImage(file);
       imageUrl = uploadResult.secure_url || uploadResult.url;
     }
-    
-    const batchUpdateData: any = {};
-    // Chuẩn hóa thông minh: số nhỏ hơn luôn là giá bán thực tế, số lớn hơn là giá gốc niêm yết
-    if (price !== undefined || originalPrice !== undefined) {
-      const p = price !== undefined ? Number(price) : undefined;
-      const op = (originalPrice !== undefined && originalPrice !== "" && Number(originalPrice) > 0) ? Number(originalPrice) : null;
 
-      if (p !== undefined && op !== null && p !== op) {
-        batchUpdateData.price = Math.min(p, op);
-        batchUpdateData.originalPrice = Math.max(p, op);
-      } else {
-        if (p !== undefined) batchUpdateData.price = p;
-        if (originalPrice !== undefined) batchUpdateData.originalPrice = op;
-      }
-    }
-    if (stock !== undefined) batchUpdateData.quantity = Number(stock);
+    const batchUpdateData: any = {};
+    if (price !== undefined) batchUpdateData.price = Number(price);
+    if (originalPrice !== undefined)
+      batchUpdateData.originalPrice =
+        originalPrice && Number(originalPrice) > 0
+          ? Number(originalPrice)
+          : null;
+    const finalQuantity = quantity !== undefined ? quantity : stock;
+    if (finalQuantity !== undefined) batchUpdateData.quantity = Number(finalQuantity);
     if (harvestDate) batchUpdateData.harvestDate = new Date(harvestDate);
     if (expiryDate) batchUpdateData.expiryDate = new Date(expiryDate);
-    if (specification !== undefined) batchUpdateData.specification = specification;
-    if (storageCondition !== undefined) batchUpdateData.storageCondition = storageCondition;
+    if (specification !== undefined)
+      batchUpdateData.specification = specification;
+    if (storageCondition !== undefined)
+      batchUpdateData.storageCondition = storageCondition;
 
-    // 🟢 1. Cập nhật thông tin cơ bản của sản phẩm
+    // 1. Cập nhật thông tin cơ bản sản phẩm
     const updatedProduct = await this.prisma.product.update({
       where: { id },
       data: {
@@ -196,7 +255,7 @@ export class ProductsService {
       },
     });
 
-    // 🟢 2. Chỉ cập nhật Lô hàng MỚI NHẤT, giữ nguyên lịch sử của các lô cũ
+    // 2. Cập nhật lô hàng mới nhất
     if (Object.keys(batchUpdateData).length > 0) {
       const latestBatch = await this.prisma.productBatch.findFirst({
         where: { productId: id },
@@ -213,7 +272,21 @@ export class ProductsService {
     return updatedProduct;
   }
 
-  remove(id: string) {
+  // 5. XÓA MỀM SẢN PHẨM (Kiểm tra quyền sở hữu BOLA/IDOR)
+  async remove(id: string, userId: string, userRole: Role) {
+    const product = await this.prisma.product.findUnique({
+      where: { id, deletedAt: null },
+      include: { store: true },
+    });
+    if (!product) {
+      throw new NotFoundException('Sản phẩm không tồn tại!');
+    }
+
+    // BẢO MẬT: Chỉ chủ shop sở hữu hoặc ADMIN mới được xóa sản phẩm này
+    if (userRole !== Role.ADMIN && product.store.ownerId !== userId) {
+      throw new ForbiddenException('Bạn không có quyền xóa sản phẩm này!');
+    }
+
     return this.prisma.product.update({
       where: { id },
       data: { deletedAt: new Date() },

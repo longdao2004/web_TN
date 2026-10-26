@@ -58,8 +58,8 @@ export class AuthService {
     });
 
     // Nếu user đăng ký bằng Google (password = null) mà cố login thường sẽ bị từ chối
-    if (!user || !user.password) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác!');
+    if (!user || !user.password || user.deletedAt !== null) {
+      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác hoặc tài khoản đã bị khóa!');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -97,6 +97,10 @@ export class AuthService {
     let user = await this.prisma.user.findUnique({
       where: { email: reqUser.email },
     });
+
+    if (user && user.deletedAt !== null) {
+      throw new UnauthorizedException('Tài khoản của bạn đã bị khóa hoặc vô hiệu hóa!');
+    }
 
     if (!user) {
       // Nếu chưa, tạo user mới liên kết với Google. (Lưu ý: password bị bỏ trống)

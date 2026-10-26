@@ -77,7 +77,7 @@ export class ProductsController {
       const uploadResult = await this.cloudinaryService.uploadImage(file);
       createProductDto.imageUrl = uploadResult.secure_url;
     }
-    return this.productsService.create(createProductDto);
+    return this.productsService.create(createProductDto, req.user.userId, req.user.role);
   }
 
   @Get()
@@ -116,14 +116,14 @@ export class ProductsController {
     @UploadedFile() file?: any,
   ) {
     checkRole(req, [Role.SELLER, Role.ADMIN]);
-    return this.productsService.update(id, updateProductDto, file);
+    return this.productsService.update(id, updateProductDto, req.user.userId, req.user.role, file);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
     checkRole(req, [Role.SELLER, Role.ADMIN]);
-    return this.productsService.remove(id);
+    return this.productsService.remove(id, req.user.userId, req.user.role);
   }
 }
 
