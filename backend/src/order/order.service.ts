@@ -239,6 +239,7 @@ export class OrderService {
   }
 
   // Lấy danh sách đơn hàng cho người bán (Seller) và Quản trị viên (Admin)
+    // Lấy danh sách đơn hàng cho người bán (Seller) và Quản trị viên (Admin)
   async getStoreOrders(userId: string, role?: string) {
     if (role === Role.ADMIN) {
       return this.prisma.order.findMany({
@@ -246,6 +247,7 @@ export class OrderService {
         include: {
           store: { select: { id: true, name: true, logoUrl: true } },
           user: { select: { fullName: true, phone: true } },
+          payment: true, // <-- Bổ sung dòng này để Admin theo dõi phương thức thanh toán COD / VNPay
           items: {
             include: {
               product: { select: { id: true, name: true, imageUrl: true } },
@@ -274,6 +276,7 @@ export class OrderService {
       orderBy: { createdAt: 'desc' },
       include: {
         user: { select: { fullName: true, phone: true } },
+        payment: true,
         items: {
           where: { product: { storeId: store.id } },
           include: {
