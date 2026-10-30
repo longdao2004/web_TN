@@ -1,7 +1,6 @@
 import { Store } from '../types/store';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-// THÊM MỚI: Hàm đính kèm Token để Seller gọi API bảo mật
 const getHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   return {
@@ -12,9 +11,9 @@ const getHeaders = () => {
 
 export const storeService = {
   // ==========================================
-  // PHẦN 1: CÁC HÀM CŨ CHO KHÁCH HÀNG (GIỮ NGUYÊN)
+  // PHẦN 1: DÀNH CHO KHÁCH HÀNG
   // ==========================================
-  getStores: async (filters?: { search?: string, province?: string, sort?: string }): Promise<Store[]> => {
+  getStores: async (filters?: { search?: string; province?: string; sort?: string }): Promise<Store[]> => {
     let url = `${API_URL}/stores`;
     if (filters) {
       const params = new URLSearchParams();
@@ -42,18 +41,17 @@ export const storeService = {
       description: item.description || '',
       certificates: [],
       productsCount: item._count?.products || item.products?.length || 0,
-      // 🟢 Điểm đánh giá và tổng lượt đánh giá tính từ toàn bộ sản phẩm
       rating: item.rating !== undefined ? item.rating : 5,
       reviewsCount: item.reviewsCount !== undefined ? item.reviewsCount : 0,
       isFeatured: false,
     }));
   },
-  
+
   getStoreById: async (id: string): Promise<Store> => {
     const res = await fetch(`${API_URL}/stores/${id}`, { method: 'GET' });
     if (!res.ok) throw new Error('Lỗi khi lấy thông tin cửa hàng');
     const item = await res.json();
-    
+
     return {
       id: item.id,
       slug: item.id,
@@ -67,16 +65,15 @@ export const storeService = {
       description: item.description || 'Cửa hàng chưa có mô tả.',
       certificates: [],
       productsCount: item._count?.products || item.products?.length || 0,
-      // 🟢 Điểm đánh giá và tổng lượt đánh giá tính từ toàn bộ sản phẩm
       rating: item.rating !== undefined ? item.rating : 5,
       reviewsCount: item.reviewsCount !== undefined ? item.reviewsCount : 0,
       isFeatured: false,
-      joinDate: item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : 'Đang cập nhật',
+      joinDate: item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'Đang cập nhật',
     };
   },
 
   // ==========================================
-  // PHẦN 2: THÊM MỚI 2 HÀM DÀNH CHO SELLER
+  // PHẦN 2: DÀNH CHO SELLER
   // ==========================================
   getMyStore: async () => {
     const res = await fetch(`${API_URL}/stores/my-store`, {
@@ -88,7 +85,6 @@ export const storeService = {
   },
 
   updateMyStore: async (data: FormData) => {
-    // Không dùng getHeaders() mặc định vì FormData sẽ tự động tạo boundary header
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const res = await fetch(`${API_URL}/stores/my-store`, {
       method: 'PATCH',
@@ -101,7 +97,6 @@ export const storeService = {
     return res.json();
   },
 
-    // THÊM HÀM NÀY: Dành cho Buyer đăng ký mở gian hàng mới
   createStore: async (data: {
     name: string;
     description?: string;
@@ -117,6 +112,31 @@ export const storeService = {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.message || 'Lỗi khi tạo cửa hàng');
+    }
+    return res.json();
+  },
+
+  // ==========================================
+  // PHẦN 3: DÀNH CHO ADMIN
+  // ==========================================
+  // 1. Lấy danh sách đầy đủ cửa hàng cho Admin
+  getAllStoresForAdmin: async (): Promise<any[]> => {
+    const res = await fetch(`${API_URL}/stores`, {
+      method: 'GET',
+    });
+    if (!res.ok) throw new Error('Lỗi khi lấy danh sách cửa hàng');
+    return res.json();
+  },
+
+  // 2. Admin khóa / gỡ cửa hàng vi phạm
+  deleteStore: async (id: string): Promise<any> => {
+    const res = await fetch(`${API_URL}/stores/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Lỗi khi khóa cửa hàng');
     }
     return res.json();
   },
