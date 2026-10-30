@@ -23,29 +23,32 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  // 1. Tạo đơn hàng mới: Cho phép Khách mua (BUYER) và Người bán (SELLER) được mua hàng
   @Post()
   createOrder(@Request() req: any, @Body() dto: CreateOrderDto) {
-    checkRole(req, [Role.BUYER]);
+    checkRole(req, [Role.BUYER, Role.SELLER]);
     const userId = req.user.userId;
     return this.orderService.createOrder(userId, dto);
   }
+
+  // 2. Xem lịch sử đơn mua cá nhân: Cả BUYER và SELLER đều có đơn mua cá nhân
   @Get('history')
   getUserOrders(@Request() req: any) {
-    checkRole(req, [Role.BUYER]);
-
+    checkRole(req, [Role.BUYER, Role.SELLER]);
     const userId = req.user.userId;
     return this.orderService.getUserOrders(userId);
   }
 
+  // 3. Lấy đơn hàng của Gian hàng: Dành cho SELLER (xem đơn shop mình) và ADMIN (giám sát toàn sàn)
   @Get('store')
   getStoreOrders(@Request() req: any) {
-    // Chỉ Seller và Admin mới được xem đơn hàng của Store
     checkRole(req, [Role.SELLER, Role.ADMIN]);
     const userId = req.user.userId;
     const userRole = req.user.role;
     return this.orderService.getStoreOrders(userId, userRole);
   }
 
+  // 4. Xem chi tiết một đơn hàng bất kỳ
   @Get(':id')
   getOrderById(@Request() req: any, @Param('id') orderId: string) {
     checkRole(req, [Role.BUYER, Role.SELLER, Role.ADMIN]);
@@ -54,6 +57,7 @@ export class OrderController {
     return this.orderService.getOrderById(orderId, userId, userRole);
   }
 
+  // 5. Cập nhật trạng thái đơn (Dành cho Người bán xử lý đơn & Admin can thiệp)
   @Patch(':id/status')
   updateOrderStatus(
     @Request() req: any,
@@ -69,9 +73,10 @@ export class OrderController {
     );
   }
 
+  // 6. Hủy đơn hàng cá nhân: Cho phép BUYER và SELLER hủy đơn của chính mình khi chưa giao
   @Patch(':id/cancel')
   cancelOrder(@Request() req: any, @Param('id') orderId: string) {
-    checkRole(req, [Role.BUYER]);
+    checkRole(req, [Role.BUYER, Role.SELLER]);
     const userId = req.user.userId;
     return this.orderService.cancelOrder(orderId, userId);
   }

@@ -48,19 +48,21 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Patch(':id/role')
+    @Patch(':id/role')
   updateRole(
     @Req() req: any,
     @Param('id') id: string,
     @Body() updateRoleDto: UpdateRoleDto,
   ) {
     checkRole(req, [Role.ADMIN]);
-    return this.usersService.updateRole(id, updateRoleDto);
+    // Truyền thêm req.user.userId để kiểm tra chống tự hạ quyền
+    return this.usersService.updateRole(id, updateRoleDto, req.user.userId);
   }
 
   @Delete(':id')
   remove(@Req() req: any, @Param('id') id: string) {
     checkRole(req, [Role.ADMIN]);
-    return this.usersService.remove(id);
+    // Truyền thêm req.user.userId để kiểm tra chống tự khóa chính mình
+    return this.usersService.remove(id, req.user.userId);
   }
 }

@@ -16,31 +16,38 @@ export class StoresService {
     private readonly cloudinary: CloudinaryService,
   ) {}
 
-  async create(userId: string, createStoreDto: CreateStoreDto) {
-    // Kiểm tra xem người dùng đã có cửa hàng chưa
+      async create(userId: string, createStoreDto: CreateStoreDto) {
+    // 1. Kiểm tra xem người dùng đã từng có cửa hàng chưa
     const existingStore = await this.prisma.store.findUnique({
       where: { ownerId: userId },
     });
+
     if (existingStore) {
-      throw new BadRequestException('Bạn đã có một cửa hàng');
+      // Nếu cửa hàng cũ ĐANG HOẠT ĐỘNG (chưa bị xóa) -> Chặn tạo trùng
+      if (existingStore.deletedAt === null) {
+        throw new BadRequestException('Bạn đã gửi đăng ký hoặc đã có một cửa hàng đang hoạt động');
+      }
+
+      // Nếu cửa hàng cũ ĐÃ BỊ KHÓA/XÓA TRƯỚC ĐÓ -> Tái kích hoạt và cập nhật thông tin cửa hàng mới
+      // Giải pháp này xử lý triệt để lỗi trùng lặp Unique Constraint (ownerId) của PostgreSQL
+      const restoredStore = await this.prisma.store.update({
+        where: { id: existingStore.id },
+        data: {
+          ...createStoreDto,
+          deletedAt: null, // Mở khóa hoạt động lại
+        },
+      });
+
+      return restoredStore;
     }
 
-    // Tạo store
+    // 2. Nếu người dùng chưa từng tạo cửa hàng bao giờ -> Tạo mới bình thường
     const store = await this.prisma.store.create({
       data: {
         ...createStoreDto,
         ownerId: userId,
       },
     });
-
-    // Tự động nâng cấp quyền người dùng lên SELLER nếu họ đang là BUYER
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (user && user.role === Role.BUYER) {
-      await this.prisma.user.update({
-        where: { id: userId },
-        data: { role: Role.SELLER },
-      });
-    }
 
     return store;
   }
@@ -191,7 +198,7 @@ export class StoresService {
     };
   }
 
-  async remove(id: string) {
+    async remove(id: string) {
     const store = await this.prisma.store.findUnique({
       where: { id, deletedAt: null },
     });
@@ -199,12 +206,19 @@ export class StoresService {
       throw new NotFoundException('Không tìm thấy cửa hàng');
     }
 
+    // 1. Khóa cửa hàng (Xóa mềm)
     await this.prisma.store.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
 
-    return { message: 'Đã khóa/xóa cửa hàng thành công' };
+    // 2. Tự động hạ vai trò của chủ cửa hàng về BUYER (vì cửa hàng đã bị khóa)
+    await this.prisma.user.update({
+      where: { id: store.ownerId },
+      data: { role: Role.BUYER },
+    });
+
+    return { message: 'Đã khóa/xóa cửa hàng và chuyển vai trò chủ shop về người mua thành công' };
   }
 }
 

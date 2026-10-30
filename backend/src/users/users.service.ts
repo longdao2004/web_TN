@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service'; // 1. Import CloudinaryService
+import { Role } from '../auth/role.enum';
+
 
 @Injectable()
 export class UsersService {
@@ -89,7 +91,12 @@ export class UsersService {
     });
   }
 
-  async updateRole(id: string, updateRoleDto: UpdateRoleDto) {
+    async updateRole(id: string, updateRoleDto: UpdateRoleDto, currentAdminId?: string) {
+    // Chặn Admin tự hạ quyền của chính mình
+    if (currentAdminId && id === currentAdminId && updateRoleDto.role !== Role.ADMIN) {
+      throw new BadRequestException('Bạn không thể tự hạ quyền Quản trị viên của chính mình!');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id, deletedAt: null },
     });
@@ -109,7 +116,12 @@ export class UsersService {
     });
   }
 
-  async remove(id: string) {
+  async remove(id: string, currentAdminId?: string) {
+    // Chặn Admin tự khóa tài khoản của chính mình
+    if (currentAdminId && id === currentAdminId) {
+      throw new BadRequestException('Quản trị viên không thể tự khóa tài khoản của chính mình!');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id, deletedAt: null },
     });

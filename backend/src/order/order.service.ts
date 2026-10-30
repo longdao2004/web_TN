@@ -147,11 +147,17 @@ export class OrderService {
         const storeItems = itemsByStore[storeId];
         let storeTotal = 0;
 
-        for (const item of storeItems) {
+                for (const item of storeItems) {
           const latestBatch = item.product.batches[0];
           if (!latestBatch) {
             throw new BadRequestException(
               `Sản phẩm ${item.product.name} chưa có lô hàng để bán!`,
+            );
+          }
+          // Chặn đặt hàng nếu sản phẩm trong giỏ đã hết hạn
+          if (new Date(latestBatch.expiryDate).getTime() <= Date.now()) {
+            throw new BadRequestException(
+              `Sản phẩm "${item.product.name}" đã hết hạn sử dụng, không thể đặt hàng! Vui lòng xóa khỏi giỏ hàng.`,
             );
           }
           if (latestBatch.quantity < item.quantity) {

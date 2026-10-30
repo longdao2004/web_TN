@@ -77,7 +77,7 @@ export class ProductsService {
     });
   }
 
-  // 2. LẤY DANH SÁCH SẢN PHẨM (Có lọc và sắp xếp)
+    // 2. LẤY DANH SÁCH SẢN PHẨM (Tự động loại bỏ các sản phẩm thuộc Gian hàng đã bị khóa/xóa)
   findAll(filters?: {
     search?: string;
     categoryId?: string;
@@ -87,7 +87,10 @@ export class ProductsService {
     sortBy?: string;
     order?: 'asc' | 'desc';
   }) {
-    const whereClause: any = { deletedAt: null };
+    const whereClause: any = { 
+      deletedAt: null,
+      store: { deletedAt: null }, // <-- QUAN TRỌNG: Chỉ lấy sản phẩm của gian hàng ĐANG HOẠT ĐỘNG
+    };
 
     if (filters?.search) {
       whereClause.name = { contains: filters.search, mode: 'insensitive' };
@@ -155,10 +158,14 @@ export class ProductsService {
       });
   }
 
-  // 3. XEM CHI TIẾT SẢN PHẨM
-  findOne(id: string) {
-    return this.prisma.product.findUnique({
-      where: { id },
+  // 3. XEM CHI TIẾT SẢN PHẨM (Chặn xem chi tiết nếu Gian hàng sở hữu sản phẩm đã bị khóa/xóa)
+  async findOne(id: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { 
+        id, 
+        deletedAt: null,
+        store: { deletedAt: null }, // <-- Không hiển thị nếu gian hàng đã bị khóa
+      },
       include: {
         batches: { orderBy: { createdAt: 'desc' } },
         category: true,
@@ -184,6 +191,12 @@ export class ProductsService {
         certificates: true,
       },
     });
+
+    if (!product) {
+      throw new NotFoundException('Sản phẩm không tồn tại hoặc gian hàng đã ngừng kinh doanh!');
+    }
+
+    return product;
   }
 
   // 4. CẬP NHẬT SẢN PHẨM (Kiểm tra quyền sở hữu BOLA/IDOR)

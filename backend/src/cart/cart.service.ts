@@ -15,20 +15,19 @@ export class CartService {
       throw new BadRequestException('Số lượng thêm vào giỏ phải lớn hơn 0!');
     }
 
-    // 1. Kiểm tra Sản phẩm có tồn tại và đang kinh doanh không
+    // 1. Kiểm tra sản phẩm tồn tại và kiểm tra xem Gian hàng có bị khóa hay không
     const product = await this.prisma.product.findUnique({
       where: { id: dto.productId, deletedAt: null },
       include: {
+        store: true, // <-- Lấy thêm thông tin cửa hàng
         batches: { orderBy: { createdAt: 'desc' } },
       },
     });
-
-    if (!product || !product.isActive) {
+    if (!product || !product.isActive || product.store.deletedAt !== null) {
       throw new NotFoundException(
-        'Sản phẩm nông sản này không tồn tại hoặc đã ngừng kinh doanh!',
+        'Sản phẩm nông sản này không tồn tại hoặc gian hàng đã ngừng kinh doanh!',
       );
     }
-
     // 2. Lấy lô hàng mới nhất để kiểm tra hạn sử dụng và tồn kho
     const latestBatch = product.batches[0];
     if (!latestBatch) {
@@ -102,9 +101,13 @@ export class CartService {
       };
     }
 
-    const formattedItems = cart.items.map((item) => {
+        const formattedItems = cart.items.map((item) => {
       const latestBatch = item.product.batches[0];
       const currentPrice = latestBatch ? latestBatch.price : 0;
+      // Kiểm tra sản phẩm đã hết hạn sử dụng hay chưa
+      const isExpired = latestBatch
+        ? new Date(latestBatch.expiryDate).getTime() <= Date.now()
+        : true;
 
       return {
         cartItemId: item.id,
@@ -115,6 +118,9 @@ export class CartService {
         quantity: item.quantity,
         pricePerUnit: currentPrice,
         subTotal: currentPrice * item.quantity,
+        isExpired,
+        expiryDate: latestBatch?.expiryDate || null,
+        availableStock: latestBatch ? latestBatch.quantity : 0,
         store: item.product.store
           ? {
               id: item.product.store.id,
