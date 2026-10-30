@@ -12,7 +12,7 @@ export const ProductActions = ({ product }: { product: Product }) => {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
   const { addItem, setBuyNowItem } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   const createCartItem = () => ({
     id: product.id,
@@ -33,10 +33,16 @@ export const ProductActions = ({ product }: { product: Product }) => {
   });
 
   const handleAddToCart = async () => {
-    // [Bảo mật] Ép buộc đăng nhập trước khi thao tác giỏ hàng
+    // 1. Kiểm tra đăng nhập
     if (!isAuthenticated) {
       toast.error("Vui lòng đăng nhập để mua hàng!");
       router.push("/dang-nhap");
+      return;
+    }
+
+    // 2. Chặn Quản trị viên mua hàng
+    if (user?.role === "ADMIN") {
+      toast.warning("Tài khoản Quản trị viên chỉ có chức năng quản lý hệ thống, không thể đặt mua hàng!");
       return;
     }
 
@@ -55,28 +61,27 @@ export const ProductActions = ({ product }: { product: Product }) => {
   };
 
   const handleBuyNow = () => {
-  if (!isAuthenticated) {
-    toast.error("Vui lòng đăng nhập để mua hàng!");
-    router.push("/dang-nhap");
-    return;
-  }
+    // 1. Kiểm tra đăng nhập
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để mua hàng!");
+      router.push("/dang-nhap");
+      return;
+    }
 
-  // Lưu sản phẩm vào luồng mua ngay độc lập (không động vào giỏ hàng)
-  setBuyNowItem(createCartItem());
-  router.push("/thanh-toan?type=buynow");
-};
+    // 2. Chặn Quản trị viên mua hàng
+    if (user?.role === "ADMIN") {
+      toast.warning("Tài khoản Quản trị viên chỉ có chức năng quản lý hệ thống, không thể đặt mua hàng!");
+      return;
+    }
 
-  const handleFavorite = () => {
-    toast.info("Đã thêm vào danh sách yêu thích!");
-  };
-
-  const handleShare = () => {
-    toast.info("Đã copy link chia sẻ!");
+    // Lưu sản phẩm vào luồng mua ngay độc lập
+    setBuyNowItem(createCartItem());
+    router.push("/thanh-toan?type=buynow");
   };
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Bộ chọn số lượng (Tự động vô hiệu hóa nếu hết hàng hoặc hết hạn) */}
+      {/* Bộ chọn số lượng chuẩn của dự án */}
       <QuantitySelector
         stock={product.stock}
         quantity={quantity}
@@ -84,12 +89,12 @@ export const ProductActions = ({ product }: { product: Product }) => {
         disabled={product.stock === 0 || product.isExpired}
         isExpired={product.isExpired}
       />
-      {/* Các nút hành động Mua / Thêm giỏ (Tự động vô hiệu hóa nếu hết hàng hoặc hết hạn) */}
+      {/* Các nút hành động chuẩn của dự án */}
       <ActionButtons
         onAddToCart={handleAddToCart}
         onBuyNow={handleBuyNow}
-        onFavorite={() => {}} // Removed from UI
-        onShare={() => {}} // Removed from UI
+        onFavorite={() => {}}
+        onShare={() => {}}
         disabled={product.stock === 0 || product.isExpired}
         isExpired={product.isExpired}
       />

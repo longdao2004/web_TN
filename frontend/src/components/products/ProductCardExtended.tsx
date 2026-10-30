@@ -7,11 +7,12 @@ import { toast } from "sonner";
 import { Badge, Button } from "@/components/ui";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/auth.store";
 import Image from "next/image";
 
 interface ProductCardExtendedProps {
   product: Product;
-  // 🟢 Hỗ trợ cờ tải ưu tiên cho các sản phẩm đầu trang
+  // Hỗ trợ cờ tải ưu tiên cho các sản phẩm đầu trang
   priority?: boolean;
 }
 
@@ -22,6 +23,7 @@ export const ProductCardExtended = ({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
+  const { user } = useAuthStore();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -33,6 +35,12 @@ export const ProductCardExtended = ({
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (isLoading) return;
+
+    // Chặn Quản trị viên thêm vào giỏ
+    if (user?.role === "ADMIN") {
+      toast.warning("Tài khoản Quản trị viên chỉ có chức năng quản trị, không thể thêm sản phẩm vào giỏ!");
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -83,7 +91,6 @@ export const ProductCardExtended = ({
           href={`/san-pham/${product.slug || product.id}`}
           className="block w-full h-full relative"
         >
-          {/* 🟢 Giữ màu sắc ảnh gốc tự nhiên, không làm mờ hay xám xịt */}
           <Image
             src={product.image}
             alt={product.name}
@@ -95,16 +102,14 @@ export const ProductCardExtended = ({
           />
         </Link>
 
-        {/* 🟢 Badges Overlay: Đã tích hợp nhãn Lô mới về & Sửa lỗi số 0 */}
+        {/* Badges Overlay */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-          {/* Huy hiệu Lô mới về */}
           {product.isNewBatch && !product.isExpired && (
             <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-md animate-pulse">
               🌿 Lô mới về
             </span>
           )}
 
-          {/* Huy hiệu giảm giá (dùng toán tử 3 ngôi chống hiện số 0) */}
           {product.discount && product.discount > 0 ? (
             <Badge variant="danger" size="sm" className="font-bold">
               -{product.discount}%
@@ -127,7 +132,7 @@ export const ProductCardExtended = ({
           )}
         </div>
 
-        {/* 🔴 Huy hiệu bo tròn báo Hết hạn ở góc trên bên phải (đồng bộ kiểu dáng bo tròn với bên trái) */}
+        {/* Báo Hết hạn */}
         {product.isExpired && (
           <div className="absolute top-3 right-3 z-20">
             <span className="inline-flex items-center bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-md">
@@ -171,7 +176,6 @@ export const ProductCardExtended = ({
           <div className="flex items-center">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
           </div>
-          {/* 🟢 Đồng bộ hiển thị số sao luôn có 1 chữ số thập phân (5.0 thay vì 5) */}
           <span className="text-xs font-bold text-gray-700">
             {Number(product.rating || 5).toFixed(1)}
           </span>
@@ -199,7 +203,6 @@ export const ProductCardExtended = ({
           </div>
 
           <div className="flex items-center gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
-            {/* 🟢 Cho phép click xem chi tiết sản phẩm kể cả khi hết hạn để minh bạch nguồn gốc */}
             <Link
               href={`/san-pham/${product.slug || product.id}`}
               className="flex-1"

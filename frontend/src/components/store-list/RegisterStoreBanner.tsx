@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import { Store, X, Loader2 } from "lucide-react";
+import { Store, X, Loader2, CheckCircle2 } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { storeService } from "@/services/store.service";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 export const RegisterStoreBanner = () => {
   const router = useRouter();
-  const { user, isAuthenticated, fetchUser } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,14 +52,15 @@ export const RegisterStoreBanner = () => {
     setIsLoading(true);
     try {
       await storeService.createStore(formData);
-      toast.success("Chúc mừng! Đăng ký gian hàng thành công.");
       
-      // Nâng cấp quyền người dùng sang SELLER
-      await fetchUser();
+      // Thông báo rõ ràng: Yêu cầu cần chờ Admin duyệt
+      toast.success("Đã gửi yêu cầu đăng ký gian hàng thành công!", {
+        description: "Thông tin gian hàng đã được lưu. Quản trị viên (Admin) sẽ kiểm tra và cấp quyền Người bán cho bạn.",
+        duration: 5000,
+      });
+      
+      // Đóng popup, giữ người dùng ở lại trang hiện tại (KHÔNG tự ý nhảy vào /seller)
       setIsOpen(false);
-      
-      // Chuyển hướng thẳng vào Kênh Người Bán
-      router.push("/seller");
     } catch (error: any) {
       toast.error(error.message || "Đăng ký gian hàng thất bại!");
     } finally {
@@ -69,7 +70,7 @@ export const RegisterStoreBanner = () => {
 
   return (
     <>
-      {/* ẢNH BANNER MỚI (CLICK VÀO ĐỂ MỞ MODAL ĐĂNG KÝ) */}
+      {/* BANNER MỞ MODAL */}
       <div 
         onClick={handleOpenModal}
         className="group relative w-full h-[220px] sm:h-[300px] md:h-[360px] rounded-3xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mb-8 sm:mb-12 border border-emerald-100"
@@ -81,11 +82,10 @@ export const RegisterStoreBanner = () => {
           priority
           className="object-cover object-center group-hover:scale-[1.02] transition-transform duration-500"
         />
-        {/* Lớp phủ sáng nhẹ khi hover chuột vào */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300"></div>
       </div>
 
-      {/* MODAL POPUP ĐIỀN THÔNG TIN ĐĂNG KÝ */}
+      {/* MODAL ĐIỀN THÔNG TIN ĐĂNG KÝ */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -112,7 +112,7 @@ export const RegisterStoreBanner = () => {
                   placeholder="VD: Nông trại Hữu cơ Đà Lạt..."
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                 />
               </div>
 
@@ -126,7 +126,7 @@ export const RegisterStoreBanner = () => {
                   placeholder="VD: Thôn 2, Xã Lạc Dương, Lâm Đồng..."
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                 />
               </div>
 
@@ -139,7 +139,7 @@ export const RegisterStoreBanner = () => {
                   placeholder="Nhập số điện thoại..."
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                 />
               </div>
 
@@ -152,7 +152,7 @@ export const RegisterStoreBanner = () => {
                   placeholder="Giới thiệu về quy mô canh tác, chứng nhận VietGAP/OCOP của vườn..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                 />
               </div>
 
@@ -170,7 +170,7 @@ export const RegisterStoreBanner = () => {
                   className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition flex items-center gap-2 shadow-sm disabled:opacity-50"
                 >
                   {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Hoàn tất đăng ký
+                  Gửi yêu cầu đăng ký
                 </button>
               </div>
             </form>

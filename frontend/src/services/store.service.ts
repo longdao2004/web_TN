@@ -76,12 +76,16 @@ export const storeService = {
   // PHẦN 2: DÀNH CHO SELLER
   // ==========================================
   getMyStore: async () => {
-    const res = await fetch(`${API_URL}/stores/my-store`, {
-      method: 'GET',
-      headers: getHeaders(),
-    });
-    if (!res.ok) throw new Error('Lỗi lấy thông tin cửa hàng');
-    return res.json();
+    try {
+      const res = await fetch(`${API_URL}/stores/my-store`, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
   },
 
   updateMyStore: async (data: FormData) => {
@@ -119,7 +123,6 @@ export const storeService = {
   // ==========================================
   // PHẦN 3: DÀNH CHO ADMIN
   // ==========================================
-  // 1. Lấy danh sách đầy đủ cửa hàng cho Admin
   getAllStoresForAdmin: async (): Promise<any[]> => {
     const res = await fetch(`${API_URL}/stores`, {
       method: 'GET',
@@ -128,7 +131,6 @@ export const storeService = {
     return res.json();
   },
 
-  // 2. Admin khóa / gỡ cửa hàng vi phạm
   deleteStore: async (id: string): Promise<any> => {
     const res = await fetch(`${API_URL}/stores/${id}`, {
       method: 'DELETE',

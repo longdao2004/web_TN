@@ -9,6 +9,8 @@ export interface CartItem {
   originalPrice?: number;
   quantity: number;
   maxQuantity: number;
+  isExpired?: boolean;
+  expiryDate?: string;
   store: {
     id: string;
     name: string;

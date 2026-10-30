@@ -18,18 +18,20 @@ export const cartService = {
       throw new Error('Không thể tải giỏ hàng');
     }
     const data = await res.json();
-    return {
+        return {
       ...data,
       items: data.items.map((item: any): CartItem => ({
         id: item.cartItemId,
         productId: item.productId,
         slug: item.productId,
         name: item.productName,
-        category: 'Nông sản', // Backend doesn't return this in cart
+        category: 'Nông sản',
         image: item.imageUrl || '/images/products/cachuabi.avif',
         price: item.pricePerUnit,
         quantity: item.quantity,
-        maxQuantity: 99, // Fallback since backend doesn't return maxQuantity in cart
+        maxQuantity: item.availableStock ?? 99,
+        isExpired: item.isExpired ?? false,
+        expiryDate: item.expiryDate,
         store: item.store || {
           id: '1',
           name: 'Cửa hàng nông sản',

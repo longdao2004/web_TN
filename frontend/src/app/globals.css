@@ -29,16 +29,10 @@
 }
 
 :root {
+  /* Khóa chế độ sáng cho toàn bộ trình duyệt, ngăn chặn Dark Mode của Windows ép màu chữ trắng */
+  color-scheme: light;
   --background: var(--color-bg);
   --foreground: var(--color-text-primary);
-}
-
-@media (prefers-color-scheme: dark) {
-  /* Chuẩn bị Dark mode nếu có mở rộng sau này */
-  :root {
-    --background: #111827;
-    --foreground: #F9FAFB;
-  }
 }
 
 body {
@@ -46,7 +40,33 @@ body {
   color: var(--foreground);
 }
 
-/* Tắt nút mũi tên tăng giảm mặc định gây nhảy số ngoài ý muốn khi cuộn chuột */
+/* ==========================================================================
+   XỬ LÝ TRIỆT ĐỂ MÀU CHỮ TRONG Ô INPUT VÀ TEXTAREA
+   ========================================================================== */
+/* 1. Ép chữ gõ vào luôn có màu đen đậm (#111827), bất kể Dark Mode hay Light Mode */
+input, textarea, select {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+/* 2. Chữ gợi ý (placeholder) hiển thị màu xám vừa phải (#9CA3AF) để phân biệt rõ với chữ gõ */
+input::placeholder, textarea::placeholder {
+  color: #9CA3AF !important;
+  -webkit-text-fill-color: #9CA3AF !important;
+  opacity: 1 !important;
+}
+
+/* 3. Chống đổi màu chữ khi trình duyệt tự động điền (Autofill cho SĐT, Địa chỉ, Email) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: #111827 !important;
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* 4. Tắt nút mũi tên tăng giảm mặc định trên input number */
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: none; 

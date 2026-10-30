@@ -13,17 +13,21 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { orderService } from "@/services/order.service";
+import { useAuthStore } from "@/store/auth.store";
 
-// Hàm phân loại nội dung thông báo cho Người Bán theo trạng thái đơn
-const getSellerNotificationInfo = (order: any) => {
-  const shortId = order.id.slice(0, 8).toUpperCase();
+// Hàm phân loại nội dung thông báo theo vai trò và trạng thái đơn
+const getNotificationInfo = (order: any, isAdmin: boolean) => {
+  const shortId = order.id ? order.id.slice(0, 8).toUpperCase() : "";
   const customerName = order.user?.fullName || "Khách hàng";
+  const storeName = order.items?.[0]?.product?.store?.name || order.store?.name || "Gian hàng";
 
   switch (order.status) {
     case "PENDING":
       return {
         title: `Đơn hàng mới #${shortId}`,
-        desc: `${customerName} vừa đặt đơn COD. Vui lòng xác nhận & đóng gói.`,
+        desc: isAdmin 
+          ? `${customerName} vừa đặt đơn COD tại ${storeName}.`
+          : `${customerName} vừa đặt đơn COD. Vui lòng xác nhận & đóng gói.`,
         icon: Clock,
         iconColor: "text-amber-500",
         iconBg: "bg-amber-50",
@@ -31,7 +35,9 @@ const getSellerNotificationInfo = (order: any) => {
     case "PACKING":
       return {
         title: `Đơn đã thanh toán #${shortId}`,
-        desc: `${customerName} đã thanh toán VNPay. Vui lòng đóng gói và giao hàng.`,
+        desc: isAdmin
+          ? `${customerName} đã thanh toán VNPay tại ${storeName}.`
+          : `${customerName} đã thanh toán VNPay. Vui lòng đóng gói và giao hàng.`,
         icon: Package,
         iconColor: "text-blue-500",
         iconBg: "bg-blue-50",
@@ -39,7 +45,7 @@ const getSellerNotificationInfo = (order: any) => {
     case "SHIPPING":
       return {
         title: `Đơn đang giao #${shortId}`,
-        desc: `Đang trên đường vận chuyển tới ${customerName}.`,
+        desc: `Đơn #${shortId} đang trên đường giao tới ${customerName}.`,
         icon: Truck,
         iconColor: "text-indigo-500",
         iconBg: "bg-indigo-50",
@@ -73,6 +79,10 @@ const getSellerNotificationInfo = (order: any) => {
 
 export const SellerNotificationPopover = () => {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role === "ADMIN";
+  const ordersUrl = isAdmin ? "/admin/orders" : "/seller/orders";
+
   const [isOpen, setIsOpen] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +106,7 @@ export const SellerNotificationPopover = () => {
     };
   }, [isOpen]);
 
-  // Tải danh sách đơn hàng của Store
+  // Tải danh sách đơn hàng
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
@@ -113,7 +123,7 @@ export const SellerNotificationPopover = () => {
     fetchOrders();
   }, [isOpen]);
 
-  // Đếm số đơn cần người bán hành động (Chờ duyệt hoặc Đang đóng gói)
+  // Đếm số đơn cần chú ý (PENDING hoặc PACKING)
   const pendingCount = orders.filter(
     (o) => o.status === "PENDING" || o.status === "PACKING"
   ).length;
@@ -125,7 +135,7 @@ export const SellerNotificationPopover = () => {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors focus:outline-none"
-        title="Thông báo đơn hàng"
+        title={isAdmin ? "Thông báo sàn" : "Thông báo đơn hàng"}
       >
         <Bell className="h-5 w-5" />
         {pendingCount > 0 && (
@@ -140,15 +150,17 @@ export const SellerNotificationPopover = () => {
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-gray-900 text-sm">Thông báo đơn hàng</span>
+              <span className="font-bold text-gray-900 text-sm">
+                {isAdmin ? "Thông báo đơn toàn sàn" : "Thông báo đơn hàng"}
+              </span>
               {pendingCount > 0 && (
                 <span className="bg-amber-100 text-amber-700 text-[11px] px-2 py-0.5 rounded-full font-semibold">
-                  {pendingCount} đơn cần xử lý
+                  {pendingCount} {isAdmin ? "đơn mới" : "cần xử lý"}
                 </span>
               )}
             </div>
             <Link
-              href="/seller/orders"
+              href={ordersUrl}
               onClick={() => setIsOpen(false)}
               className="text-xs text-emerald-600 hover:underline font-medium"
             >
@@ -174,14 +186,15 @@ export const SellerNotificationPopover = () => {
                 <Bell className="w-10 h-10 text-gray-200 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-700">Chưa có đơn hàng nào</p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Khi khách đặt hàng, thông báo sẽ hiển thị tại đây.
+                  Khi phát sinh đơn hàng, thông báo sẽ hiển thị tại đây.
                 </p>
               </div>
             ) : (
               orders.slice(0, 5).map((order) => {
-                const info = getSellerNotificationInfo(order);
+                const info = getNotificationInfo(order, isAdmin);
                 const IconComponent = info.icon;
                 const totalAmount =
+                  order.totalAmount ||
                   order.items?.reduce(
                     (sum: number, item: any) =>
                       sum + item.quantity * item.priceAtPurchase,
@@ -193,7 +206,7 @@ export const SellerNotificationPopover = () => {
                     key={order.id}
                     onClick={() => {
                       setIsOpen(false);
-                      router.push("/seller/orders");
+                      router.push(ordersUrl);
                     }}
                     className="p-3.5 hover:bg-gray-50 cursor-pointer transition-colors flex items-start gap-3"
                   >
@@ -218,7 +231,7 @@ export const SellerNotificationPopover = () => {
                         </span>
                         <span>•</span>
                         <span className="font-semibold text-emerald-600">
-                          {totalAmount.toLocaleString("vi-VN")}đ
+                          {Number(totalAmount).toLocaleString("vi-VN")}đ
                         </span>
                       </div>
                     </div>
@@ -230,11 +243,11 @@ export const SellerNotificationPopover = () => {
 
           <div className="p-2 border-t border-gray-100 text-center bg-gray-50/50 rounded-b-2xl">
             <Link
-              href="/seller/orders"
+              href={ordersUrl}
               onClick={() => setIsOpen(false)}
               className="text-xs text-gray-600 hover:text-emerald-600 font-medium inline-flex items-center gap-1 py-1"
             >
-              Vào trang Quản lý đơn hàng
+              {isAdmin ? "Vào trang Giám sát đơn hàng" : "Vào trang Quản lý đơn hàng"}
               <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>

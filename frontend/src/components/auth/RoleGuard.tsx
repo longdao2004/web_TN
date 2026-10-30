@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react'; // Bổ sung import useState
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { Role } from '@/types/user';
@@ -7,40 +7,40 @@ import { Loader2 } from 'lucide-react';
 
 export const RoleGuard = ({ children, allowedRole }: { children: React.ReactNode, allowedRole: Role }) => {
   const router = useRouter();
-  // Lấy thêm thông tin người dùng từ store, bao gồm role và token
   const { user, token, fetchUser } = useAuthStore();
-  
-  // 1. Khai báo biến kiểm tra môi trường Client
   const [isMounted, setIsMounted] = useState(false);
 
-  // 2. Chạy một lần duy nhất khi vừa load lên Trình duyệt
   useEffect(() => {
     setIsMounted(true);
-    // Nếu có thẻ Token nhưng chưa có thông tin User -> Tự gọi Backend lấy về!
     if (token && !user) {
       fetchUser();
     }
   }, [token, user, fetchUser]);
 
   useEffect(() => {
-    // Nếu chưa load xong Client thì chưa thèm làm gì cả
     if (!isMounted) return;
 
     if (!token) {
       router.push('/dang-nhap');
       return;
     }
-    if (user && user.role !== allowedRole && user.role !== 'ADMIN') {
-      router.push('/');
+
+    // Phân quyền chặt chẽ theo vai trò
+    if (user && user.role !== allowedRole) {
+      if (user.role === 'ADMIN') {
+        router.push('/admin');
+      } else if (user.role === 'SELLER') {
+        router.push('/seller');
+      } else {
+        router.push('/');
+      }
     }
   }, [user, token, router, allowedRole, isMounted]);
 
-  // 3. TRỌNG TÂM: Nếu chưa Mounted, trả về null để khớp hoàn toàn với Server
   if (!isMounted) {
     return null;
   }
 
-  // 4. Các bước sau diễn ra bình thường trên Trình duyệt
   if (token && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -49,7 +49,8 @@ export const RoleGuard = ({ children, allowedRole }: { children: React.ReactNode
     );
   }
 
-  if (user && (user.role === allowedRole || user.role === 'ADMIN')) {
+  // Chỉ cho phép người dùng có đúng vai trò được render giao diện
+  if (user && user.role === allowedRole) {
     return <>{children}</>;
   }
 

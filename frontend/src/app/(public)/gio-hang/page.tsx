@@ -40,11 +40,14 @@ export default function CartPage() {
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
 
-  // 🟢 Tự động khởi tạo khi tải giỏ hàng: Chọn các món của 1 cửa hàng để tránh xung đột
+  // 🟢 Tự động khởi tạo khi tải giỏ hàng: Chỉ chọn các món CHƯA HẾT HẠN của 1 cửa hàng
   useEffect(() => {
     if (items.length > 0) {
       setSelectedItemIds((prev) => {
-        const validPrev = prev.filter((id) => items.some((item) => item.id === id));
+        // Chỉ giữ lại các món còn tồn tại VÀ chưa hết hạn
+        const validPrev = prev.filter((id) =>
+          items.some((item) => item.id === id && !item.isExpired)
+        );
         if (validPrev.length > 0) {
           const prevItems = items.filter((i) => validPrev.includes(i.id));
           const prevStoreKeys = Array.from(
@@ -54,9 +57,14 @@ export default function CartPage() {
             return validPrev;
           }
         }
-        // Mặc định chọn tất cả sản phẩm của cửa hàng đầu tiên trong giỏ
-        const firstStoreKey = items[0]?.store?.id || items[0]?.store?.name;
-        const firstStoreItems = items.filter(
+        // Lấy danh sách sản phẩm còn hạn
+        const activeItems = items.filter((i) => !i.isExpired);
+        if (activeItems.length === 0) return [];
+
+        // Mặc định chọn tất cả sản phẩm còn hạn của cửa hàng đầu tiên trong giỏ
+        const firstStoreKey =
+          activeItems[0]?.store?.id || activeItems[0]?.store?.name;
+        const firstStoreItems = activeItems.filter(
           (i) => (i.store?.id || i.store?.name) === firstStoreKey
         );
         return firstStoreItems.map((i) => i.id);
@@ -70,6 +78,12 @@ export default function CartPage() {
   const handleSelectItem = (id: string, selected: boolean) => {
     const targetItem = items.find((i) => i.id === id);
     if (!targetItem) return;
+
+    // Chặn người dùng nếu cố tích chọn sản phẩm đã hết hạn
+    if (targetItem.isExpired) {
+      toast.error("Sản phẩm này đã hết hạn sử dụng, vui lòng xóa khỏi giỏ hàng!");
+      return;
+    }
 
     if (selected) {
       // Lấy danh sách cửa hàng của các sản phẩm đang được chọn
@@ -95,27 +109,33 @@ export default function CartPage() {
     }
   };
 
-  // 🟢 Xử lý khi người dùng bấm "Chọn tất cả"
+  // 🟢 Xử lý khi người dùng bấm "Chọn tất cả" (Chỉ chọn các món còn hạn)
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
-      // Kiểm tra xem giỏ hàng có sản phẩm từ nhiều cửa hàng khác nhau không
+      // Chỉ xét các món chưa hết hạn
+      const activeItems = items.filter((i) => !i.isExpired);
+      if (activeItems.length === 0) {
+        toast.warning("Tất cả sản phẩm trong giỏ hàng đều đã hết hạn sử dụng!");
+        return;
+      }
+
+      // Kiểm tra xem có nhiều cửa hàng khác nhau không
       const allStoreKeys = Array.from(
-        new Set(items.map((i) => i.store?.id || i.store?.name))
+        new Set(activeItems.map((i) => i.store?.id || i.store?.name))
       );
 
       if (allStoreKeys.length > 1) {
-        // Thông báo cho người dùng biết web không hỗ trợ thanh toán nhiều cửa hàng cùng lúc
         toast.warning(
           "Website hiện chưa hỗ trợ thanh toán nhiều sản phẩm của các cửa hàng khác nhau trong cùng một đơn. Hệ thống đã chọn các sản phẩm của một cửa hàng để bạn thanh toán trước!",
           { duration: 5000 }
         );
         const firstStoreKey = allStoreKeys[0];
-        const firstStoreItems = items.filter(
+        const firstStoreItems = activeItems.filter(
           (i) => (i.store?.id || i.store?.name) === firstStoreKey
         );
         setSelectedItemIds(firstStoreItems.map((i) => i.id));
       } else {
-        setSelectedItemIds(items.map((i) => i.id));
+        setSelectedItemIds(activeItems.map((i) => i.id));
       }
     } else {
       setSelectedItemIds([]);

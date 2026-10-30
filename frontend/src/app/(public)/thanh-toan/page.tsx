@@ -93,6 +93,13 @@ function CheckoutContent() {
         return;
       }
 
+      // CHẶN ADMIN KHÔNG CHO VÀO THANH TOÁN
+      if (user?.role === "ADMIN") {
+        toast.warning("Tài khoản Quản trị viên chỉ có chức năng quản trị, không thể thực hiện đặt hàng!");
+        router.push("/admin");
+        return;
+      }
+
       if (items.length === 0 && !isSuccess) {
         if (isBuyNow) {
           toast.error("Không tìm thấy sản phẩm");
@@ -102,7 +109,7 @@ function CheckoutContent() {
         router.push("/gio-hang");
       }
     }
-  }, [isMounted, items.length, isSuccess, isBuyNow, router, isAuthenticated]);
+  }, [isMounted, items.length, isSuccess, isBuyNow, router, isAuthenticated, user]);
 
   // Tính toán dữ liệu
   const summaryData = useMemo(() => {
