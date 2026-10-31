@@ -54,7 +54,7 @@ export class StoresService {
 
   async getMyStore(userId: string) {
     const store = await this.prisma.store.findUnique({
-      where: { ownerId: userId, deletedAt: null },
+      where: { ownerId: userId },
       include: {
         _count: {
           select: { products: { where: { deletedAt: null } } },
@@ -71,6 +71,9 @@ export class StoresService {
 
   async update(userId: string, updateStoreDto: UpdateStoreDto, files?: any) {
     const store = await this.getMyStore(userId);
+    if (store.deletedAt) {
+      throw new BadRequestException('Gian hàng của bạn hiện đang bị tạm khóa, không thể cập nhật thông tin');
+    }
     let logoUrl = store.logoUrl;
     if (files?.logo?.[0]) {
       const uploadResult = await this.cloudinary.uploadImage(files.logo[0]);
@@ -95,8 +98,13 @@ export class StoresService {
     search?: string;
     province?: string;
     sort?: string;
+    all?: boolean;
   }) {
+    // Chỉ hiển thị các gian hàng ĐÃ ĐƯỢC PHÊ DUYỆT (Chủ shop mang quyền SELLER), trừ khi Admin yêu cầu lấy tất cả (all=true)
     const whereClause: any = { deletedAt: null };
+    if (!filters?.all) {
+      whereClause.owner = { role: 'SELLER' };
+    }
 
     if (filters?.search) {
       whereClause.OR = [
@@ -120,7 +128,7 @@ export class StoresService {
       where: whereClause,
       include: {
         owner: {
-          select: { fullName: true, email: true },
+          select: { id: true, fullName: true, email: true, role: true },
         },
         _count: {
           select: { products: { where: { deletedAt: null } } },

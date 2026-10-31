@@ -52,14 +52,20 @@ export class StoresController {
     return this.storesService.update(req.user.userId, updateStoreDto, files);
   }
 
-  // Public API for buyers to see all stores
+  // Public API for buyers to see all stores (or all=true for admin)
   @Get()
   findAll(
     @Query('search') search?: string,
     @Query('province') province?: string,
     @Query('sort') sort?: string,
+    @Query('all') all?: string,
   ) {
-    return this.storesService.findAll({ search, province, sort });
+    return this.storesService.findAll({
+      search,
+      province,
+      sort,
+      all: all === 'true',
+    });
   }
 
   // Public API for buyers to see store details

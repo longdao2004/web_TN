@@ -92,8 +92,13 @@ export class UsersService {
   }
 
     async updateRole(id: string, updateRoleDto: UpdateRoleDto, currentAdminId?: string) {
-    // Chặn Admin tự hạ quyền của chính mình
-    if (currentAdminId && id === currentAdminId && updateRoleDto.role !== Role.ADMIN) {
+    // 1. CẤM TUYỆT ĐỐI việc nâng người dùng thành Quản trị viên (ADMIN) qua giao diện này
+    if (updateRoleDto.role === Role.ADMIN) {
+      throw new BadRequestException('Bảo mật: Không được phép cấp quyền Quản trị viên (ADMIN) từ giao diện này!');
+    }
+
+    // 2. Chặn Admin tự hạ quyền của chính mình
+    if (currentAdminId && id === currentAdminId) {
       throw new BadRequestException('Bạn không thể tự hạ quyền Quản trị viên của chính mình!');
     }
 
@@ -102,6 +107,16 @@ export class UsersService {
     });
     if (!user) {
       throw new NotFoundException('Không tìm thấy người dùng');
+    }
+
+    // 3. Nếu muốn nâng lên SELLER: Bắt buộc người đó phải có hồ sơ gian hàng trong hệ thống
+    if (updateRoleDto.role === Role.SELLER) {
+      const store = await this.prisma.store.findUnique({
+        where: { ownerId: id },
+      });
+      if (!store) {
+        throw new BadRequestException('Người dùng này chưa nộp hồ sơ gian hàng, không thể cấp quyền SELLER!');
+      }
     }
 
     return this.prisma.user.update({

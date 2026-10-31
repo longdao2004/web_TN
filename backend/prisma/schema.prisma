@@ -108,6 +108,9 @@ model Product {
   soldCount     Int     @default(0)
   isActive      Boolean @default(true)
 
+  // Mặc đinh hàng khô là bảo quản thường
+  logisticsTier LogisticsTier @default(DRY_STABLE)
+
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
@@ -244,4 +247,8 @@ model Review {
   deletedAt DateTime?
 }
 
-
+enum LogisticsTier {
+  ULTRA_FRESH   // 1. Siêu ngắn ngày: Thịt, cá, sữa tươi thanh trùng, rau lá
+  CHILLED       // 2. Bảo quản mát: Trái cây tươi, củ quả, sữa chua (2°C - 8°C)
+  DRY_STABLE    // 3. Hàng khô / dài ngày: Gạo, nông sản sấy, đồ hộp
+}

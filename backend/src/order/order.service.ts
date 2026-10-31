@@ -294,7 +294,9 @@ export class OrderService {
     });
   }
 
-  // Cập nhật trạng thái đơn hàng (Có phân quyền BOLA/IDOR và tự động cập nhật thanh toán COD)
+    // =========================================================================
+  // CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (Chuẩn hóa máy trạng thái & Trọng tài Admin)
+  // =========================================================================
   async updateOrderStatus(
     orderId: string,
     status: OrderStatus,
@@ -310,7 +312,18 @@ export class OrderService {
       throw new NotFoundException('Không tìm thấy đơn hàng này!');
     }
 
-    // BẢO MẬT: Nếu là SELLER, chỉ được cập nhật đơn hàng thuộc shop của mình
+    // 1. NGUYÊN TẮC BẢO VỆ TRẠNG THÁI CUỐI (TERMINAL STATE):
+    // Đơn hàng đã COMPLETED hoặc CANCELLED là đã đóng băng vĩnh viễn, không ai được phép sửa đổi
+    if (order.status === OrderStatus.CANCELLED || order.status === OrderStatus.COMPLETED) {
+      throw new BadRequestException(
+        `Đơn hàng này đã ở trạng thái đóng băng (${
+          order.status === OrderStatus.COMPLETED ? 'Đã hoàn thành' : 'Đã hủy'
+        }), không thể thay đổi nữa!`,
+      );
+    }
+
+    // 2. PHÂN QUYỀN THỰC TẾ:
+    // Nếu là SELLER: Chỉ được cập nhật đơn hàng thuộc shop của mình quản lý
     if (userRole === Role.SELLER) {
       const store = await this.prisma.store.findUnique({
         where: { ownerId: userId },
@@ -322,8 +335,16 @@ export class OrderService {
       }
     }
 
-    // HỦY ĐƠN: Hoàn tồn kho VÀ giảm soldCount
-    if (status === OrderStatus.CANCELLED && order.status !== OrderStatus.CANCELLED) {
+    // Nếu là ADMIN: Quyền can thiệp của Admin chỉ là HỦY ĐƠN (CANCELLED) khi có khiếu nại hoặc tranh chấp.
+    // Admin không đóng gói (PACKING) hay đi giao hàng (SHIPPING) thay cho Shop/Shipper!
+    if (userRole === Role.ADMIN && status !== OrderStatus.CANCELLED) {
+      throw new BadRequestException(
+        'Quản trị viên chỉ có quyền can thiệp HỦY ĐƠN (CANCELLED) khi có sự cố hoặc khiếu nại! Tiến trình đóng gói và giao vận do Chủ shop thực hiện.',
+      );
+    }
+
+    // 3. XỬ LÝ HỦY ĐƠN: Hoàn trả số lượng nông sản về đúng lô hàng và giảm số lượng đã bán
+    if (status === OrderStatus.CANCELLED) {
       return this.prisma.$transaction(async (tx) => {
         const updatedOrder = await tx.order.update({
           where: { id: orderId },
@@ -334,19 +355,19 @@ export class OrderService {
           if (item.productBatchId) {
             await tx.productBatch.update({
               where: { id: item.productBatchId },
-              data: { quantity: { increment: item.quantity } },
+              data: { quantity: { increment: item.quantity } }, // Hoàn kho
             });
           }
           await tx.product.update({
             where: { id: item.productId },
-            data: { soldCount: { decrement: item.quantity } },
+            data: { soldCount: { decrement: item.quantity } }, // Giảm số lượng đã bán
           });
         }
         return updatedOrder;
       });
     }
 
-    // HOÀN THÀNH ĐƠN (COMPLETED): Tự động đánh dấu thanh toán COD thành công
+    // 4. XỬ LÝ HOÀN THÀNH ĐƠN (COMPLETED): Tự động đánh dấu thanh toán COD thành công
     if (status === OrderStatus.COMPLETED) {
       await this.prisma.payment.updateMany({
         where: { orderId: orderId, isSuccess: false },
@@ -354,6 +375,7 @@ export class OrderService {
       });
     }
 
+    // 5. Cập nhật các trạng thái thông thường (PACKING, SHIPPING) do Shop thực hiện
     return this.prisma.order.update({
       where: { id: orderId },
       data: { status },

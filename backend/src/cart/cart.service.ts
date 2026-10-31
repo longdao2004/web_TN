@@ -121,6 +121,7 @@ export class CartService {
         isExpired,
         expiryDate: latestBatch?.expiryDate || null,
         availableStock: latestBatch ? latestBatch.quantity : 0,
+        logisticsTier: item.product.logisticsTier || 'DRY_STABLE',
         store: item.product.store
           ? {
               id: item.product.store.id,

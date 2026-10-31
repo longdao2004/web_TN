@@ -195,9 +195,18 @@ export class StatisticsService {
       }),
     };
 
-    // 2. Tổng số Cửa hàng & Sản phẩm đang hoạt động
+        // 2. Tổng số Cửa hàng ĐÃ PHÊ DUYỆT (Chủ shop có quyền SELLER)
     const totalStores = await this.prisma.store.count({
-      where: { deletedAt: null },
+      where: { deletedAt: null, owner: { role: 'SELLER' } },
+    });
+
+    // 2b. Danh sách các Gian hàng CHỜ PHÊ DUYỆT (Chủ shop đang mang quyền BUYER)
+    const pendingStores = await this.prisma.store.findMany({
+      where: { deletedAt: null, owner: { role: 'BUYER' } },
+      include: {
+        owner: { select: { id: true, fullName: true, email: true, phone: true } },
+      },
+      orderBy: { createdAt: 'desc' },
     });
 
     const totalProducts = await this.prisma.product.count({
@@ -286,6 +295,7 @@ export class StatisticsService {
       orderStatusFunnel,
       revenueChart7Days,
       recentOrders,
+      pendingStores,
     };
   }
 }
