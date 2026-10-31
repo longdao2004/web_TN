@@ -124,7 +124,7 @@ export const storeService = {
   // PHẦN 3: DÀNH CHO ADMIN
   // ==========================================
   getAllStoresForAdmin: async (): Promise<any[]> => {
-    const res = await fetch(`${API_URL}/stores`, {
+    const res = await fetch(`${API_URL}/stores?all=true`, {
       method: 'GET',
     });
     if (!res.ok) throw new Error('Lỗi khi lấy danh sách cửa hàng');

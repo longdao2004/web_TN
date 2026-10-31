@@ -32,6 +32,7 @@ export const cartService = {
         maxQuantity: item.availableStock ?? 99,
         isExpired: item.isExpired ?? false,
         expiryDate: item.expiryDate,
+        logisticsTier: item.logisticsTier || 'DRY_STABLE',
         store: item.store || {
           id: '1',
           name: 'Cửa hàng nông sản',

@@ -25,6 +25,7 @@ export const ProductActions = ({ product }: { product: Product }) => {
     originalPrice: product.salePrice ? product.price : undefined,
     quantity: quantity,
     maxQuantity: product.stock,
+    logisticsTier: (product as any).logisticsTier || 'DRY_STABLE',
     store: {
       id: (product as any).store?.id || (product as any).storeId || "store-1",
       name: product.storeName || (product as any).store?.name || "Cửa hàng",

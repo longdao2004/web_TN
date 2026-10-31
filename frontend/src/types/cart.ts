@@ -11,6 +11,7 @@ export interface CartItem {
   maxQuantity: number;
   isExpired?: boolean;
   expiryDate?: string;
+  logisticsTier?: 'ULTRA_FRESH' | 'CHILLED' | 'DRY_STABLE';
   store: {
     id: string;
     name: string;

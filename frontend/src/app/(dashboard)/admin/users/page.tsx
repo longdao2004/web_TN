@@ -76,6 +76,10 @@ export default function AdminUsersPage() {
       alert("Bạn không thể tự thay đổi vai trò của chính mình!");
       return;
     }
+    if (user.role === "ADMIN") {
+      alert("Tài khoản Quản trị viên được quản lý bảo mật nội bộ, không thể chỉnh sửa vai trò tại đây!");
+      return;
+    }
     setEditingUser(user);
     setNewRole(user.role);
     setIsRoleModalOpen(true);
@@ -384,10 +388,10 @@ export default function AdminUsersPage() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                  Chọn vai trò mới:
+                  Điều chỉnh vai trò:
                 </label>
-                <div className="space-y-2">
-                  {/* BUYER */}
+                <div className="space-y-2.5">
+                  {/* 1. Khách mua hàng (BUYER) - Luôn khả dụng để có thể thu hồi quyền SELLER về BUYER */}
                   <div
                     onClick={() => setNewRole("BUYER")}
                     className={`p-3.5 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
@@ -398,41 +402,48 @@ export default function AdminUsersPage() {
                   >
                     <div>
                       <p className="text-sm font-bold text-gray-900">Khách mua hàng (BUYER)</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Quyền mua sắm nông sản và đánh giá</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {editingUser.role === "SELLER" 
+                          ? "Thu hồi quyền bán hàng, đưa về tài khoản mua sắm bình thường" 
+                          : "Quyền mua sắm nông sản tiêu chuẩn"}
+                      </p>
                     </div>
                     {newRole === "BUYER" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
                   </div>
 
-                  {/* SELLER */}
-                  <div
-                    onClick={() => setNewRole("SELLER")}
-                    className={`p-3.5 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
-                      newRole === "SELLER"
-                        ? "border-emerald-600 bg-emerald-50/50"
-                        : "border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">Đối tác Bán hàng (SELLER)</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Quản lý gian hàng, sản phẩm và đơn bán</p>
+                  {/* 2. Đối tác bán hàng (SELLER) - BỊ KHÓA NẾU LÀ BUYER */}
+                  {editingUser.role === "BUYER" ? (
+                    <div className="p-3.5 rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 opacity-75 cursor-not-allowed">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-bold text-gray-400">Đối tác Bán hàng (SELLER)</p>
+                        <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-200 text-gray-600 rounded-md">
+                          Không thể gán trực tiếp
+                        </span>
+                      </div>
+                      <p className="text-xs text-amber-700 mt-1.5 leading-relaxed">
+                        ⚠️ Khách mua muốn bán hàng bắt buộc phải nộp đơn mở shop và được xét duyệt tại trang <strong>Quản lý Gian hàng</strong>.
+                      </p>
                     </div>
-                    {newRole === "SELLER" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
-                  </div>
+                  ) : (
+                    <div
+                      onClick={() => setNewRole("SELLER")}
+                      className={`p-3.5 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
+                        newRole === "SELLER"
+                          ? "border-emerald-600 bg-emerald-50/50"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">Đối tác Bán hàng (SELLER)</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Đang duy trì quyền quản lý gian hàng và nông sản</p>
+                      </div>
+                      {newRole === "SELLER" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+                    </div>
+                  )}
 
-                  {/* ADMIN */}
-                  <div
-                    onClick={() => setNewRole("ADMIN")}
-                    className={`p-3.5 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
-                      newRole === "ADMIN"
-                        ? "border-emerald-600 bg-emerald-50/50"
-                        : "border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">Quản trị viên (ADMIN)</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Toàn quyền giám sát hệ thống sàn</p>
-                    </div>
-                    {newRole === "ADMIN" && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+                  {/* Ghi chú bảo mật về quyền Quản trị viên (ADMIN) */}
+                  <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-xl text-xs text-blue-800">
+                    ℹ️ <strong>Quyền Quản trị viên (ADMIN):</strong> Vì lý do an toàn và bảo mật thông tin, tài khoản Admin phải được cấp phát nội bộ, không được phép phân quyền tùy tiện tại đây.
                   </div>
                 </div>
               </div>

@@ -93,6 +93,7 @@ export const productService = {
         isFeatured: false,
         isNew: true,
         unit: item.unit || 'kg',
+        logisticsTier: item.logisticsTier || 'DRY_STABLE',
       };
     });
 
@@ -190,6 +191,7 @@ export const productService = {
       isFeatured: false,
       isNew: true,
       unit: item.unit || 'kg',
+      logisticsTier: item.logisticsTier || 'DRY_STABLE',
       description: item.description || '',
       specifications: {
         "Xuất xứ": item.origin || 'Đang cập nhật',

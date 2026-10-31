@@ -16,6 +16,9 @@ export interface ShippingMethod {
   name: string;
   estimatedTime: string;
   price: number;
+  disabled?: boolean;
+  disabledReason?: string;
+  badge?: string;
 }
 
 export interface PaymentMethod {

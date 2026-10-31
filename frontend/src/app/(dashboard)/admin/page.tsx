@@ -16,6 +16,10 @@ import {
   Calendar,
 } from "lucide-react";
 import { statisticService } from "@/services/statistic.service";
+import { userService } from "@/services/user.service";
+import { storeService } from "@/services/store.service";
+import { toast } from "sonner";
+import { CheckCircle2, UserCheck, AlertCircle } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<any>(null);
@@ -55,7 +59,36 @@ export default function AdminDashboardPage() {
     orderStatusFunnel = { pending: 0, packing: 0, shipping: 0, completed: 0, cancelled: 0 },
     revenueChart7Days = [],
     recentOrders = [],
+    pendingStores = [],
   } = data || {};
+
+  // 🟢 Hàm phê duyệt gian hàng: Nâng quyền chủ shop lên SELLER
+  const handleApproveStore = async (store: any) => {
+    try {
+      await userService.updateUserRole(store.owner.id, "SELLER" as any);
+      toast.success(`Đã phê duyệt thành công gian hàng "${store.name}"! Chủ shop đã được nâng lên SELLER.`);
+      // Nạp lại dữ liệu tổng quan
+      const res = await statisticService.getAdminOverview();
+      setData(res);
+    } catch (err: any) {
+      toast.error(err.message || "Lỗi khi phê duyệt gian hàng");
+    }
+  };
+
+  // 🔴 Hàm từ chối gian hàng: Xóa yêu cầu đăng ký
+  const handleRejectStore = async (store: any) => {
+    if (!confirm(`Bạn có chắc muốn từ chối yêu cầu mở gian hàng "${store.name}" của đối tác "${store.owner?.fullName}"?`)) {
+      return;
+    }
+    try {
+      await storeService.deleteStore(store.id);
+      toast.success(`Đã từ chối gian hàng "${store.name}".`);
+      const res = await statisticService.getAdminOverview();
+      setData(res);
+    } catch (err: any) {
+      toast.error(err.message || "Lỗi khi từ chối gian hàng");
+    }
+  };
 
   const maxDayRevenue = Math.max(
     ...revenueChart7Days.map((d: any) => d.revenue),
@@ -165,6 +198,94 @@ export default function AdminDashboardPage() {
             <Store className="w-6 h-6" />
           </div>
         </div>
+      </div>
+
+      {/* 🟢 KHỐI: YÊU CẦU PHÊ DUYỆT GIAN HÀNG MỚI */}
+      <div className="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold">
+              <Store className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">
+                Yêu cầu Phê duyệt Gian hàng Mới
+              </h2>
+              <p className="text-xs text-amber-700">
+                Các đối tác đã gửi thông tin đăng ký và đang chờ Admin duyệt để mở bán
+              </p>
+            </div>
+          </div>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+            pendingStores.length > 0
+              ? "bg-amber-100 text-amber-800 border-amber-300 animate-pulse"
+              : "bg-emerald-100 text-emerald-800 border-emerald-200"
+          }`}>
+            {pendingStores.length > 0 ? `${pendingStores.length} yêu cầu cần duyệt` : "0 yêu cầu đang chờ"}
+          </span>
+        </div>
+
+        {pendingStores.length === 0 ? (
+          <div className="p-6 text-center text-gray-500 text-sm flex items-center justify-center gap-2 bg-emerald-50/20">
+            <CheckCircle className="w-4 h-4 text-emerald-600" />
+            <span>Tất cả các gian hàng đều đã được xử lý. Không có yêu cầu đăng ký nào đang chờ.</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left whitespace-nowrap text-sm">
+              <thead className="bg-gray-50/60 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase">
+                <tr>
+                  <th className="p-4">Gian hàng đăng ký</th>
+                  <th className="p-4">Chủ sở hữu (Người nộp)</th>
+                  <th className="p-4">Số điện thoại</th>
+                  <th className="p-4">Địa chỉ hoạt động</th>
+                  <th className="p-4">Ngày gửi</th>
+                  <th className="p-4 text-center">Hành động duyệt</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {pendingStores.map((store: any) => (
+                  <tr key={store.id} className="hover:bg-amber-50/20 transition">
+                    <td className="p-4">
+                      <p className="font-bold text-gray-900">{store.name}</p>
+                      <p className="text-xs text-gray-400 font-mono">ID: {store.id.slice(0, 8).toUpperCase()}</p>
+                    </td>
+                    <td className="p-4">
+                      <p className="font-semibold text-gray-800">{store.owner?.fullName}</p>
+                      <p className="text-xs text-gray-500">{store.owner?.email}</p>
+                    </td>
+                    <td className="p-4 text-gray-700 font-medium">
+                      {store.phone || store.owner?.phone || "Chưa cập nhật"}
+                    </td>
+                    <td className="p-4 text-gray-500 max-w-xs truncate">
+                      {store.address || "Chưa có địa chỉ"}
+                    </td>
+                    <td className="p-4 text-xs text-gray-400">
+                      {new Date(store.createdAt).toLocaleDateString("vi-VN")}
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleApproveStore(store)}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <UserCheck className="w-3.5 h-3.5" />
+                          Phê duyệt
+                        </button>
+                        <button
+                          onClick={() => handleRejectStore(store)}
+                          className="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-rose-50 text-gray-600 hover:text-rose-600 font-medium text-xs transition border border-gray-200 cursor-pointer"
+                        >
+                          Từ chối
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* HÀNG 2: TIẾN ĐỘ ĐƠN HÀNG & CƠ CẤU THÀNH VIÊN (2 CỘT) */}

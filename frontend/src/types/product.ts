@@ -42,4 +42,5 @@ export interface Product {
   isNewBatch?: boolean;
   badges?: string[];
   soldCount?: number;
+  logisticsTier?: 'ULTRA_FRESH' | 'CHILLED' | 'DRY_STABLE';
 }

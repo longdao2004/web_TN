@@ -9,14 +9,13 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui";
-import { Voucher, CartSummaryData } from "@/types/cart";
+import { CartSummaryData } from "@/types/cart";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";
 import {
   CartList,
   CartSummary,
-  VoucherBox,
   EmptyCart,
   DeleteConfirmModal,
 } from "@/components/cart";
@@ -36,7 +35,6 @@ export default function CartPage() {
     fetchCart();
   }, [fetchCart, isAuthenticated, router]);
 
-  const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
 
@@ -174,35 +172,16 @@ export default function CartPage() {
       0,
     );
 
-    let discount = 0;
-    if (appliedVoucher && subTotal >= appliedVoucher.minOrderValue) {
-      if (appliedVoucher.discountType === "fixed") {
-        discount = appliedVoucher.discountValue;
-      } else {
-        discount = (subTotal * appliedVoucher.discountValue) / 100;
-        if (
-          appliedVoucher.maxDiscount &&
-          discount > appliedVoucher.maxDiscount
-        ) {
-          discount = appliedVoucher.maxDiscount;
-        }
-      }
-    }
-
-    // Mặc định phí ship tạm tính 
+    const discount = 0; // Đã bỏ mục mã khuyến mãi
     const defaultShippingPrice = SHIPPING_METHODS[0]?.price || 25000;
-    let shippingFee = subTotal > 500000 || subTotal === 0 ? 0 : defaultShippingPrice;
-    if (appliedVoucher?.code === "FREESHIP") {
-      shippingFee = Math.max(0, shippingFee - appliedVoucher.discountValue);
-      discount = 0;
-    }
+    const shippingFee = subTotal > 500000 || subTotal === 0 ? 0 : defaultShippingPrice;
 
     // Chính sách hỗ trợ: Nông sản sạch được miễn thuế VAT (0%), đồng bộ với trang thanh toán
     const tax = 0;
-    const total = Math.max(0, subTotal + shippingFee + tax - discount);
+    const total = subTotal + shippingFee;
 
     return { subTotal, discount, shippingFee, tax, total };
-  }, [selectedItems, appliedVoucher]);
+  }, [selectedItems]);
 
   const itemToDeleteName = useMemo(() => {
     return items.find((i) => i.id === deleteItemId)?.name;
@@ -294,11 +273,6 @@ export default function CartPage() {
 
           {/* Cột phải: Tóm tắt & Tiến hành thanh toán */}
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <VoucherBox
-              appliedVoucher={appliedVoucher}
-              onApplyVoucher={setAppliedVoucher}
-            />
-
             <CartSummary
               data={summaryData}
               selectedCount={selectedItemIds.length}

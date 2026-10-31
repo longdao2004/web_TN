@@ -24,35 +24,69 @@ export const ShippingMethod: React.FC<ShippingMethodProps> = ({
       <div className="space-y-3">
         {methods.map((method) => {
           const isSelected = selectedId === method.id;
+          const isDisabled = method.disabled === true;
+
           return (
             <div
               key={method.id}
-              onClick={() => onChange(method.id)}
-              className={`relative flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                isSelected
-                  ? "border-emerald-500 bg-emerald-50/50"
-                  : "border-gray-100 hover:border-emerald-200 hover:bg-gray-50"
+              onClick={() => {
+                if (!isDisabled) {
+                  onChange(method.id);
+                }
+              }}
+              className={`relative flex items-start p-4 rounded-xl border-2 transition-all duration-200 ${
+                isDisabled
+                  ? "border-gray-200 bg-gray-50/70 opacity-60 cursor-not-allowed"
+                  : isSelected
+                  ? "border-emerald-500 bg-emerald-50/50 cursor-pointer shadow-sm"
+                  : "border-gray-100 hover:border-emerald-200 hover:bg-gray-50 cursor-pointer"
               }`}
             >
               <Radio
-                checked={isSelected}
-                onChange={() => onChange(method.id)}
-                className="mt-0.5"
+                checked={isSelected && !isDisabled}
+                disabled={isDisabled}
+                onChange={() => !isDisabled && onChange(method.id)}
+                className="mt-1"
               />
-              <div className="ml-3 flex-1 flex items-center justify-between">
+              <div className="ml-3 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <div>
-                  <p
-                    className={`font-semibold text-sm ${isSelected ? "text-emerald-800" : "text-gray-700"}`}
-                  >
-                    {method.name}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p
+                      className={`font-semibold text-sm ${
+                        isDisabled
+                          ? "text-gray-400"
+                          : isSelected
+                          ? "text-emerald-800"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {method.name}
+                    </p>
+                    {method.badge && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        {method.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-0.5">
                     {method.estimatedTime}
                   </p>
+                  {/* Nhãn cảnh báo lý do không khả dụng */}
+                  {method.disabledReason && (
+                    <p className="text-[11px] font-medium text-red-500 mt-1 flex items-center gap-1">
+                      ⚠️ {method.disabledReason}
+                    </p>
+                  )}
                 </div>
-                <div className="text-right">
+                <div className="text-right sm:self-center">
                   <span
-                    className={`font-bold ${isSelected ? "text-emerald-600" : "text-gray-900"}`}
+                    className={`font-bold text-sm ${
+                      isDisabled
+                        ? "text-gray-400"
+                        : isSelected
+                        ? "text-emerald-600"
+                        : "text-gray-900"
+                    }`}
                   >
                     {method.price === 0
                       ? "Miễn phí"

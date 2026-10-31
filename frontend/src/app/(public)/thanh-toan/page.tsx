@@ -15,8 +15,6 @@ import {
 } from "@/components/ui";
 
 import { useCartStore } from "@/store/useCartStore";
-import { Voucher } from "@/types/cart";
-import { VoucherBox } from "@/components/cart/VoucherBox";
 import { orderService } from "@/services/order.service";
 import { useAuthStore } from "@/store/auth.store";
 import {
@@ -67,7 +65,6 @@ function CheckoutContent() {
     SHIPPING_METHODS[0].id,
   );
   const [paymentMethodId, setPaymentMethodId] = useState(PAYMENT_METHODS[0].id);
-  const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -111,6 +108,70 @@ function CheckoutContent() {
     }
   }, [isMounted, items.length, isSuccess, isBuyNow, router, isAuthenticated, user]);
 
+    // 🟢 PHÂN LOẠI VẬN CHUYỂN THEO ĐẶC THÙ SINH HỌC CỦA NÔNG SẢN
+  const hasUltraFresh = useMemo(
+    () => items.some((i) => (i as any).logisticsTier === "ULTRA_FRESH"),
+    [items]
+  );
+  const hasChilled = useMemo(
+    () => items.some((i) => (i as any).logisticsTier === "CHILLED"),
+    [items]
+  );
+
+  // 🟢 GỢI Ý 1: HIỂN THỊ ĐỦ 3 PHƯƠNG THỨC, LÀM MỜ VÀ GẮN NHÃN GIẢI THÍCH
+  const displayShippingMethods = useMemo(() => {
+    return SHIPPING_METHODS.map((method) => {
+      // 1. Nếu đơn hàng có thực phẩm Siêu tươi (ULTRA_FRESH)
+      if (hasUltraFresh) {
+        if (method.id === "ship-express") {
+          return {
+            ...method,
+            disabled: false,
+            badge: "Bắt buộc cho hàng siêu tươi",
+          };
+        }
+        return {
+          ...method,
+          disabled: true,
+          disabledReason: "Không áp dụng cho thực phẩm siêu tươi (nguy cơ hư hỏng)",
+        };
+      }
+
+      // 2. Nếu đơn hàng có nông sản Bảo quản mát (CHILLED)
+      if (hasChilled) {
+        if (method.id === "ship-standard") {
+          return {
+            ...method,
+            disabled: true,
+            disabledReason: "Không áp dụng cho trái cây/nông sản cần giữ mát 2°C - 8°C",
+          };
+        }
+        return {
+          ...method,
+          disabled: false,
+          badge: method.id === "ship-cold" ? "Khuyên dùng (Cold Chain)" : undefined,
+        };
+      }
+
+      // 3. Đơn hàng Nông sản khô (DRY_STABLE): Tất cả đều khả dụng
+      return {
+        ...method,
+        disabled: false,
+      };
+    });
+  }, [hasUltraFresh, hasChilled]);
+
+  // Tự động chuyển sang phương thức khả dụng đầu tiên nếu phương thức đang chọn bị khóa
+  useEffect(() => {
+    const currentMethod = displayShippingMethods.find((m) => m.id === shippingMethodId);
+    if (!currentMethod || currentMethod.disabled) {
+      const firstValid = displayShippingMethods.find((m) => !m.disabled);
+      if (firstValid) {
+        setShippingMethodId(firstValid.id);
+      }
+    }
+  }, [displayShippingMethods, shippingMethodId]);
+
   // Tính toán dữ liệu
   const summaryData = useMemo(() => {
     const subTotal = items.reduce(
@@ -118,29 +179,15 @@ function CheckoutContent() {
       0,
     );
 
-    let discount = 0;
-    if (appliedVoucher && subTotal >= appliedVoucher.minOrderValue) {
-      if (appliedVoucher.discountType === "fixed") {
-        discount = appliedVoucher.discountValue;
-      } else {
-        discount = (subTotal * appliedVoucher.discountValue) / 100;
-        if (
-          appliedVoucher.maxDiscount &&
-          discount > appliedVoucher.maxDiscount
-        ) {
-          discount = appliedVoucher.maxDiscount;
-        }
-      }
-    }
-
+    const discount = 0; // Đã bỏ mục voucher
     const selectedMethod = SHIPPING_METHODS.find(
       (m) => m.id === shippingMethodId,
     );
     const shippingFee = selectedMethod ? selectedMethod.price : 25000;
     const tax = 0;
-    const total = Math.max(0, subTotal - discount + shippingFee);
+    const total = subTotal + shippingFee;
     return { subTotal, discount, shippingFee, tax, total };
-  }, [items, appliedVoucher, shippingMethodId]);
+  }, [items, shippingMethodId]);
 
   const handleCheckout = async () => {
     setIsSubmitting(true);
@@ -280,12 +327,38 @@ function CheckoutContent() {
               </div>
             </div>
 
-            {/* 2. Phương thức vận chuyển (Gọi trực tiếp component tổng) */}
-            <ShippingMethod
-              methods={SHIPPING_METHODS}
-              selectedId={shippingMethodId}
-              onChange={setShippingMethodId}
-            />
+                        {/* 2. Phương thức vận chuyển (Lọc theo đặc thù nông sản) */}
+            <div className="flex flex-col gap-3">
+              {/* Thông báo nghiệp vụ thông minh cho khách hàng */}
+              {hasUltraFresh ? (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2">
+                  <span className="font-bold uppercase bg-red-600 text-white px-1.5 py-0.5 rounded text-[10px]">
+                    Siêu tươi sống
+                  </span>
+                  Đơn hàng có thực phẩm siêu tươi (thịt/thủy sản/sữa thanh trùng). Hệ thống chỉ áp dụng <b>Giao hỏa tốc 2H</b> để đảm bảo chất lượng.
+                </div>
+              ) : hasChilled ? (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-700 flex items-center gap-2">
+                  <span className="font-bold uppercase bg-blue-600 text-white px-1.5 py-0.5 rounded text-[10px]">
+                    Bảo quản mát
+                  </span>
+                  Đơn hàng có nông sản bảo quản mát (trái cây tươi/sữa chua). Đã kích hoạt <b>Vận chuyển chuỗi lạnh (Cold Chain)</b> để kiểm soát nhiệt độ 2°C - 8°C.
+                </div>
+              ) : (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700 flex items-center gap-2">
+                  <span className="font-bold uppercase bg-emerald-600 text-white px-1.5 py-0.5 rounded text-[10px]">
+                    Nông sản khô
+                  </span>
+                  Đơn hàng gồm nông sản khô bảo quản thường. Bạn có thể chọn Giao tiêu chuẩn để tiết kiệm chi phí.
+                </div>
+              )}
+
+              <ShippingMethod
+                methods={displayShippingMethods}
+                selectedId={shippingMethodId}
+                onChange={setShippingMethodId}
+              />
+            </div>
 
             {/* 3. Phương thức thanh toán (Gọi trực tiếp component tổng) */}
             <PaymentMethod
@@ -298,11 +371,6 @@ function CheckoutContent() {
           {/* Cột phải (Danh sách sản phẩm & Tóm tắt đơn hàng) */}
           <div className="w-full lg:w-[35%] flex flex-col gap-6 sticky top-24">
             <OrderItems items={items} />
-
-            <VoucherBox
-              onApplyVoucher={setAppliedVoucher}
-              appliedVoucher={appliedVoucher}
-            />
 
             <OrderSummary
               subTotal={summaryData.subTotal}
