@@ -199,16 +199,18 @@ function CheckoutContent() {
         return;
       }
 
-            // Tạo payload đơn hàng: nếu là "Mua ngay" thì gửi kèm productId & quantity
+            // Tạo payload đơn hàng: gửi đầy đủ địa chỉ, số điện thoại và phí vận chuyển
       const payload: {
         shippingAddress: string;
         phone: string;
+        shippingFee: number;
         productId?: string;
         quantity?: number;
         cartItemIds?: string[];
       } = {
         shippingAddress: addressText,
         phone: phoneText,
+        shippingFee: summaryData.shippingFee,
       };
 
       if (isBuyNow && items.length > 0) {

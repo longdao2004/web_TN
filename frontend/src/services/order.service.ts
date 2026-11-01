@@ -36,9 +36,10 @@ export const orderService = {
     return res.json();
   },
 
-    createOrder: async (data: {
+  createOrder: async (data: {
     shippingAddress: string;
     phone: string;
+    shippingFee?: number;
     productId?: string;
     quantity?: number;
     cartItemIds?: string[];

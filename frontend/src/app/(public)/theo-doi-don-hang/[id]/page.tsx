@@ -121,7 +121,7 @@ export default function OrderTrackingPage() {
             foundOrder.paymentMethod === "VNPAY"
               ? "VNPay"
               : "Thanh toán khi nhận hàng (COD)",
-          shippingFee: 0,
+          shippingFee: foundOrder.shippingFee || 0,
           discount: 0,
         });
       }

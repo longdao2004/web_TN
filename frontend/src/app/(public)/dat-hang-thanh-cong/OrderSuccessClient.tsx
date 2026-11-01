@@ -89,8 +89,8 @@ export const OrderSuccessClient = () => {
           shippingMethod: "Giao hàng tiêu chuẩn",
           status: data.status,
           total: data.totalAmount,
-          subtotal: data.totalAmount, // Assuming no shipping fee field in DB yet
-          shippingFee: 0,
+          subtotal: data.totalAmount - (data.shippingFee || 0),
+          shippingFee: data.shippingFee || 0,
           discount: 0,
                     products: (data.items || []).map((item: any) => {
             const product = item.product || item.batch?.product || {};

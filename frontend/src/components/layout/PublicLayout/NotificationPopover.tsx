@@ -84,6 +84,7 @@ export const NotificationPopover = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [myStore, setMyStore] = useState<any | null>(null);
   const [isStoreSeen, setIsStoreSeen] = useState(false);
+  const [hasPendingApproval, setHasPendingApproval] = useState(false);
   const [isStoreLockedSeen, setIsStoreLockedSeen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -123,6 +124,9 @@ export const NotificationPopover = () => {
         setMyStore(storeData);
 
         if (storeData && typeof window !== "undefined") {
+          const isPending = user?.id ? !!localStorage.getItem(`store_pending_approval_${user.id}`) : false;
+          setHasPendingApproval(isPending);
+
           const seenApproved = localStorage.getItem(`store_approved_seen_${storeData.id}`);
           setIsStoreSeen(!!seenApproved);
 
@@ -165,12 +169,17 @@ export const NotificationPopover = () => {
     }
 
     // 2b. Trường hợp gian hàng ĐƯỢC PHÊ DUYỆT thành SELLER
-    if (user?.role === "SELLER") {
-      const approveKey = `store_approved_toast_${myStore.id}`;
-      const alreadyNotified = localStorage.getItem(approveKey);
+    // 🟢 CHỈ thông báo cho tài khoản BUYER đã từng nộp đơn đăng ký gian hàng và nay được Admin duyệt lên SELLER
+    if (user?.role === "SELLER" && user?.id) {
+      const pendingKey = `store_pending_approval_${user.id}`;
+      const wasPending = localStorage.getItem(pendingKey);
 
-      if (!alreadyNotified) {
-        localStorage.setItem(approveKey, "true");
+      // Chỉ kích hoạt Toast nếu tài khoản này có cờ chờ duyệt nộp từ trước
+      if (wasPending) {
+        // Đã thông báo thành công: Xóa cờ chờ duyệt để không bao giờ lặp lại
+        localStorage.removeItem(pendingKey);
+        localStorage.setItem(`store_approved_toast_${myStore.id}`, "true");
+
         toast.success(
           `🎉 Chúc mừng bạn! Gian hàng "${myStore.name}" đã được phê duyệt!`,
           {
@@ -211,9 +220,9 @@ export const NotificationPopover = () => {
     (o) => o.status === "PENDING" || o.status === "PACKING" || o.status === "SHIPPING"
   ).length;
 
-  // Cờ thông báo phê duyệt gian hàng mới (chưa xem)
+  // Cờ thông báo phê duyệt gian hàng mới (chỉ dành cho Buyer vừa nộp đơn và nay được duyệt, chưa xem)
   const hasUnreadStoreApproval = Boolean(
-    myStore && !myStore.deletedAt && user?.role === "SELLER" && !isStoreSeen
+    myStore && !myStore.deletedAt && user?.role === "SELLER" && hasPendingApproval && !isStoreSeen
   );
 
   // Cờ thông báo gian hàng bị khóa (chưa xem)
@@ -325,8 +334,8 @@ export const NotificationPopover = () => {
                   </div>
                 )}
 
-                {/* 🌟 THÔNG BÁO GIAN HÀNG ĐÃ ĐƯỢC DUYỆT (Dành cho SELLER) */}
-                {myStore && !myStore.deletedAt && user?.role === "SELLER" && (
+                {/* 🌟 THÔNG BÁO GIAN HÀNG ĐÃ ĐƯỢC DUYỆT (Chỉ dành cho Buyer vừa nộp đơn và nay được duyệt) */}
+                {myStore && !myStore.deletedAt && user?.role === "SELLER" && hasPendingApproval && (
                   <div
                     onClick={() => {
                       setIsOpen(false);

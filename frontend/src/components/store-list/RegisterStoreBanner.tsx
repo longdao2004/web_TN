@@ -53,6 +53,11 @@ export const RegisterStoreBanner = () => {
     try {
       await storeService.createStore(formData);
       
+      // 🟢 Đánh dấu tài khoản Buyer này đã gửi hồ sơ mở shop và đang chờ Admin duyệt
+      if (user?.id && typeof window !== "undefined") {
+        localStorage.setItem(`store_pending_approval_${user.id}`, "true");
+      }
+      
       // Thông báo rõ ràng: Yêu cầu cần chờ Admin duyệt
       toast.success("Đã gửi yêu cầu đăng ký gian hàng thành công!", {
         description: "Thông tin gian hàng đã được lưu. Quản trị viên (Admin) sẽ kiểm tra và cấp quyền Người bán cho bạn.",
