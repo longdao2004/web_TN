@@ -45,4 +45,13 @@ export class CreateOrderDto {
   @IsString({ each: true })
   @IsOptional()
   cartItemIds?: string[];
+    @ApiProperty({
+    required: false,
+    example: 25000,
+    description: 'Phí vận chuyển của đơn hàng',
+  })
+  @IsNumber({}, { message: 'Phí vận chuyển phải là một số' })
+  @Min(0, { message: 'Phí vận chuyển không được âm' })
+  @IsOptional()
+  shippingFee?: number;
 }

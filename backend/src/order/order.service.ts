@@ -44,7 +44,8 @@ export class OrderService {
       }
 
       const price = latestBatch.price;
-      const totalAmount = price * quantity;
+      const shippingFee = Number(dto.shippingFee) || 0; // Phí vận chuyển (mặc định 0đ)
+      const totalAmount = price * quantity + shippingFee; // Tổng tiền = Tiền hàng + Phí ship
 
       return this.prisma.$transaction(async (tx) => {
         // 1. Kiểm tra lại tồn kho trong transaction
@@ -55,12 +56,13 @@ export class OrderService {
           throw new BadRequestException('Sản phẩm vừa hết hàng, vui lòng thử lại!');
         }
 
-        // 2. Tạo đơn hàng (Lưu cả phone và storeId)
+        // 2. Tạo đơn hàng (Lưu cả phone, storeId và shippingFee)
         const order = await tx.order.create({
           data: {
             userId,
             storeId: product.storeId,
             totalAmount,
+            shippingFee, // Lưu phí ship vào database
             shippingAddress: dto.shippingAddress,
             phone: dto.phone,
             status: OrderStatus.PENDING,
@@ -168,12 +170,18 @@ export class OrderService {
           storeTotal += latestBatch.price * item.quantity;
         }
 
+        // Phí vận chuyển cho từng cửa hàng (nếu giỏ hàng nhiều shop thì chia đều, 1 shop thì nhận trọn vẹn)
+        const storeCount = Object.keys(itemsByStore).length;
+        const storeShippingFee = storeCount > 0 ? (Number(dto.shippingFee) || 0) / storeCount : 0;
+        const finalStoreTotal = storeTotal + storeShippingFee;
+
         // Tạo đơn hàng riêng cho từng Store
         const order = await tx.order.create({
           data: {
             userId,
             storeId,
-            totalAmount: storeTotal,
+            totalAmount: finalStoreTotal,
+            shippingFee: storeShippingFee, // Lưu phí ship vào database
             shippingAddress: dto.shippingAddress,
             phone: dto.phone,
             status: OrderStatus.PENDING,
@@ -206,7 +214,7 @@ export class OrderService {
         }
 
         createdOrders.push(order);
-        grandTotal += storeTotal;
+        grandTotal += finalStoreTotal;
       }
 
       // Xóa các món đã mua khỏi giỏ hàng
