@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, ShoppingBag } from "lucide-react";
+import { ArrowRight, ShoppingBag, Store } from "lucide-react";
 import { Button } from "@/components/ui";
 import { CartSummaryData } from "@/types/cart";
 
@@ -8,6 +8,7 @@ interface CartSummaryProps {
   onCheckout: () => void;
   onContinueShopping: () => void;
   selectedCount: number;
+  selectedStoreName?: string; // Tên gian hàng đang được chọn thanh toán
 }
 
 export const CartSummary = ({
@@ -15,6 +16,7 @@ export const CartSummary = ({
   onCheckout,
   onContinueShopping,
   selectedCount,
+  selectedStoreName,
 }: CartSummaryProps) => {
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -27,6 +29,15 @@ export const CartSummary = ({
     <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm overflow-hidden sticky top-24">
       <div className="p-5 border-b border-[var(--color-border)]">
         <h3 className="text-lg font-bold text-gray-900">Tóm tắt đơn hàng</h3>
+        {/* Hiển thị huy hiệu cửa hàng đang chọn thanh toán */}
+        {selectedStoreName && (
+          <div className="mt-2.5 flex items-center gap-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+            <Store className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="truncate">
+              Đang chọn: <strong>{selectedStoreName}</strong>
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="p-5 space-y-4">
@@ -88,7 +99,7 @@ export const CartSummary = ({
           disabled={selectedCount === 0}
         >
           <ShoppingBag className="mr-2 h-5 w-5" />
-          Tiến hành thanh toán
+          {selectedStoreName ? `Thanh toán (${selectedCount} món)` : "Tiến hành thanh toán"}
         </Button>
         <Button
           variant="outline"

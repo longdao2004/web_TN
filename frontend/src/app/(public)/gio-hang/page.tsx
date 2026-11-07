@@ -38,7 +38,7 @@ export default function CartPage() {
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
 
-  // 🟢 Tự động khởi tạo khi tải giỏ hàng: Chỉ chọn các món CHƯA HẾT HẠN của 1 cửa hàng
+  // 🟢 Tự động khởi tạo khi tải giỏ hàng: Chọn tất cả các món chưa hết hạn
   useEffect(() => {
     if (items.length > 0) {
       setSelectedItemIds((prev) => {
@@ -46,33 +46,39 @@ export default function CartPage() {
         const validPrev = prev.filter((id) =>
           items.some((item) => item.id === id && !item.isExpired)
         );
-        if (validPrev.length > 0) {
-          const prevItems = items.filter((i) => validPrev.includes(i.id));
-          const prevStoreKeys = Array.from(
-            new Set(prevItems.map((i) => i.store?.id || i.store?.name))
-          );
-          if (prevStoreKeys.length <= 1) {
-            return validPrev;
-          }
-        }
-        // Lấy danh sách sản phẩm còn hạn
-        const activeItems = items.filter((i) => !i.isExpired);
-        if (activeItems.length === 0) return [];
+        if (validPrev.length > 0) return validPrev;
 
-        // Mặc định chọn tất cả sản phẩm còn hạn của cửa hàng đầu tiên trong giỏ
-        const firstStoreKey =
-          activeItems[0]?.store?.id || activeItems[0]?.store?.name;
-        const firstStoreItems = activeItems.filter(
-          (i) => (i.store?.id || i.store?.name) === firstStoreKey
-        );
-        return firstStoreItems.map((i) => i.id);
+        // Nếu chưa chọn món nào: Mặc định chọn tất cả sản phẩm còn hạn của giỏ
+        const activeItems = items.filter((i) => !i.isExpired);
+        return activeItems.map((i) => i.id);
       });
     } else {
       setSelectedItemIds([]);
     }
   }, [items]);
 
-  // 🟢 Xử lý khi người dùng tích chọn / bỏ chọn từng sản phẩm
+  // 🟢 Lọc danh sách các sản phẩm đang được chọn
+  const selectedItems = useMemo(
+    () => items.filter((item) => selectedItemIds.includes(item.id)),
+    [items, selectedItemIds]
+  );
+
+  // 🟢 Lấy danh sách tên các gian hàng đang được chọn để hiển thị ở tóm tắt đơn hàng
+  const selectedStoreNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const item of selectedItems) {
+      if (item.store?.name) names.add(item.store.name);
+    }
+    return Array.from(names);
+  }, [selectedItems]);
+
+  const selectedStoreName = useMemo(() => {
+    if (selectedStoreNames.length === 0) return undefined;
+    if (selectedStoreNames.length === 1) return selectedStoreNames[0];
+    return `${selectedStoreNames.length} gian hàng (${selectedStoreNames.join(", ")})`;
+  }, [selectedStoreNames]);
+
+  // 🟢 Xử lý khi người dùng tích chọn / bỏ chọn từng sản phẩm (Hỗ trợ chọn nhiều gian hàng cùng lúc)
   const handleSelectItem = (id: string, selected: boolean) => {
     const targetItem = items.find((i) => i.id === id);
     if (!targetItem) return;
@@ -84,30 +90,48 @@ export default function CartPage() {
     }
 
     if (selected) {
-      // Lấy danh sách cửa hàng của các sản phẩm đang được chọn
-      const currentlySelectedItems = items.filter((i) => selectedItemIds.includes(i.id));
-      const selectedStoreKeys = Array.from(
-        new Set(currentlySelectedItems.map((i) => i.store?.id || i.store?.name))
-      );
-
-      const targetStoreKey = targetItem.store?.id || targetItem.store?.name;
-
-      // Nếu đang chọn món của cửa hàng khác: Bật thông báo cho người dùng biết
-      if (selectedStoreKeys.length > 0 && !selectedStoreKeys.includes(targetStoreKey)) {
-        toast.warning(
-          "Website hiện chưa hỗ trợ thanh toán nhiều sản phẩm của các cửa hàng khác nhau trong cùng một đơn. Vui lòng chọn và thanh toán sản phẩm của từng cửa hàng!",
-          { duration: 5000 }
-        );
-        return;
-      }
-
+      // Thêm sản phẩm vào danh sách chọn (cho phép tự do chọn sản phẩm từ nhiều gian hàng khác nhau)
       setSelectedItemIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
     } else {
       setSelectedItemIds((prev) => prev.filter((itemId) => itemId !== id));
     }
   };
 
-  // 🟢 Xử lý khi người dùng bấm "Chọn tất cả" (Chỉ chọn các món còn hạn)
+  // 🟢 Xử lý chọn hoặc bỏ chọn toàn bộ sản phẩm của một gian hàng cụ thể
+  const handleSelectStore = (storeKey: string, selected: boolean) => {
+    const storeActiveItems = items.filter(
+      (i) => (i.store?.id || i.store?.name) === storeKey && !i.isExpired
+    );
+    const storeItemIds = storeActiveItems.map((i) => i.id);
+
+    if (selected) {
+      // Tích chọn thêm toàn bộ sản phẩm của gian hàng này mà không làm mất sản phẩm của gian hàng khác
+      setSelectedItemIds((prev) => Array.from(new Set([...prev, ...storeItemIds])));
+      const storeName = storeActiveItems[0]?.store?.name || "gian hàng";
+      toast.success(`Đã chọn toàn bộ sản phẩm của ${storeName}.`);
+    } else {
+      // Bỏ chọn các sản phẩm của riêng gian hàng này
+      setSelectedItemIds((prev) => prev.filter((id) => !storeItemIds.includes(id)));
+    }
+  };
+
+  // 🟢 Mua nhanh toàn bộ sản phẩm khả dụng của một gian hàng cụ thể
+  const handleCheckoutStore = (storeKey: string) => {
+    const storeActiveItems = items.filter(
+      (i) => (i.store?.id || i.store?.name) === storeKey && !i.isExpired
+    );
+
+    if (storeActiveItems.length === 0) {
+      toast.warning("Gian hàng này không có sản phẩm khả dụng để thanh toán!");
+      return;
+    }
+
+    const ids = storeActiveItems.map((i) => i.id);
+    setSelectedItemIds(ids);
+    router.push(`/thanh-toan?items=${ids.join(",")}`);
+  };
+
+  // 🟢 Xử lý khi người dùng bấm "Chọn tất cả" sản phẩm của tất cả các gian hàng
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
       // Chỉ xét các món chưa hết hạn
@@ -116,25 +140,8 @@ export default function CartPage() {
         toast.warning("Tất cả sản phẩm trong giỏ hàng đều đã hết hạn sử dụng!");
         return;
       }
-
-      // Kiểm tra xem có nhiều cửa hàng khác nhau không
-      const allStoreKeys = Array.from(
-        new Set(activeItems.map((i) => i.store?.id || i.store?.name))
-      );
-
-      if (allStoreKeys.length > 1) {
-        toast.warning(
-          "Website hiện chưa hỗ trợ thanh toán nhiều sản phẩm của các cửa hàng khác nhau trong cùng một đơn. Hệ thống đã chọn các sản phẩm của một cửa hàng để bạn thanh toán trước!",
-          { duration: 5000 }
-        );
-        const firstStoreKey = allStoreKeys[0];
-        const firstStoreItems = activeItems.filter(
-          (i) => (i.store?.id || i.store?.name) === firstStoreKey
-        );
-        setSelectedItemIds(firstStoreItems.map((i) => i.id));
-      } else {
-        setSelectedItemIds(activeItems.map((i) => i.id));
-      }
+      setSelectedItemIds(activeItems.map((i) => i.id));
+      toast.success(`Đã chọn tất cả ${activeItems.length} sản phẩm khả dụng.`);
     } else {
       setSelectedItemIds([]);
     }
@@ -155,13 +162,7 @@ export default function CartPage() {
     }
   };
 
-  // 🟢 Lọc danh sách các sản phẩm đang được chọn
-  const selectedItems = useMemo(
-    () => items.filter((item) => selectedItemIds.includes(item.id)),
-    [items, selectedItemIds]
-  );
-
-  // 🟢 Tính toán dữ liệu giỏ hàng đồng bộ CHỈ CHO CÁC SẢN PHẨM ĐƯỢC CHỌN
+  // 🟢 Tính toán dữ liệu giỏ hàng đồng bộ CHỈ CHO CÁC SẢN PHẨM ĐƯỢC CHỌN (Hỗ trợ Đa gian hàng)
   const summaryData = useMemo<CartSummaryData>(() => {
     if (selectedItems.length === 0) {
       return { subTotal: 0, discount: 0, shippingFee: 0, tax: 0, total: 0 };
@@ -173,8 +174,14 @@ export default function CartPage() {
     );
 
     const discount = 0; // Đã bỏ mục mã khuyến mãi
-    const defaultShippingPrice = SHIPPING_METHODS[0]?.price || 25000;
-    const shippingFee = subTotal > 500000 || subTotal === 0 ? 0 : defaultShippingPrice;
+    // Đếm số lượng gian hàng có sản phẩm được chọn (Mỗi gian hàng có chuyến vận chuyển riêng biệt)
+    const uniqueStoreCount = new Set(
+      selectedItems.map((i) => i.store?.id || i.store?.name)
+    ).size;
+    const baseShippingPrice = SHIPPING_METHODS[0]?.price || 25000;
+    // Miễn phí vận chuyển nếu đơn > 500.000đ, ngược lại tính theo số lượng gian hàng
+    const shippingFee =
+      subTotal > 500000 || subTotal === 0 ? 0 : baseShippingPrice * uniqueStoreCount;
 
     // Chính sách hỗ trợ: Nông sản sạch được miễn thuế VAT (0%), đồng bộ với trang thanh toán
     const tax = 0;
@@ -187,22 +194,10 @@ export default function CartPage() {
     return items.find((i) => i.id === deleteItemId)?.name;
   }, [deleteItemId, items]);
 
-  // 🟢 Xử lý chuyển sang trang thanh toán: Truyền danh sách ID các món được chọn
+  // 🟢 Xử lý chuyển sang trang thanh toán: Truyền danh sách ID các món được chọn (Cho phép nhiều gian hàng)
   const handleProceedToCheckout = () => {
     if (selectedItemIds.length === 0) {
       toast.warning("Vui lòng chọn ít nhất 1 sản phẩm để tiến hành thanh toán!");
-      return;
-    }
-
-    // Kiểm tra an toàn trước khi chuyển sang thanh toán
-    const selectedStores = Array.from(
-      new Set(selectedItems.map((i) => i.store?.id || i.store?.name))
-    );
-    if (selectedStores.length > 1) {
-      toast.warning(
-        "Website hiện chưa hỗ trợ thanh toán nhiều sản phẩm của các cửa hàng khác nhau trong cùng một đơn. Vui lòng chọn và thanh toán sản phẩm của từng cửa hàng!",
-        { duration: 5000 }
-      );
       return;
     }
 
@@ -266,6 +261,8 @@ export default function CartPage() {
               selectedItemIds={selectedItemIds}
               onSelectAll={handleSelectAll}
               onSelectItem={handleSelectItem}
+              onSelectStore={handleSelectStore}
+              onCheckoutStore={handleCheckoutStore}
               onUpdateQuantity={handleUpdateQuantity}
               onDeleteItem={requestDelete}
             />
@@ -276,6 +273,7 @@ export default function CartPage() {
             <CartSummary
               data={summaryData}
               selectedCount={selectedItemIds.length}
+              selectedStoreName={selectedStoreName}
               onCheckout={handleProceedToCheckout}
               onContinueShopping={() => router.push("/san-pham")}
             />

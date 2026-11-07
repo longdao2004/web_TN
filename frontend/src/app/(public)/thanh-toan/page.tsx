@@ -172,7 +172,7 @@ function CheckoutContent() {
     }
   }, [displayShippingMethods, shippingMethodId]);
 
-  // Tính toán dữ liệu
+  // 🟢 Tính toán dữ liệu thanh toán (Hỗ trợ Đa gian hàng)
   const summaryData = useMemo(() => {
     const subTotal = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -183,10 +183,18 @@ function CheckoutContent() {
     const selectedMethod = SHIPPING_METHODS.find(
       (m) => m.id === shippingMethodId,
     );
-    const shippingFee = selectedMethod ? selectedMethod.price : 25000;
+    const baseShippingFee = selectedMethod ? selectedMethod.price : 25000;
+
+    // Đếm số gian hàng độc lập để tính phí vận chuyển theo từng địa phương
+    const storeCount =
+      new Set(items.map((i) => i.store?.id || (i as any).storeId || i.store?.name)).size || 1;
+
+    // Miễn phí vận chuyển nếu đơn hàng > 500.000đ, ngược lại nhân theo số gian hàng
+    const shippingFee =
+      subTotal > 500000 || subTotal === 0 ? 0 : baseShippingFee * storeCount;
     const tax = 0;
     const total = subTotal + shippingFee;
-    return { subTotal, discount, shippingFee, tax, total };
+    return { subTotal, discount, shippingFee, tax, total, storeCount };
   }, [items, shippingMethodId]);
 
   const handleCheckout = async () => {
@@ -199,7 +207,7 @@ function CheckoutContent() {
         return;
       }
 
-            // Tạo payload đơn hàng: gửi đầy đủ địa chỉ, số điện thoại và phí vận chuyển
+      // Tạo payload đơn hàng: gửi đầy đủ địa chỉ, số điện thoại và phí vận chuyển
       const payload: {
         shippingAddress: string;
         phone: string;
@@ -229,8 +237,10 @@ function CheckoutContent() {
       );
       const provider = selectedPayment?.provider || "COD";
 
+      // 🟢 Truyền danh sách tất cả các đơn hàng con (orderIds) để Backend xử lý thanh toán gộp
       const paymentRes = await orderService.createPaymentUrl({
         orderId: orderRes.orderId,
+        orderIds: orderRes.orderIds || [orderRes.orderId],
         provider,
       });
 

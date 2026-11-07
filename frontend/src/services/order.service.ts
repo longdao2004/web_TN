@@ -56,7 +56,12 @@ export const orderService = {
     return res.json();
   },
 
-  createPaymentUrl: async (data: { orderId: string; provider: 'COD' | 'VNPAY' }) => {
+  // 🟢 Tạo URL thanh toán VNPay hoặc xác nhận COD (Hỗ trợ danh sách đơn hàng con khi giỏ hàng có nhiều shop)
+  createPaymentUrl: async (data: {
+    orderId: string;
+    orderIds?: string[];
+    provider: 'COD' | 'VNPAY';
+  }) => {
     const res = await fetch(`${API_URL}/payments/create-url`, {
       method: 'POST',
       headers: getHeaders(),
