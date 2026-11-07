@@ -18,54 +18,56 @@ export class PaymentsService {
   ) {}
 
   /**
-   * Tạo URL thanh toán VNPay hoặc xác nhận COD
+   * Tạo URL thanh toán VNPay hoặc xác nhận COD (Hỗ trợ Đa gian hàng / Tách nhiều đơn hàng)
    */
   async createPaymentUrl(
     userId: string,
     createPaymentDto: CreatePaymentDto,
     ipAddr: string,
   ) {
-    // Kiểm tra đơn hàng
-    const order = await this.prisma.order.findUnique({
-      where: { id: createPaymentDto.orderId },
+    // 🟢 Thu thập toàn bộ danh sách mã đơn hàng cần thanh toán
+    const targetOrderIds = Array.from(
+      new Set([
+        createPaymentDto.orderId,
+        ...(createPaymentDto.orderIds || []),
+      ]),
+    ).filter(Boolean);
+
+    // Truy vấn tất cả đơn hàng liên quan trong cơ sở dữ liệu
+    const orders = await this.prisma.order.findMany({
+      where: {
+        id: { in: targetOrderIds },
+      },
       include: { payment: true },
     });
 
-    if (!order) throw new NotFoundException('Đơn hàng không tồn tại');
-    if (order.userId !== userId)
-      throw new BadRequestException('Không có quyền thanh toán đơn hàng này');
-    if (order.payment && order.payment.isSuccess)
-      throw new BadRequestException(
-        'Đơn hàng đã được thanh toán thành công từ trước',
-      );
+    if (orders.length === 0) throw new NotFoundException('Đơn hàng không tồn tại');
 
-    // 1. Trường hợp chọn COD (Thanh toán khi nhận hàng)
+    // Kiểm tra quyền sở hữu và trạng thái thanh toán của từng đơn
+    for (const ord of orders) {
+      if (ord.userId !== userId) {
+        throw new BadRequestException('Không có quyền thanh toán đơn hàng này');
+      }
+      if (ord.payment && ord.payment.isSuccess) {
+        throw new BadRequestException(
+          `Đơn hàng ${ord.id} đã được thanh toán thành công từ trước`,
+        );
+      }
+    }
+
+    // 🟢 1. TRƯỜNG HỢP CHỌN COD (Thanh toán khi nhận hàng cho tất cả các đơn hàng con)
     if (createPaymentDto.provider === PaymentProvider.COD) {
-      // Tìm các đơn hàng PENDING của người dùng chưa có bản ghi Payment (hỗ trợ giỏ hàng tách nhiều shop)
-      const relatedOrders = await this.prisma.order.findMany({
-        where: {
-          userId,
-          status: OrderStatus.PENDING,
-          payment: null,
-        },
-      });
-
-      const ordersToPay =
-        relatedOrders.length > 0
-          ? relatedOrders
-          : !order.payment
-            ? [order]
-            : [];
-
-      for (const ord of ordersToPay) {
-        await this.prisma.payment.create({
-          data: {
-            orderId: ord.id,
-            provider: PaymentProvider.COD,
-            amount: ord.totalAmount,
-            isSuccess: false, // Thanh toán khi nhận hàng nên mặc định false
-          },
-        });
+      for (const ord of orders) {
+        if (!ord.payment) {
+          await this.prisma.payment.create({
+            data: {
+              orderId: ord.id,
+              provider: PaymentProvider.COD,
+              amount: ord.totalAmount,
+              isSuccess: false, // Thanh toán khi nhận hàng nên mặc định false
+            },
+          });
+        }
       }
 
       return {
@@ -75,7 +77,7 @@ export class PaymentsService {
       };
     }
 
-    // 2. Trường hợp chọn VNPay Sandbox
+    // 🟢 2. TRƯỜNG HỢP CHỌN VNPAY SANDBOX (Thanh toán gộp cho tất cả các đơn hàng con)
     if (createPaymentDto.provider === PaymentProvider.VNPAY) {
       const tmnCode = this.configService.get<string>('VNPAY_TMNCODE');
       const secretKey = this.configService.get<string>('VNPAY_HASHSECRET');
@@ -88,26 +90,41 @@ export class PaymentsService {
         );
       }
 
-      // Tạo hoặc cập nhật bản ghi Payment pending
-      if (!order.payment) {
-        await this.prisma.payment.create({
-          data: {
-            orderId: order.id,
-            provider: PaymentProvider.VNPAY,
-            amount: order.totalAmount,
-            isSuccess: false,
-          },
-        });
-      } else {
-        await this.prisma.payment.update({
-          where: { orderId: order.id },
-          data: { provider: PaymentProvider.VNPAY },
-        });
+      // Tạo mã giao dịch tham chiếu duy nhất cho phiên thanh toán VNPay này
+      // Nếu có 1 đơn, dùng orderId. Nếu nhiều đơn, sinh mã duy nhất PAY_{timestamp}_{random}
+      const txnRef =
+        orders.length === 1
+          ? orders[0].id
+          : `PAY_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+      // Tính tổng tiền thanh toán của tất cả các đơn hàng con
+      const totalAmount = orders.reduce((sum, ord) => sum + ord.totalAmount, 0);
+
+      // Tạo hoặc cập nhật bản ghi Payment với mã giao dịch txnRef cho từng đơn hàng
+      for (const ord of orders) {
+        if (!ord.payment) {
+          await this.prisma.payment.create({
+            data: {
+              orderId: ord.id,
+              transactionId: txnRef, // Dùng chung mã txnRef để đối soát đồng bộ khi VNPay phản hồi
+              provider: PaymentProvider.VNPAY,
+              amount: ord.totalAmount,
+              isSuccess: false,
+            },
+          });
+        } else {
+          await this.prisma.payment.update({
+            where: { orderId: ord.id },
+            data: {
+              transactionId: txnRef,
+              provider: PaymentProvider.VNPAY,
+            },
+          });
+        }
       }
 
       const date = new Date();
       const createDate = this.formatVNPayDate(date);
-      const txnRef = order.id; // Dùng OrderID làm mã giao dịch VNPay
 
       // Các tham số cấu hình VNPay
       let vnp_Params: any = {
@@ -117,9 +134,9 @@ export class PaymentsService {
         vnp_Locale: 'vn',
         vnp_CurrCode: 'VND',
         vnp_TxnRef: txnRef,
-        vnp_OrderInfo: 'Thanh toan don hang ' + order.id,
+        vnp_OrderInfo: `Thanh toan don hang ${txnRef}`,
         vnp_OrderType: 'other',
-        vnp_Amount: order.totalAmount * 100, // VNPay bắt buộc nhân 100
+        vnp_Amount: Math.round(totalAmount * 100), // VNPay bắt buộc nhân 100
         vnp_ReturnUrl: returnUrl,
         vnp_IpAddr: ipAddr,
         vnp_CreateDate: createDate,
@@ -134,7 +151,7 @@ export class PaymentsService {
       const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
       vnp_Params['vnp_SecureHash'] = signed;
 
-      // Trả về URL để Frontend redirect sang trang thanh toán của VNPay
+      // Trả về URL để Frontend redirect sang cổng thanh toán của VNPay
       const finalUrl =
         vnpUrl + '?' + qs.stringify(vnp_Params, { encode: false });
       return { url: finalUrl };
@@ -144,7 +161,7 @@ export class PaymentsService {
   }
 
   /**
-   * VNPay Callback: Nhận kết quả thanh toán từ VNPay
+   * VNPay Callback: Nhận kết quả thanh toán từ VNPay và cập nhật tất cả đơn hàng liên quan
    */
   async vnpayReturn(vnpayParams: any) {
     let vnp_Params = { ...vnpayParams };
@@ -163,67 +180,83 @@ export class PaymentsService {
 
     // Kiểm tra tính toàn vẹn của dữ liệu (ngăn chặn hacker sửa URL)
     if (secureHash === signed) {
-      const orderId = vnp_Params['vnp_TxnRef'];
+      const txnRef = vnp_Params['vnp_TxnRef'];
       const responseCode = vnp_Params['vnp_ResponseCode'];
 
+      // 🟢 Tìm tất cả bản ghi Payment thuộc về phiên thanh toán này (theo transactionId hoặc orderId)
+      const payments = await this.prisma.payment.findMany({
+        where: {
+          OR: [
+            { transactionId: txnRef },
+            { orderId: txnRef },
+          ],
+        },
+        include: { order: { include: { items: true } } },
+      });
+
+      if (payments.length === 0) {
+        return { code: '99', message: 'Không tìm thấy thông tin đơn hàng thanh toán', orderId: txnRef };
+      }
+
+      const firstOrderId = payments[0].orderId;
+
       if (responseCode === '00') {
-        // Thanh toán thành công -> Cập nhật CSDL
-        await this.prisma.$transaction(async (prisma) => {
-          await prisma.payment.update({
-            where: { orderId: orderId },
-            data: {
-              isSuccess: true,
-              transactionId: vnp_Params['vnp_TransactionNo'],
-              paymentDate: new Date(),
-            },
-          });
-
-          await prisma.order.update({
-            where: { id: orderId },
-            data: { status: OrderStatus.PACKING }, // Chuyển trạng thái sang Đang đóng gói
-          });
-        });
-
-        return { code: '00', message: 'Thanh toán thành công', orderId };
-      } else {
-        // Thanh toán thất bại hoặc khách đã bấm Hủy trên cổng VNPay:
-        // Tự động hoàn lại tồn kho và chuyển trạng thái đơn sang CANCELLED
-        const order = await this.prisma.order.findUnique({
-          where: { id: orderId },
-          include: { items: true },
-        });
-
-        if (order && order.status === OrderStatus.PENDING) {
-          await this.prisma.$transaction(async (tx) => {
-            await tx.order.update({
-              where: { id: orderId },
-              data: { status: OrderStatus.CANCELLED },
+        // 🟢 Thanh toán thành công -> Cập nhật CSDL cho TẤT CẢ các đơn hàng con
+        await this.prisma.$transaction(async (tx) => {
+          for (const p of payments) {
+            await tx.payment.update({
+              where: { id: p.id },
+              data: {
+                isSuccess: true,
+                transactionId: vnp_Params['vnp_TransactionNo'] || p.transactionId,
+                paymentDate: new Date(),
+              },
             });
 
-            for (const item of order.items) {
-              if (item.productBatchId) {
-                await tx.productBatch.update({
-                  where: { id: item.productBatchId },
-                  data: { quantity: { increment: item.quantity } },
+            await tx.order.update({
+              where: { id: p.orderId },
+              data: { status: OrderStatus.PACKING }, // Chuyển trạng thái sang Đang đóng gói
+            });
+          }
+        });
+
+        return { code: '00', message: 'Thanh toán thành công', orderId: firstOrderId };
+      } else {
+        // 🟢 Thanh toán thất bại hoặc khách đã bấm Hủy trên cổng VNPay:
+        // Tự động hoàn lại tồn kho và chuyển trạng thái TẤT CẢ đơn hàng con sang CANCELLED
+        await this.prisma.$transaction(async (tx) => {
+          for (const p of payments) {
+            const ord = p.order;
+            if (ord && ord.status === OrderStatus.PENDING) {
+              await tx.order.update({
+                where: { id: ord.id },
+                data: { status: OrderStatus.CANCELLED },
+              });
+
+              for (const item of ord.items) {
+                if (item.productBatchId) {
+                  await tx.productBatch.update({
+                    where: { id: item.productBatchId },
+                    data: { quantity: { increment: item.quantity } },
+                  });
+                }
+                await tx.product.update({
+                  where: { id: item.productId },
+                  data: { soldCount: { decrement: item.quantity } },
                 });
               }
-              await tx.product.update({
-                where: { id: item.productId },
-                data: { soldCount: { decrement: item.quantity } },
-              });
             }
-          });
-        }
+          }
+        });
 
         return {
           code: responseCode,
-          message:
-            'Thanh toán thất bại hoặc khách hàng đã hủy (đã hoàn lại tồn kho)',
-          orderId,
+          message: 'Giao dịch bị hủy hoặc không thành công',
+          orderId: firstOrderId,
         };
       }
     } else {
-      return { code: '97', message: 'Chữ ký không hợp lệ (Checksum failed)' };
+      return { code: '97', message: 'Chữ ký không hợp lệ (Dữ liệu bị chỉnh sửa)' };
     }
   }
 
