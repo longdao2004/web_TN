@@ -48,10 +48,18 @@ export class CreateOrderDto {
     @ApiProperty({
     required: false,
     example: 25000,
-    description: 'Phí vận chuyển của đơn hàng',
+    description: 'Phí vận chuyển tổng của đơn hàng',
   })
   @IsNumber({}, { message: 'Phí vận chuyển phải là một số' })
   @Min(0, { message: 'Phí vận chuyển không được âm' })
   @IsOptional()
   shippingFee?: number;
+
+  // 🟢 Phí vận chuyển chi tiết cho từng gian hàng (Key là storeId, Value là số tiền ship)
+  @ApiProperty({
+    required: false,
+    description: 'Phí vận chuyển riêng biệt cho từng gian hàng',
+  })
+  @IsOptional()
+  storeShippingFees?: Record<string, number>;
 }

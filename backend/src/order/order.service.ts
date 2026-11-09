@@ -170,9 +170,14 @@ export class OrderService {
           storeTotal += latestBatch.price * item.quantity;
         }
 
-        // Phí vận chuyển cho từng cửa hàng (nếu giỏ hàng nhiều shop thì chia đều, 1 shop thì nhận trọn vẹn)
-        const storeCount = Object.keys(itemsByStore).length;
-        const storeShippingFee = storeCount > 0 ? (Number(dto.shippingFee) || 0) / storeCount : 0;
+        // 🟢 Phí vận chuyển cho từng cửa hàng: Ưu tiên lấy phí riêng theo từng storeId nếu có
+        let storeShippingFee = 0;
+        if (dto.storeShippingFees && dto.storeShippingFees[storeId] !== undefined) {
+          storeShippingFee = Number(dto.storeShippingFees[storeId]) || 0;
+        } else {
+          const storeCount = Object.keys(itemsByStore).length;
+          storeShippingFee = storeCount > 0 ? (Number(dto.shippingFee) || 0) / storeCount : 0;
+        }
         const finalStoreTotal = storeTotal + storeShippingFee;
 
         // Tạo đơn hàng riêng cho từng Store
@@ -242,6 +247,7 @@ export class OrderService {
       orderBy: { createdAt: 'desc' },
       include: {
         store: { select: { id: true, name: true, logoUrl: true } },
+        payment: { select: { provider: true, isSuccess: true, paymentDate: true } },
         items: {
           include: {
             product: { select: { id: true, name: true, imageUrl: true } },
@@ -397,6 +403,7 @@ export class OrderService {
       include: {
         user: { select: { fullName: true, phone: true } },
         store: { select: { id: true, name: true, logoUrl: true, ownerId: true } },
+        payment: { select: { provider: true, isSuccess: true, paymentDate: true } },
         items: {
           include: {
             batch: true,
