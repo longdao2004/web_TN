@@ -23,6 +23,14 @@ type Order = {
   totalAmount: number;
   createdAt: string;
   items: OrderItem[];
+  store?: {
+    id?: string;
+    name?: string;
+  };
+  payment?: {
+    provider?: string;
+    isSuccess?: boolean;
+  };
 };
 
 const getStatusConfig = (status: string) => {
@@ -33,6 +41,7 @@ const getStatusConfig = (status: string) => {
       return { label: "Đang đóng gói", icon: Package, color: "text-blue-500", bg: "bg-blue-50" };
     case "SHIPPING":
       return { label: "Đang giao hàng", icon: Truck, color: "text-indigo-500", bg: "bg-indigo-50" };
+    case "COMPLETED":
     case "DELIVERED":
       return { label: "Giao thành công", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" };
     case "CANCELLED":
@@ -94,7 +103,14 @@ export default function OrderHistoryPage() {
               <div>
                 <p className="text-sm text-gray-500 mb-1">Mã đơn hàng</p>
                 {/* TẠO MÃ ĐƠN HÀNG: Cắt phần đầu UUID trước dấu '-' và viết in hoa */}
-                <p className="font-semibold text-gray-900 text-sm">{order.id.split("-")[0].toUpperCase()}</p>
+                <p className="font-semibold text-gray-900 text-sm flex items-center gap-2 flex-wrap">
+                  <span>#{order.id.split("-")[0].toUpperCase()}</span>
+                  {order.store?.name && (
+                    <span className="font-medium text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      {order.store.name}
+                    </span>
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Ngày đặt</p>
@@ -139,11 +155,16 @@ export default function OrderHistoryPage() {
             </div>
             
             <div className="p-4 border-t border-[var(--color-border)] flex flex-wrap gap-4 items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500">Tổng tiền:</span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-gray-500 text-sm">Tổng tiền:</span>
                 <span className="text-lg font-black text-emerald-600">
                   {order.totalAmount.toLocaleString("vi-VN")}đ
                 </span>
+                {order.payment?.provider && (
+                  <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+                    {order.payment.provider === "VNPAY" ? "VNPay" : "COD"}
+                  </span>
+                )}
               </div>
               <Link
                 href={`/theo-doi-don-hang/${order.id}`}

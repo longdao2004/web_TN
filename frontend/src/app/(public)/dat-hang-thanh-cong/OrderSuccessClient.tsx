@@ -83,10 +83,17 @@ export const OrderSuccessClient = () => {
 
           date: new Date(data.createdAt).toISOString(),
           paymentMethod:
-            data.paymentMethod === "VNPAY"
-              ? "VNPay"
-              : "Thanh toán khi nhận hàng",
-          shippingMethod: "Giao hàng tiêu chuẩn",
+            data.payment?.provider === "VNPAY" || data.paymentMethod === "VNPAY"
+              ? "Cổng thanh toán VNPay"
+              : "Thanh toán khi nhận hàng (COD)",
+          shippingMethod:
+            (data.shippingFee || 0) >= 50000
+              ? "Giao hàng hỏa tốc"
+              : (data.shippingFee || 0) >= 40000
+              ? "Vận chuyển chuỗi lạnh (Cold Chain)"
+              : (data.shippingFee || 0) === 0
+              ? "Miễn phí vận chuyển"
+              : "Giao hàng tiêu chuẩn",
           status: data.status,
           total: data.totalAmount,
           subtotal: data.totalAmount - (data.shippingFee || 0),

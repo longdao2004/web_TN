@@ -40,6 +40,7 @@ export const orderService = {
     shippingAddress: string;
     phone: string;
     shippingFee?: number;
+    storeShippingFees?: Record<string, number>;
     productId?: string;
     quantity?: number;
     cartItemIds?: string[];

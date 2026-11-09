@@ -7,6 +7,7 @@ interface OrderSummaryProps {
   shippingFee: number;
   tax: number;
   total: number;
+  storeShippingBreakdown?: { storeName: string; fee: number }[];
 }
 
 export const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -15,6 +16,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
   shippingFee,
   tax,
   total,
+  storeShippingBreakdown,
 }) => {
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -45,12 +47,28 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           </div>
         )}
 
-        <div className="flex justify-between text-gray-600">
-          <span>Phí vận chuyển</span>
-          <span className="font-medium text-gray-900">
-            {shippingFee === 0 ? "Miễn phí" : formatCurrency(shippingFee)}
-          </span>
-        </div>
+        {/* Phí vận chuyển: Hiển thị chi tiết theo từng gian hàng nếu có từ 2 gian hàng trở lên */}
+        {storeShippingBreakdown && storeShippingBreakdown.length > 1 ? (
+          <div className="space-y-2 py-1">
+            {storeShippingBreakdown.map((item, idx) => (
+              <div key={idx} className="flex justify-between text-gray-600 text-xs sm:text-sm">
+                <span className="truncate pr-2">
+                  Phí vận chuyển ({item.storeName})
+                </span>
+                <span className="font-medium text-gray-900 shrink-0">
+                  {item.fee === 0 ? "Miễn phí" : formatCurrency(item.fee)}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex justify-between text-gray-600">
+            <span>Phí vận chuyển</span>
+            <span className="font-medium text-gray-900">
+              {shippingFee === 0 ? "Miễn phí" : formatCurrency(shippingFee)}
+            </span>
+          </div>
+        )}
 
         {tax > 0 && (
           <div className="flex justify-between text-gray-600">

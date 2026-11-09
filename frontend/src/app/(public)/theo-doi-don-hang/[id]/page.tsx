@@ -118,8 +118,8 @@ export default function OrderTrackingPage() {
             trackingNumber: `AGRI-${foundOrder.id.split("-")[0].toUpperCase()}`,
           },
           paymentMethod:
-            foundOrder.paymentMethod === "VNPAY"
-              ? "VNPay"
+            foundOrder.payment?.provider === "VNPAY" || foundOrder.paymentMethod === "VNPAY"
+              ? "Cổng thanh toán VNPay"
               : "Thanh toán khi nhận hàng (COD)",
           shippingFee: foundOrder.shippingFee || 0,
           discount: 0,
