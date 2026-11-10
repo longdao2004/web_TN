@@ -123,17 +123,28 @@ export class StatisticsService {
     });
 
     const today = new Date();
+    const expired: any[] = [];
     const expiringSoon: any[] = [];
     const lowStock: any[] = [];
 
     for (const prod of prodsWithBatches) {
       for (const b of prod.batches) {
         const exp = new Date(b.expiryDate);
-        const daysLeft = Math.ceil(
-          (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-        );
-
-        if (b.quantity > 0 && daysLeft >= 0 && daysLeft <= 7) {
+        const diffMs = exp.getTime() - today.getTime();
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        // 1. Phân loại Lô ĐÃ HẾT HẠN (quá ngày HSD và vẫn còn tồn kho)
+        if (b.quantity > 0 && exp.getTime() < today.getTime()) {
+          expired.push({
+            batchId: b.id,
+            productName: prod.name,
+            quantity: b.quantity,
+            unit: prod.unit || 'kg',
+            expiryDate: b.expiryDate,
+            daysLeft: daysLeft,
+          });
+        }
+        // 2. Phân loại Lô CẬN DATE (Còn hạn sử dụng và trong vòng 7 ngày tới)
+        else if (b.quantity > 0 && daysLeft >= 0 && daysLeft <= 7) {
           expiringSoon.push({
             batchId: b.id,
             productName: prod.name,
@@ -143,8 +154,8 @@ export class StatisticsService {
             daysLeft: daysLeft,
           });
         }
-
-        if (b.quantity > 0 && b.quantity <= 10) {
+        // 3. Phân loại Lô SẮP HẾT HÀNG (Tồn kho <= 10 VÀ PHẢI CÒN HẠN SỬ DỤNG!)
+        else if (b.quantity > 0 && exp.getTime() >= today.getTime() && b.quantity <= 10) {
           lowStock.push({
             batchId: b.id,
             productName: prod.name,
@@ -165,8 +176,10 @@ export class StatisticsService {
       totalRevenue,
       pendingOrders,
       expiringBatchesCount: expiringSoon.length,
+      expiredBatchesCount: expired.length, // Bổ sung đếm lô hết hạn
       orderStatusFunnel,
       alerts: {
+        expired: expired.slice(0, 5), // Bổ sung danh sách lô hết hạn
         expiringSoon: expiringSoon.slice(0, 5),
         lowStock: lowStock.slice(0, 5),
       },
