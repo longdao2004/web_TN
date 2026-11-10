@@ -50,8 +50,9 @@ export default function SellerDashboardPage() {
     totalOrders = 0,
     pendingOrders = 0,
     expiringBatchesCount = 0,
+    expiredBatchesCount = 0,
     orderStatusFunnel = { pending: 0, packing: 0, shipping: 0, completed: 0, cancelled: 0 },
-    alerts = { expiringSoon: [], lowStock: [] },
+    alerts = { expiringSoon: [], lowStock: [], expired: [] },
     revenueChart7Days = [],
   } = data || {};
 
@@ -258,21 +259,43 @@ export default function SellerDashboardPage() {
             </Link>
           </div>
 
-          <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[300px]">
-            {alerts.expiringSoon.length === 0 && alerts.lowStock.length === 0 ? (
+                    <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[300px]">
+            {(!alerts.expired || alerts.expired.length === 0) &&
+            alerts.expiringSoon.length === 0 &&
+            alerts.lowStock.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center py-8 text-center text-gray-400">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-2" />
                 <p className="text-sm font-medium text-gray-700">
                   Kho hàng đang rất an toàn!
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Không có lô hàng nào cận date hoặc sắp hết tồn kho.
+                  Không có lô hàng nào hết hạn, cận date hoặc sắp hết tồn kho.
                 </p>
               </div>
             ) : (
               <>
-                {/* Danh sách Lô cận date */}
-                {alerts.expiringSoon.map((item: any, idx: number) => (
+                {/* 1. DANH SÁCH LÔ ĐÃ HẾT HẠN (Màu đỏ sẫm cảnh báo an toàn) */}
+                {alerts.expired?.map((item: any, idx: number) => (
+                  <div
+                    key={`expired-${idx}`}
+                    className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">
+                        {item.productName}
+                      </p>
+                      <p className="text-xs text-red-600 font-medium mt-0.5">
+                        ❌ Đã quá hạn (HSD: {new Date(item.expiryDate).toLocaleDateString("vi-VN")}) — Cần tiêu hủy khỏi kho
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-red-700 bg-red-100 px-2.5 py-1 rounded-md">
+                      Tồn: {item.quantity} {item.unit}
+                    </span>
+                  </div>
+                ))}
+
+                {/* 2. DANH SÁCH LÔ CẬN DATE (Còn hạn trong 7 ngày) */}
+                {alerts.expiringSoon?.map((item: any, idx: number) => (
                   <div
                     key={`exp-${idx}`}
                     className="p-3 bg-rose-50/70 border border-rose-100 rounded-xl flex items-center justify-between"
@@ -292,8 +315,8 @@ export default function SellerDashboardPage() {
                   </div>
                 ))}
 
-                {/* Danh sách Lô sắp hết hàng */}
-                {alerts.lowStock.map((item: any, idx: number) => (
+                {/* 3. DANH SÁCH LÔ SẮP HẾT HÀNG (Chỉ những lô VẪN CÒN HẠN nhưng tồn kho <= 10) */}
+                {alerts.lowStock?.map((item: any, idx: number) => (
                   <div
                     key={`low-${idx}`}
                     className="p-3 bg-amber-50/70 border border-amber-100 rounded-xl flex items-center justify-between"

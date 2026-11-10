@@ -13,7 +13,10 @@ export const RecommendedProducts = () => {
     const fetchProducts = async () => {
       try {
         const res = await productService.getProducts({});
-        setProducts(Array.isArray(res) ? res.slice(0, 4) : []);
+        const validProducts = Array.isArray(res)
+          ? res.filter((p: any) => !p.isExpired).slice(0, 4)
+          : [];
+        setProducts(validProducts);
       } catch (error) {
         console.error("Failed to fetch recommended products", error);
       } finally {
@@ -49,19 +52,9 @@ export const RecommendedProducts = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {products.map((product) => (
-          <ProductCard 
+          <ProductCard
             key={product.id} 
-            product={{
-              id: product.id,
-              name: product.name,
-              price: product.salePrice || product.price,
-              originalPrice: product.salePrice ? product.price : undefined,
-              rating: product.rating || 0,
-              reviews: product.reviewCount || 0,
-              store: product.storeName || "Cửa hàng",
-              image: product.image || "/images/products/cachuabi.avif",
-              unit: product.unit || "kg"
-            }} 
+            product={product} 
           />
         ))}
       </div>

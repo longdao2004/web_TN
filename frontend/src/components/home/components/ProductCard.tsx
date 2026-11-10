@@ -42,9 +42,10 @@ export const ProductCard = ({
     category: product.category || "Nông sản",
     stock: product.stock !== undefined ? product.stock : 10,
     isExpired: product.isExpired,
-    isOrganic: product.isOrganic !== undefined ? product.isOrganic : true,
+    // 🟢 Nếu sản phẩm đã hết hạn thì tuyệt đối KHÔNG gắn nhãn "Hữu cơ" hay "Mới"
+    isOrganic: product.isExpired ? false : (product.isOrganic !== undefined ? product.isOrganic : false),
     isFeatured: product.isFeatured !== undefined ? product.isFeatured : false,
-    isNew: product.isNew !== undefined ? product.isNew : true,
+    isNew: product.isExpired ? false : (product.isNew !== undefined ? product.isNew : false),
     unit: product.unit || "kg",
     isNewBatch: product.isNewBatch,
     badges: product.badges,
