@@ -13,6 +13,46 @@ import { Role } from '../auth/role.enum';
 export class OrderService {
   constructor(private prisma: PrismaService) {}
 
+  // Lấy địa chỉ giao hàng gốc, loại bỏ các thẻ ghi chú ẩn
+  private getCleanAddress(shippingAddress: string) {
+    return (shippingAddress || '')
+      .split(' || [CANCEL_INFO]:')[0]
+      .split(' || [ADMIN_REMIND]:')[0];
+  }
+
+  // Bóc tách thông tin hủy đơn và lời nhắc nhở khẩn cấp từ Admin lưu kèm trong shippingAddress (không cần sửa DB Schema)
+  private parseCancelInfo(order: any) {
+    if (!order) return order;
+    let cleanAddress = order.shippingAddress || '';
+    let cancelledBy: string | null = null;
+    let cancelReason: string | null = null;
+    let adminRemind: string | null = null;
+
+    const remindMarker = ' || [ADMIN_REMIND]:';
+    if (cleanAddress.includes(remindMarker)) {
+      const [before, remindText] = cleanAddress.split(remindMarker);
+      cleanAddress = before;
+      adminRemind = remindText || null;
+    }
+
+    const cancelMarker = ' || [CANCEL_INFO]:';
+    if (cleanAddress.includes(cancelMarker)) {
+      const [before, meta] = cleanAddress.split(cancelMarker);
+      cleanAddress = before;
+      const [role, ...reasonParts] = (meta || '').split('|');
+      cancelledBy = role || null;
+      cancelReason = reasonParts.join('|') || null;
+    }
+
+    return {
+      ...order,
+      shippingAddress: cleanAddress,
+      cancelledBy,
+      cancelReason,
+      adminRemind,
+    };
+  }
+
   async createOrder(
     userId: string,
     dto: CreateOrderDto & { productId?: string; quantity?: number },
@@ -149,7 +189,7 @@ export class OrderService {
         const storeItems = itemsByStore[storeId];
         let storeTotal = 0;
 
-                for (const item of storeItems) {
+        for (const item of storeItems) {
           const latestBatch = item.product.batches[0];
           if (!latestBatch) {
             throw new BadRequestException(
@@ -242,7 +282,7 @@ export class OrderService {
 
   // Truy vấn lịch sử đơn hàng của người dùng
   async getUserOrders(userId: string) {
-    return this.prisma.order.findMany({
+    const orders = await this.prisma.order.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -256,13 +296,13 @@ export class OrderService {
         },
       },
     });
+    return orders.map((o) => this.parseCancelInfo(o));
   }
 
   // Lấy danh sách đơn hàng cho người bán (Seller) và Quản trị viên (Admin)
-    // Lấy danh sách đơn hàng cho người bán (Seller) và Quản trị viên (Admin)
   async getStoreOrders(userId: string, role?: string) {
     if (role === Role.ADMIN) {
-      return this.prisma.order.findMany({
+      const orders = await this.prisma.order.findMany({
         orderBy: { createdAt: 'desc' },
         include: {
           store: { select: { id: true, name: true, logoUrl: true } },
@@ -276,6 +316,7 @@ export class OrderService {
           },
         },
       });
+      return orders.map((o) => this.parseCancelInfo(o));
     }
 
     const store = await this.prisma.store.findUnique({
@@ -286,7 +327,7 @@ export class OrderService {
       throw new NotFoundException('Bạn chưa có cửa hàng!');
     }
 
-    return this.prisma.order.findMany({
+    const orders = await this.prisma.order.findMany({
       where: {
         OR: [
           { storeId: store.id },
@@ -306,9 +347,10 @@ export class OrderService {
         },
       },
     });
+    return orders.map((o) => this.parseCancelInfo(o));
   }
 
-    // =========================================================================
+  // =========================================================================
   // CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (Chuẩn hóa máy trạng thái & Trọng tài Admin)
   // =========================================================================
   async updateOrderStatus(
@@ -316,6 +358,7 @@ export class OrderService {
     status: OrderStatus,
     userId: string,
     userRole: Role,
+    cancelReason?: string,
   ) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
@@ -357,12 +400,24 @@ export class OrderService {
       );
     }
 
-    // 3. XỬ LÝ HỦY ĐƠN: Hoàn trả số lượng nông sản về đúng lô hàng và giảm số lượng đã bán
+    // 3. XỬ LÝ HỦY ĐƠN: Hoàn trả số lượng nông sản về đúng lô hàng, giảm số lượng đã bán & lưu kèm lý do hủy
     if (status === OrderStatus.CANCELLED) {
       return this.prisma.$transaction(async (tx) => {
+        const marker = ' || [CANCEL_INFO]:';
+        const cleanAddress = this.getCleanAddress(order.shippingAddress);
+        const reasonText =
+          cancelReason ||
+          (userRole === Role.SELLER
+            ? 'Chủ cửa hàng hủy đơn'
+            : 'Quản trị viên can thiệp hủy đơn');
+        const encodedAddress = `${cleanAddress}${marker}${userRole}|${reasonText}`;
+
         const updatedOrder = await tx.order.update({
           where: { id: orderId },
-          data: { status: OrderStatus.CANCELLED },
+          data: {
+            status: OrderStatus.CANCELLED,
+            shippingAddress: encodedAddress,
+          },
         });
 
         for (const item of order.items) {
@@ -377,7 +432,7 @@ export class OrderService {
             data: { soldCount: { decrement: item.quantity } }, // Giảm số lượng đã bán
           });
         }
-        return updatedOrder;
+        return this.parseCancelInfo(updatedOrder);
       });
     }
 
@@ -390,10 +445,17 @@ export class OrderService {
     }
 
     // 5. Cập nhật các trạng thái thông thường (PACKING, SHIPPING) do Shop thực hiện
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id: orderId },
-      data: { status },
+      data: {
+        status,
+        // Nếu Shop đã bấm giao hàng hoặc hoàn thành thì gỡ cờ nhắc nhở của Admin
+        ...(status === OrderStatus.SHIPPING || status === OrderStatus.COMPLETED
+          ? { shippingAddress: this.getCleanAddress(order.shippingAddress) }
+          : {}),
+      },
     });
+    return this.parseCancelInfo(updated);
   }
 
   // Xem chi tiết đơn hàng
@@ -423,7 +485,7 @@ export class OrderService {
       throw new ForbiddenException('Bạn không có quyền xem đơn hàng này');
     }
 
-    return order;
+    return this.parseCancelInfo(order);
   }
 
   // Người mua hủy đơn (Chống Race Condition hoàn kho 2 lần)
@@ -447,10 +509,15 @@ export class OrderService {
         );
       }
 
-      // 2. Chuyển trạng thái sang CANCELLED
+      // 2. Chuyển trạng thái sang CANCELLED và lưu thông tin người mua chủ động hủy
+      const marker = ' || [CANCEL_INFO]:';
+      const cleanAddress = this.getCleanAddress(order.shippingAddress);
       const updatedOrder = await tx.order.update({
         where: { id: orderId },
-        data: { status: OrderStatus.CANCELLED },
+        data: {
+          status: OrderStatus.CANCELLED,
+          shippingAddress: `${cleanAddress}${marker}BUYER|Khách hàng chủ động hủy đơn`,
+        },
       });
 
       // 3. Hoàn tồn kho VÀ giảm soldCount
@@ -469,8 +536,32 @@ export class OrderService {
 
       return {
         message: 'Hủy đơn hàng thành công và đã hoàn lại số lượng vào kho!',
-        order: updatedOrder,
+        order: this.parseCancelInfo(updatedOrder),
       };
     });
+  }
+
+  // Admin gửi nhắc nhở thủ công thúc giục Shop giao đơn gấp
+  async remindOrder(orderId: string, message?: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng!');
+    }
+    if (order.status !== OrderStatus.PENDING && order.status !== OrderStatus.PACKING) {
+      throw new BadRequestException(
+        'Chỉ có thể gửi nhắc nhở đối với đơn đang chờ xác nhận hoặc đang đóng gói!',
+      );
+    }
+
+    const cleanAddress = this.getCleanAddress(order.shippingAddress);
+    const remindText =
+      message?.trim() || 'Quản trị viên nhắc nhở: Vui lòng đóng gói và gửi đơn hàng này gấp!';
+    const encodedAddress = `${cleanAddress} || [ADMIN_REMIND]:${remindText}`;
+
+    const updated = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { shippingAddress: encodedAddress },
+    });
+    return this.parseCancelInfo(updated);
   }
 }

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { OrderStatus } from '@prisma/client';
 
 export class UpdateOrderStatusDto {
@@ -10,4 +10,10 @@ export class UpdateOrderStatusDto {
   })
   @IsEnum(OrderStatus, { message: 'Trạng thái đơn hàng không hợp lệ!' })
   status!: OrderStatus;
+
+  // Cho phép gửi kèm lý do hủy đơn khi Admin/Seller chuyển trạng thái sang CANCELLED
+  @ApiPropertyOptional({ description: 'Lý do hủy đơn hàng' })
+  @IsOptional()
+  @IsString()
+  cancelReason?: string;
 }

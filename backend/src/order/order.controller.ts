@@ -70,7 +70,19 @@ export class OrderController {
       updateOrderStatusDto.status,
       req.user.userId,
       req.user.role,
+      updateOrderStatusDto.cancelReason,
     );
+  }
+
+  // 5b. Admin gửi nhắc nhở thủ công yêu cầu Shop xử lý đơn gấp
+  @Patch(':id/remind')
+  remindOrder(
+    @Request() req: any,
+    @Param('id') orderId: string,
+    @Body('message') message?: string,
+  ) {
+    checkRole(req, [Role.ADMIN]);
+    return this.orderService.remindOrder(orderId, message);
   }
 
   // 6. Hủy đơn hàng cá nhân: Cho phép BUYER và SELLER hủy đơn của chính mình khi chưa giao
