@@ -22,16 +22,30 @@ export const orderService = {
     return res.json();
   },
 
-  // 2. Cập nhật trạng thái đơn hàng (Xác nhận, Đang giao, v.v...)
-  updateOrderStatus: async (orderId: string, status: string) => {
+  // 2. Cập nhật trạng thái đơn hàng (Xác nhận, Đang giao, Hủy kèm lý do, v.v...)
+  updateOrderStatus: async (orderId: string, status: string, cancelReason?: string) => {
     const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
       method: 'PATCH',
       headers: getHeaders(),
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, ...(cancelReason ? { cancelReason } : {}) }),
     });
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.message || 'Lỗi cập nhật trạng thái đơn hàng');
+    }
+    return res.json();
+  },
+
+  // 2b. Admin gửi nhắc nhở thủ công tới Gian hàng
+  remindOrder: async (orderId: string, message?: string) => {
+    const res = await fetch(`${API_URL}/orders/${orderId}/remind`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify({ ...(message ? { message } : {}) }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Lỗi gửi nhắc nhở đơn hàng');
     }
     return res.json();
   },

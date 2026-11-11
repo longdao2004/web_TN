@@ -20,6 +20,7 @@ import {
   DollarSign,
   AlertTriangle,
   ShieldAlert,
+  Bell,
 } from "lucide-react";
 import { orderService } from "@/services/order.service";
 
@@ -37,6 +38,10 @@ export default function AdminOrdersPage() {
     "Khách hàng gọi Hotline khiếu nại yêu cầu hủy đơn"
   );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [remindMessage, setRemindMessage] = useState(
+    "Khách cần nhận gấp trong ngày, vui lòng ưu tiên đóng gói và bàn giao vận chuyển!"
+  );
+  const [isReminding, setIsReminding] = useState(false);
 
   // 1. Tải toàn bộ đơn hàng của sàn
   const fetchOrders = async () => {
@@ -94,7 +99,7 @@ export default function AdminOrdersPage() {
 
     try {
       setIsUpdating(true);
-      await orderService.updateOrderStatus(orderId, "CANCELLED");
+      await orderService.updateOrderStatus(orderId, "CANCELLED", cancelReason);
       alert("Đã can thiệp hủy đơn hàng thành công! Nông sản đã được hoàn về kho.");
       setSelectedOrder(null);
       fetchOrders();
@@ -102,6 +107,21 @@ export default function AdminOrdersPage() {
       alert("Lỗi can thiệp đơn: " + error.message);
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  // 4b. Admin gửi nhắc nhở thủ công thúc giục Shop giao hàng gấp
+  const handleRemindShop = async (orderId: string) => {
+    try {
+      setIsReminding(true);
+      await orderService.remindOrder(orderId, remindMessage);
+      alert("Đã gửi thông báo nhắc nhở khẩn cấp tới Gian hàng!");
+      setSelectedOrder(null);
+      fetchOrders();
+    } catch (error: any) {
+      alert("Lỗi gửi nhắc nhở: " + error.message);
+    } finally {
+      setIsReminding(false);
     }
   };
 
@@ -327,6 +347,18 @@ export default function AdminOrdersPage() {
                               <Package className="w-3 h-3" /> Chậm gửi hàng (&gt;48h)
                             </span>
                           )}
+
+                          {/* Nhãn thủ công: Admin đã gửi nhắc nhở gấp */}
+                          {order.adminRemind &&
+                            (order.status === "PENDING" ||
+                              order.status === "PACKING") && (
+                              <span
+                                className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1"
+                                title={order.adminRemind}
+                              >
+                                <Bell className="w-3 h-3" /> Đã nhắc Shop
+                              </span>
+                            )}
                         </div>
                       </td>
 
@@ -390,6 +422,10 @@ export default function AdminOrdersPage() {
                           onClick={() => {
                             setSelectedOrder(order);
                             setCancelReason("Khách hàng gọi Hotline khiếu nại yêu cầu hủy đơn");
+                            setRemindMessage(
+                              order.adminRemind ||
+                                "Khách cần nhận gấp trong ngày, vui lòng ưu tiên đóng gói và bàn giao vận chuyển!"
+                            );
                           }}
                           className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
                           title="Xem chi tiết đơn hàng"
@@ -572,6 +608,53 @@ export default function AdminOrdersPage() {
                     <p className="text-rose-700 text-[11px] mt-0.5 leading-relaxed">
                       Toàn bộ nông sản trong đơn đã được hệ thống tự động hoàn lại vào kho của shop. Đơn hàng đã đóng băng và không thể khôi phục lại.
                     </p>
+                    {selectedOrder.cancelReason && (
+                      <p className="text-rose-800 text-xs font-semibold mt-1.5">
+                        Lý do: {selectedOrder.cancelReason}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Trường hợp 2b: Đơn CHỜ XÁC NHẬN hoặc ĐANG ĐÓNG GÓI -> Cho phép Admin gửi nhắc nhở thủ công tới Shop */}
+              {(selectedOrder.status === "PENDING" ||
+                selectedOrder.status === "PACKING") && (
+                <div className="p-4 bg-blue-50/80 border border-blue-200 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-blue-900 font-bold text-xs">
+                      <Bell className="w-4 h-4 text-blue-600" />
+                      Nhắc nhở Gian hàng Xử lý Gấp (Thủ công)
+                    </div>
+                    {selectedOrder.adminRemind && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-200 text-blue-800 rounded">
+                        Đã gửi nhắc nhở
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-blue-800 leading-relaxed">
+                    Gửi thông báo thúc giục trực tiếp lên chuông thông báo và danh sách đơn của Chủ shop trước khi cần can thiệp hủy đơn.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={remindMessage}
+                      onChange={(e) => setRemindMessage(e.target.value)}
+                      placeholder="Nhập lời nhắc gửi tới Gian hàng..."
+                      className="flex-1 px-3 py-2 text-xs bg-white border border-blue-300 rounded-xl outline-none text-gray-800 font-medium focus:border-blue-500"
+                    />
+                    <button
+                      disabled={isReminding}
+                      onClick={() => handleRemindShop(selectedOrder.id)}
+                      className="px-4 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50 shrink-0"
+                    >
+                      <Bell className="w-4 h-4" />
+                      {isReminding
+                        ? "Đang gửi..."
+                        : selectedOrder.adminRemind
+                          ? "Gửi lại nhắc nhở"
+                          : "Gửi nhắc nhở Shop"}
+                    </button>
                   </div>
                 </div>
               )}

@@ -86,7 +86,8 @@ export default function SellerOrdersPage() {
 
       {/* BẢNG ĐƠN HÀNG */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left whitespace-nowrap">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
               <th className="p-4 font-semibold text-gray-600">Mã Đơn</th>
@@ -109,14 +110,48 @@ export default function SellerOrdersPage() {
             ) : (
               orders.map((order) => {
                 const statusObj = getStatusDisplay(order.status);
+                const orderAgeMs = Date.now() - new Date(order.createdAt).getTime();
+                const isPendingDelayed =
+                  order.status === "PENDING" && orderAgeMs > 24 * 60 * 60 * 1000;
+                const isPackingDelayed =
+                  order.status === "PACKING" && orderAgeMs > 48 * 60 * 60 * 1000;
+
                 return (
                   <tr
                     key={order.id}
                     className="border-b border-gray-50 hover:bg-gray-50/50 transition"
                   >
                     <td className="p-4 font-medium text-gray-800">
-                      {/* TẠO MÃ ĐƠN HÀNG: Cắt 8 ký tự đầu của UUID làm mã đơn hàng hiển thị */}
-                      {order.id.slice(0, 8).toUpperCase()}
+                      <div className="flex flex-col gap-1 items-start">
+                        {/* TẠO MÃ ĐƠN HÀNG: Cắt 8 ký tự đầu của UUID làm mã đơn hàng hiển thị */}
+                        <span>{order.id.slice(0, 8).toUpperCase()}</span>
+                        {isPendingDelayed && (
+                          <span
+                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200 animate-pulse"
+                            title="Đơn hàng chờ xác nhận quá 24h!"
+                          >
+                            ⏰ Chậm xác nhận (&gt;24h)
+                          </span>
+                        )}
+                        {isPackingDelayed && (
+                          <span
+                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200"
+                            title="Đơn hàng đóng gói quá 48h chưa bàn giao vận chuyển!"
+                          >
+                            ⚠️ Chậm gửi hàng (&gt;48h)
+                          </span>
+                        )}
+                        {order.adminRemind &&
+                          (order.status === "PENDING" ||
+                            order.status === "PACKING") && (
+                            <span
+                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 animate-pulse"
+                              title={order.adminRemind}
+                            >
+                              📢 Admin nhắc xử lý gấp
+                            </span>
+                          )}
+                      </div>
                     </td>
                     <td className="p-4 text-gray-500">
                       {new Date(order.createdAt).toLocaleString("vi-VN")}
@@ -155,7 +190,8 @@ export default function SellerOrdersPage() {
               })
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       {/* ================= MODAL CHI TIẾT ĐƠN HÀNG ================= */}
@@ -202,6 +238,37 @@ export default function SellerOrdersPage() {
                   {selectedOrder.shippingAddress}
                 </p>
               </div>
+
+              {/* Thông báo Nhắc nhở khẩn cấp từ Quản trị viên */}
+              {selectedOrder.adminRemind &&
+                (selectedOrder.status === "PENDING" ||
+                  selectedOrder.status === "PACKING") && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
+                    <p className="text-xs font-bold text-blue-800 uppercase tracking-wider">
+                      📢 Nhắc nhở khẩn cấp từ Quản trị viên
+                    </p>
+                    <p className="text-sm text-blue-700 font-medium">
+                      {selectedOrder.adminRemind}
+                    </p>
+                  </div>
+                )}
+
+              {/* Thông báo Lý do hủy đơn nếu bị hủy */}
+              {selectedOrder.status === "CANCELLED" && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl space-y-1">
+                  <p className="text-xs font-bold text-rose-800 uppercase tracking-wider">
+                    Đơn hàng đã bị hủy{" "}
+                    {selectedOrder.cancelledBy === "ADMIN"
+                      ? "(Trọng tài Quản trị viên can thiệp)"
+                      : selectedOrder.cancelledBy === "BUYER"
+                        ? "(Khách hàng chủ động hủy)"
+                        : ""}
+                  </p>
+                  <p className="text-sm text-rose-700 font-medium">
+                    Lý do: {selectedOrder.cancelReason || "Đã hoàn trả tồn kho về cửa hàng."}
+                  </p>
+                </div>
+              )}
 
               {/* Danh sách Món hàng */}
               <div>
@@ -252,7 +319,7 @@ export default function SellerOrdersPage() {
             </div>
 
             {/* Footer Modal: Các nút thao tác theo từng trạng thái đơn hàng */}
-            <div className="p-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+            <div className="p-5 border-t border-gray-100 flex flex-wrap justify-end gap-3 bg-gray-50">
               {/* 1. Trạng thái PENDING (Chờ xác nhận - Dành cho đơn COD mới đặt): Cho phép Hủy hoặc Xác nhận đóng gói */}
               {selectedOrder.status === "PENDING" && (
                 <>

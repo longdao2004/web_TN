@@ -208,7 +208,7 @@ export default function SellerBatchesPage() {
 
   return (
     <div className="p-6 relative">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Quản lý Lô hàng</h1>
           <p className="text-gray-500 mt-1">
@@ -217,7 +217,7 @@ export default function SellerBatchesPage() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm"
+          className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm self-start sm:self-auto"
         >
           <Plus className="w-5 h-5" />
           Nhập lô hàng mới
@@ -226,7 +226,8 @@ export default function SellerBatchesPage() {
 
       {/* BẢNG LÔ HÀNG */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left whitespace-nowrap">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
               <th className="p-4 font-semibold text-gray-600">Sản phẩm</th>
@@ -302,7 +303,8 @@ export default function SellerBatchesPage() {
               })
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       {/* ================= MODAL NHẬP LÔ HÀNG MỚI ================= */}

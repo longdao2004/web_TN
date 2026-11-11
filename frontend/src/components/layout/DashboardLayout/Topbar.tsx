@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from "@/store/auth.store";
 import { storeService } from '@/services/store.service';
+import { SellerNotificationPopover } from "./SellerNotificationPopover";
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -133,7 +134,7 @@ export const Topbar = ({ onToggleSidebar, title, breadcrumb }: TopbarProps) => {
 
       <div className="flex items-center gap-4">
         {/* Chuông thông báo động */}
-        {/* <SellerNotificationPopover /> */}
+        <SellerNotificationPopover />
 
         {/* User Menu */}
         <Dropdown

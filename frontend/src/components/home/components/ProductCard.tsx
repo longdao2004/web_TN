@@ -12,7 +12,7 @@ export const ProductCard = ({
   product,
   priority = false,
 }: ProductCardProps) => {
-  // 🟢 Chuẩn hóa dữ liệu để đồng bộ 100% giao diện giữa Trang chủ, Trang sản phẩm và Trang tìm kiếm
+  //  Chuẩn hóa dữ liệu để đồng bộ 100% giao diện giữa Trang chủ, Trang sản phẩm và Trang tìm kiếm
   const normalizedProduct: Product = {
     id: product.id,
     slug: product.slug || product.id,
@@ -42,7 +42,7 @@ export const ProductCard = ({
     category: product.category || "Nông sản",
     stock: product.stock !== undefined ? product.stock : 10,
     isExpired: product.isExpired,
-    // 🟢 Nếu sản phẩm đã hết hạn thì tuyệt đối KHÔNG gắn nhãn "Hữu cơ" hay "Mới"
+    //  Nếu sản phẩm đã hết hạn thì tuyệt đối KHÔNG gắn nhãn "Hữu cơ" hay "Mới"
     isOrganic: product.isExpired ? false : (product.isOrganic !== undefined ? product.isOrganic : false),
     isFeatured: product.isFeatured !== undefined ? product.isFeatured : false,
     isNew: product.isExpired ? false : (product.isNew !== undefined ? product.isNew : false),

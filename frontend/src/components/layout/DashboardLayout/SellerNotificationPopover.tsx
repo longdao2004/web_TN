@@ -20,9 +20,39 @@ const getNotificationInfo = (order: any, isAdmin: boolean) => {
   const shortId = order.id ? order.id.slice(0, 8).toUpperCase() : "";
   const customerName = order.user?.fullName || "Khách hàng";
   const storeName = order.items?.[0]?.product?.store?.name || order.store?.name || "Gian hàng";
+  const orderAgeMs = Date.now() - new Date(order.createdAt).getTime();
+  const isPendingDelayed = order.status === "PENDING" && orderAgeMs > 24 * 60 * 60 * 1000;
+  const isPackingDelayed = order.status === "PACKING" && orderAgeMs > 48 * 60 * 60 * 1000;
+
+  // Ưu tiên hiển thị lời nhắc thủ công từ Quản trị viên nếu đơn vẫn đang chờ xử lý / đóng gói
+  if (
+    order.adminRemind &&
+    (order.status === "PENDING" || order.status === "PACKING")
+  ) {
+    return {
+      title: `📢 [Admin nhắc gấp] #${shortId}`,
+      desc: isAdmin
+        ? `Đã nhắc Shop ${storeName}: "${order.adminRemind}"`
+        : order.adminRemind,
+      icon: Bell,
+      iconColor: "text-blue-600",
+      iconBg: "bg-blue-50",
+    };
+  }
 
   switch (order.status) {
     case "PENDING":
+      if (isPendingDelayed) {
+        return {
+          title: `⏰ Chậm xác nhận #${shortId}`,
+          desc: isAdmin
+            ? `Shop ${storeName} chưa xác nhận đơn của ${customerName} quá 24h.`
+            : `Đơn của ${customerName} đã chờ xác nhận quá 24h. Vui lòng xử lý ngay!`,
+          icon: Clock,
+          iconColor: "text-rose-500",
+          iconBg: "bg-rose-50",
+        };
+      }
       return {
         title: `Đơn hàng mới #${shortId}`,
         desc: isAdmin 
@@ -33,6 +63,17 @@ const getNotificationInfo = (order: any, isAdmin: boolean) => {
         iconBg: "bg-amber-50",
       };
     case "PACKING":
+      if (isPackingDelayed) {
+        return {
+          title: `⚠️ Chậm gửi hàng (>48h) #${shortId}`,
+          desc: isAdmin
+            ? `Shop ${storeName} đóng gói quá 48h chưa gửi hàng cho ${customerName}.`
+            : `Đơn của ${customerName} đóng gói quá 48h chưa gửi. Vui lòng bàn giao gấp!`,
+          icon: Package,
+          iconColor: "text-amber-600",
+          iconBg: "bg-amber-50",
+        };
+      }
       return {
         title: `Đơn đã thanh toán #${shortId}`,
         desc: isAdmin
@@ -61,7 +102,9 @@ const getNotificationInfo = (order: any, isAdmin: boolean) => {
     case "CANCELLED":
       return {
         title: `Đơn đã hủy #${shortId}`,
-        desc: `Đơn hàng #${shortId} đã bị hủy.`,
+        desc: order.cancelReason
+          ? `${order.cancelledBy === "ADMIN" ? "[Admin] " : order.cancelledBy === "BUYER" ? "[Khách] " : ""}${order.cancelReason}`
+          : `Đơn hàng #${shortId} đã bị hủy.`,
         icon: XCircle,
         iconColor: "text-rose-500",
         iconBg: "bg-rose-50",
@@ -190,7 +233,22 @@ export const SellerNotificationPopover = () => {
                 </p>
               </div>
             ) : (
-              orders.slice(0, 5).map((order) => {
+              [...orders]
+                .sort((a, b) => {
+                  const aReminded =
+                    a.adminRemind &&
+                    (a.status === "PENDING" || a.status === "PACKING")
+                      ? 1
+                      : 0;
+                  const bReminded =
+                    b.adminRemind &&
+                    (b.status === "PENDING" || b.status === "PACKING")
+                      ? 1
+                      : 0;
+                  return bReminded - aReminded;
+                })
+                .slice(0, 5)
+                .map((order) => {
                 const info = getNotificationInfo(order, isAdmin);
                 const IconComponent = info.icon;
                 const totalAmount =
