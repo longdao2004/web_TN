@@ -9,10 +9,10 @@ const getHeaders = () => {
 };
 
 export const statisticService = {
-  // Lấy thống kê cho Người bán (Seller)
-  getOverview: async () => {
+  // Lấy thống kê cho Người bán (Seller) với bộ lọc thời gian: all | 7d | 30d | month
+  getOverview: async (period = "all") => {
     try {
-      const res = await fetch(`${API_URL}/statistics/overview`, {
+      const res = await fetch(`${API_URL}/statistics/overview?period=${encodeURIComponent(period)}`, {
         method: "GET",
         headers: getHeaders(),
       });

@@ -540,6 +540,7 @@ export default function CreateProductPage() {
                   <option value="quả">Quả</option>
                   <option value="thùng">Thùng</option>
                   <option value="lít">Lít</option>
+                  <option value="túi">Túi</option>
                 </select>
               </div>
             </div>
