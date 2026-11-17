@@ -1,6 +1,6 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { StatisticsService } from './statistics.service';
 import { checkRole } from '../auth/auth.helper';
 import { Role } from '../auth/role.enum';
@@ -15,9 +15,10 @@ export class StatisticsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('overview')
   @ApiOperation({ summary: 'Thống kê tổng quan cho người bán' })
-  async getOverview(@Req() req: any) {
+  @ApiQuery({ name: 'period', required: false, description: 'all | 7d | 30d | month' })
+  async getOverview(@Req() req: any, @Query('period') period?: string) {
     checkRole(req, [Role.SELLER, Role.ADMIN]);
-    return this.statisticsService.getOverviewStats(req.user.userId);
+    return this.statisticsService.getOverviewStats(req.user.userId, period || 'all');
   }
 
   // 2. Thống kê toàn sàn dành cho Quản trị viên (Admin)
