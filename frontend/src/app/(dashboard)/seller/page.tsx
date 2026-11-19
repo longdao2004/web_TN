@@ -438,7 +438,8 @@ export default function SellerDashboardPage() {
               </div>
             }
           >
-            <div className="pt-6 pb-2 overflow-x-auto">
+            {/* Tăng pt-14 (56px) để Tooltip có đủ khoảng không gian hiển thị, hoàn toàn không bị chém mép trên */}
+            <div className="pt-14 pb-2 overflow-x-auto">
               {/* Các cột biểu đồ */}
               <div className="h-56 min-w-[500px] flex items-end justify-between gap-2 sm:gap-6 border-b border-gray-100 pb-2">
                 {revenueChart7Days.map((item: any, idx: number) => {
@@ -448,10 +449,15 @@ export default function SellerDashboardPage() {
 
                   return (
                     <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
-                      {/* Tooltip khi rê chuột */}
-                      <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-[11px] font-semibold py-1 px-2.5 rounded-lg pointer-events-none whitespace-nowrap shadow-lg z-10">
-                        <p>{item.date} ({item.dayName}): {fmt(item.revenue)}</p>
-                        <p className="text-[10px] text-gray-300 font-normal">{item.ordersCount} đơn thành công</p>
+                      {/* Tooltip hiển thị đầy đủ ngày tháng, doanh thu màu xanh nổi bật và mũi tên trỏ xuống cột */}
+                      {/* Dùng filter drop-shadow-md để bóng ôm sát viền thực tế của cả hộp lẫn mũi tên, loại bỏ viền trắng hình chữ nhật */}
+                      <div className="absolute -top-14 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20 flex flex-col items-center whitespace-nowrap filter drop-shadow-md">
+                        <div className="bg-gray-900 text-white text-[11px] font-semibold py-1.5 px-3 rounded-lg flex flex-col items-center text-center">
+                          <p className="font-bold text-emerald-400">{item.date} ({item.dayName}): {fmt(item.revenue)}</p>
+                          <p className="text-[10px] text-gray-300 font-normal mt-0.5">{item.ordersCount} đơn thành công</p>
+                        </div>
+                        {/* Mũi tên tam giác hướng xuống đầu cột, overlap -mt-px để liền khối hoàn hảo */}
+                        <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-gray-900 -mt-px" />
                       </div>
 
                       {/* Nhãn giá trị phía trên cột (đơn vị nghìn) */}

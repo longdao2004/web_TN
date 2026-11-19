@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Plus, X, Edit, Trash2 } from "lucide-react";
+import { Plus, X, Edit, Trash2, Download, AlertTriangle } from "lucide-react";
 import { storeService } from "@/services/store.service";
 import { productService } from "@/services/product.service";
 import { batchService } from "@/services/batch.service";
@@ -14,6 +14,8 @@ export default function SellerBatchesPage() {
   // Danh sách sản phẩm & tất cả lô hàng
   const [products, setProducts] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
+  // Lưu tên cửa hàng để đặt tên file Excel xuất báo cáo
+  const [storeName, setStoreName] = useState<string>("Nong_San");
 
   // Dữ liệu nhập form THÊM MỚI
   const [formData, setFormData] = useState({
@@ -38,14 +40,19 @@ export default function SellerBatchesPage() {
     try {
       setIsLoading(true);
       const store = await storeService.getMyStore();
+      if (store?.name) setStoreName(store.name);
       const prods = await productService.getProducts({ storeId: store.id });
       setProducts(prods);
-
       let allBatches: any[] = [];
       prods.forEach((p: any) => {
         if (p.batches && p.batches.length > 0) {
           p.batches.forEach((b: any) => {
-            allBatches.push({ ...b, productName: p.name });
+            // Lưu kèm tên sản phẩm và đơn vị tính để phục vụ hiển thị và xuất Excel
+            allBatches.push({
+              ...b,
+              productName: p.name,
+              unit: p.unit || "kg",
+            });
           });
         }
       });
@@ -203,25 +210,194 @@ export default function SellerBatchesPage() {
     return { text: "Đang bán", color: "bg-emerald-100 text-emerald-700" };
   };
 
+  // =========================================================================
+  // 7. HÀM XUẤT FILE EXCEL / CSV LÔ HÀNG & KIỂM SOÁT HẠN SỬ DỤNG (DATE)
+  // onlyRiskBatches = true  -> Chỉ xuất riêng các lô ĐÃ HẾT HẠN và CẬN DATE (<= 7 ngày)
+  // onlyRiskBatches = false -> Xuất toàn bộ các lô hàng trong kho
+  // =========================================================================
+  const handleExportBatchesCSV = (onlyRiskBatches: boolean) => {
+    if (!batches || batches.length === 0) {
+      alert("Chưa có dữ liệu lô hàng để xuất báo cáo!");
+      return;
+    }
+
+    // Hàm bọc chuỗi an toàn CSV
+    const esc = (val: any) => `"${String(val ?? "").replace(/"/g, '""')}"`;
+
+    const today = new Date();
+
+    // Tính toán thông tin chi tiết ngày hết hạn và rủi ro cho từng lô
+    const enrichedBatches = batches.map((b: any) => {
+      const expDate = new Date(b.expiryDate);
+      const diffMs = expDate.getTime() - today.getTime();
+      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      const stock = b.quantity || 0;
+      const price = b.price || 0;
+      const totalValue = stock * price;
+
+      let riskLevel = "AN TOÀN";
+      let actionPlan = "Bảo quản đúng quy chuẩn, xuất kho theo thứ tự FEFO";
+
+      if (stock <= 0) {
+        riskLevel = "ĐÃ HẾT TỒN KHO";
+        actionPlan = "Đã bán hết - Lưu lịch sử truy xuất";
+      } else if (expDate.getTime() < today.getTime()) {
+        riskLevel = "ĐÃ QUÁ HẠN SỬ DỤNG";
+        actionPlan = "Tiêu hủy ngay khỏi kho lạnh (Tránh lây nấm mốc) & Lập biên bản hao hụt";
+      } else if (daysLeft <= 7) {
+        riskLevel = "CẬN DATE (<= 7 NGÀY)";
+        actionPlan = "Chạy Flash Sale giảm giá 30%-50% / Ưu tiên xuất giao trước (FEFO)";
+      }
+
+      return {
+        ...b,
+        daysLeft,
+        stock,
+        price,
+        totalValue,
+        isExpired: stock > 0 && expDate.getTime() < today.getTime(),
+        isExpiringSoon: stock > 0 && expDate.getTime() >= today.getTime() && daysLeft <= 7,
+        riskLevel,
+        actionPlan,
+      };
+    });
+
+    // Lọc danh sách theo chế độ người bán chọn
+    const targetBatches = onlyRiskBatches
+      ? enrichedBatches.filter((b) => b.isExpired || b.isExpiringSoon)
+      : enrichedBatches;
+
+    if (targetBatches.length === 0) {
+      alert("Tuyệt vời! Kho hàng hiện tại hoàn toàn an toàn, không có lô nào hết hạn hay cận date.");
+      return;
+    }
+
+    try {
+      // Tổng kết tài chính & rủi ro ở đầu file
+      const expiredList = enrichedBatches.filter((b) => b.isExpired);
+      const expiringSoonList = enrichedBatches.filter((b) => b.isExpiringSoon);
+      const expiredLossValue = expiredList.reduce((sum: number, b: any) => sum + b.totalValue, 0);
+      const expiringRiskValue = expiringSoonList.reduce((sum: number, b: any) => sum + b.totalValue, 0);
+
+      const reportTitle = onlyRiskBatches
+        ? "BÁO CÁO KIỂM SOÁT LÔ HẾT HẠN & CẬN DATE (CẢNH BÁO HAO HỤT KHO)"
+        : "BÁO CÁO KIỂM KÊ TOÀN BỘ LÔ HÀNG & HẠN SỬ DỤNG";
+
+      const summaryLines = [
+        [esc(reportTitle)],
+        [esc(`Cửa hàng: ${storeName}`), esc(`Ngày lập báo cáo: ${today.toLocaleDateString("vi-VN")}`)],
+        [
+          esc(`Lô đã quá hạn (Cần tiêu hủy): ${expiredList.length} lô`),
+          esc(`Thiệt hại ước tính: ${expiredLossValue.toLocaleString("vi-VN")} VNĐ`),
+        ],
+        [
+          esc(`Lô cận date <= 7 ngày (Cần xả hàng gấp): ${expiringSoonList.length} lô`),
+          esc(`Giá trị tiền kẹt cần cứu vãn: ${expiringRiskValue.toLocaleString("vi-VN")} VNĐ`),
+        ],
+        [], // Dòng trống ngăn cách
+      ];
+
+      // Tiêu đề các cột dữ liệu lô hàng
+      const headers = [
+        "Mã lô hàng",
+        "Tên nông sản",
+        "Ngày thu hoạch",
+        "Hạn sử dụng (HSD)",
+        "Số ngày còn lại",
+        "Tồn kho lô",
+        "Đơn vị tính",
+        "Giá bán lô (VNĐ)",
+        "Giá trị hàng tồn (VNĐ)",
+        "Phân loại chất lượng",
+        "Hành động thực tế khuyến nghị",
+      ];
+
+      const rows = targetBatches.map((b: any) => [
+        esc(`LO-${b.id ? b.id.substring(0, 8).toUpperCase() : ""}`),
+        esc(b.productName),
+        esc(new Date(b.harvestDate).toLocaleDateString("vi-VN")),
+        esc(new Date(b.expiryDate).toLocaleDateString("vi-VN")),
+        esc(b.daysLeft < 0 ? `Quá hạn ${Math.abs(b.daysLeft)} ngày` : `Còn ${b.daysLeft} ngày`),
+        b.stock,
+        esc(b.unit),
+        b.price,
+        b.totalValue,
+        esc(b.riskLevel),
+        esc(b.actionPlan),
+      ]);
+
+      // Ghép CSV kèm UTF-8 BOM (\uFEFF)
+      const csvContent =
+        "\uFEFF" +
+        [
+          ...summaryLines.map((line) => line.join(",")),
+          headers.map(esc).join(","),
+          ...rows.map((r) => r.join(",")),
+        ].join("\r\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const cleanShop = storeName.replace(/[^a-zA-Z0-9]/g, "_");
+      const fileDate = today.toISOString().split("T")[0];
+      const prefix = onlyRiskBatches ? "Bao_cao_het_han_can_date" : "Bao_cao_tat_ca_lo_hang";
+
+      link.href = url;
+      link.setAttribute("download", `${prefix}_${cleanShop}_${fileDate}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Lỗi khi xuất Excel lô hàng:", error);
+      alert("Có lỗi xảy ra khi xuất file báo cáo!");
+    }
+  };
+
   if (isLoading)
     return <div className="p-6">Đang tải danh sách Lô hàng...</div>;
 
   return (
     <div className="p-6 relative">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Quản lý Lô hàng</h1>
           <p className="text-gray-500 mt-1">
             Quản lý tồn kho, ngày thu hoạch và hạn sử dụng theo từng đợt
           </p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm self-start sm:self-auto"
-        >
-          <Plus className="w-5 h-5" />
-          Nhập lô hàng mới
-        </button>
+
+        {/* Cụm nút Xuất báo cáo Excel & Nhập lô mới */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {/* Nút 1: Xuất riêng báo cáo Lô Hết hạn & Cận Date */}
+          <button
+            onClick={() => handleExportBatchesCSV(true)}
+            className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-lg hover:bg-rose-100 transition text-sm font-semibold cursor-pointer"
+            title="Xuất riêng danh sách các lô đã hết hạn cần tiêu hủy và lô cận date cần xả hàng"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            Xuất Lô Hết hạn / Cận Date
+          </button>
+
+          {/* Nút 2: Xuất toàn bộ danh sách lô hàng trong kho */}
+          <button
+            onClick={() => handleExportBatchesCSV(false)}
+            className="flex items-center gap-1.5 bg-white border border-emerald-600 text-emerald-700 px-3.5 py-2.5 rounded-lg hover:bg-emerald-50 transition text-sm font-semibold cursor-pointer"
+            title="Xuất toàn bộ các lô hàng hiện có ra file Excel"
+          >
+            <Download className="w-4 h-4" />
+            Xuất Tất cả Lô
+          </button>
+
+          {/* Nút 3: Nhập lô hàng mới */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg hover:bg-emerald-700 transition text-sm font-medium shadow-sm cursor-pointer"
+          >
+            <Plus className="w-5 h-5" />
+            Nhập lô hàng mới
+          </button>
+        </div>
       </div>
 
       {/* BẢNG LÔ HÀNG */}

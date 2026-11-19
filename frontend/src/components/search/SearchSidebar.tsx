@@ -48,7 +48,7 @@ export const SearchSidebar = () => {
             <div className="flex flex-col gap-2">
               {group.options.map((option, idx) => (
                 <label key={idx} className="flex items-center gap-3 cursor-pointer group/label">
-                  <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                  <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-emerald-600 text-emerald-600 focus:ring-emerald-500" />
                   <span className="text-sm text-gray-600 group-hover/label:text-emerald-600 transition-colors">{option}</span>
                 </label>
               ))}

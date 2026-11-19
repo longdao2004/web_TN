@@ -394,7 +394,8 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="pt-6 pb-2">
+        {/* Tăng pt-14 (56px) để Tooltip hiển thị trọn vẹn và đồng bộ với giao diện Seller */}
+        <div className="pt-14 pb-2">
           <div className="h-56 flex items-end justify-between gap-2 sm:gap-6 border-b border-gray-100 pb-2">
             {revenueChart7Days.map((item: any, idx: number) => {
               const heightPercent =
@@ -407,12 +408,21 @@ export default function AdminDashboardPage() {
                   key={idx}
                   className="flex-1 flex flex-col items-center group relative h-full justify-end"
                 >
-                  <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-[11px] font-semibold py-1 px-2.5 rounded-lg pointer-events-none whitespace-nowrap shadow-lg z-10">
-                    <p>{item.date} ({item.dayName}): {item.revenue.toLocaleString("vi-VN")}đ</p>
-                    <p className="text-[10px] text-gray-300 font-normal">
-                      {item.ordersCount} đơn hoàn thành
-                    </p>
+                  {/* Tooltip Admin hiển thị nổi bật số tiền và số đơn kèm mũi tên chỉ dẫn */}
+                  {/* Dùng filter drop-shadow-md để bóng ôm sát viền thực tế của cả hộp lẫn mũi tên, loại bỏ viền trắng hình chữ nhật */}
+                  <div className="absolute -top-14 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20 flex flex-col items-center whitespace-nowrap filter drop-shadow-md">
+                    <div className="bg-gray-900 text-white text-[11px] font-semibold py-1.5 px-3 rounded-lg flex flex-col items-center text-center">
+                      <p className="font-bold text-emerald-400">
+                        {item.date} ({item.dayName}): {item.revenue.toLocaleString("vi-VN")}đ
+                      </p>
+                      <p className="text-[10px] text-gray-300 font-normal mt-0.5">
+                        {item.ordersCount} đơn hoàn thành
+                      </p>
+                    </div>
+                    {/* Mũi tên tam giác hướng xuống đầu cột, overlap -mt-px để liền khối hoàn hảo */}
+                    <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-gray-900 -mt-px" />
                   </div>
+
 
                   {item.revenue > 0 && (
                     <span className="text-[10px] font-bold text-emerald-600 mb-1 opacity-70 group-hover:opacity-100 transition-opacity">

@@ -73,8 +73,11 @@ export const FilterSidebar = ({ onCloseMobile }: FilterSidebarProps) => {
   if (searchParams.get('minPrice') === '200000' && searchParams.get('maxPrice') === '500000') currentPrice = '3';
   if (searchParams.get('minPrice') === '500000' && !searchParams.get('maxPrice')) currentPrice = '4';
 
+  // Kiểm tra xem hiện tại người dùng có đang áp dụng bất kỳ bộ lọc nào không
+  const hasActiveFilters = Boolean(currentCategory || currentPrice !== 'all');
+
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-6 w-full pl-0.5">
       {/* Header chỉ dành cho di động */}
       <div className="flex items-center justify-between lg:hidden pb-4 border-b border-[var(--color-border)]">
         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -93,9 +96,16 @@ export const FilterSidebar = ({ onCloseMobile }: FilterSidebarProps) => {
           <Filter className="h-5 w-5" />
           Bộ lọc
         </h2>
+        {/* Nút Xóa tất cả: Chỉ sáng đỏ khi có bộ lọc đang chọn, tự động mờ và khóa khi chưa chọn gì */}
         <button 
           onClick={() => router.push('/san-pham')}
-          className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+          disabled={!hasActiveFilters}
+          className={`text-sm font-medium transition-colors ${
+            hasActiveFilters
+              ? "text-red-500 hover:text-red-600 cursor-pointer"
+              : "text-gray-300 cursor-not-allowed"
+          }`}
+          title={hasActiveFilters ? "Xóa toàn bộ các bộ lọc đang chọn" : "Chưa có bộ lọc nào được chọn"}
         >
           Xóa tất cả
         </button>
@@ -109,7 +119,7 @@ export const FilterSidebar = ({ onCloseMobile }: FilterSidebarProps) => {
             <Checkbox 
               key={cat.id} 
               id={`cat-${cat.id}`} 
-              label={cat.name} 
+              label={cat.name ? cat.name.charAt(0).toUpperCase() + cat.name.slice(1) : ''} 
               checked={currentCategory === cat.id}
               onChange={(e) => handleCategoryChange(cat.id, e.target.checked)}
             />

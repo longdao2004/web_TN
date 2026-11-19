@@ -19,21 +19,30 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
     const radioId = id || generatedId;
 
     return (
-      <div className={cn('flex items-start gap-2', className)}>
-        <div className="flex h-5 items-center">
+      <div className={cn('flex items-start gap-2.5', className)}>
+        {/* Khung chứa Custom Radio tròn đều 100%, không bị méo lệch viền trái */}
+        <div className="relative flex h-5 w-4 shrink-0 items-center justify-center">
           <input
             id={radioId}
             type="radio"
             ref={ref}
             disabled={disabled}
-            className={cn(
-              'h-4 w-4 rounded-full border-[var(--color-border)] text-[var(--color-primary)] transition-colors',
-              'focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:ring-offset-0',
-              'disabled:cursor-not-allowed disabled:bg-gray-200 disabled:border-gray-300',
-              error ? 'border-[var(--color-danger)] text-[var(--color-danger)] focus:ring-[var(--color-danger)]/20' : ''
-            )}
+            className="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
             {...props}
           />
+          <div
+            className={cn(
+              'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white transition-all duration-150',
+              'peer-hover:border-emerald-500',
+              'peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/20 peer-focus-visible:border-emerald-500',
+              'peer-checked:border-emerald-600 peer-checked:[&>span]:scale-100',
+              'peer-disabled:cursor-not-allowed peer-disabled:bg-gray-100 peer-disabled:border-gray-200',
+              error ? 'border-red-500 peer-focus-visible:ring-red-500/20' : ''
+            )}
+            aria-hidden="true"
+          >
+            <span className="h-2 w-2 rounded-full bg-emerald-600 scale-0 transition-transform duration-150 pointer-events-none" />
+          </div>
         </div>
         
         {(label || helperText) && (
@@ -43,17 +52,17 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
                 htmlFor={radioId}
                 className={cn(
                   'text-sm font-medium select-none',
-                  disabled ? 'text-[var(--color-disabled)] cursor-not-allowed' : 'text-[var(--color-text-primary)] cursor-pointer'
+                  disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 cursor-pointer'
                 )}
               >
                 {label}
-                {props.required && <span className="text-[var(--color-danger)] ml-1">*</span>}
+                {props.required && <span className="text-red-500 ml-1">*</span>}
               </label>
             )}
             {error ? (
-              <p className="text-xs text-[var(--color-danger)] mt-0.5">{error}</p>
+              <p className="text-xs text-red-500 mt-0.5">{error}</p>
             ) : helperText ? (
-              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{helperText}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{helperText}</p>
             ) : null}
           </div>
         )}
