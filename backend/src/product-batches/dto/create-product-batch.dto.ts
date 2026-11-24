@@ -35,4 +35,9 @@ export class CreateProductBatchDto {
   @Min(0, { message: 'Giá không được âm' })
   @IsNotEmpty()
   price!: number;
+
+  @ApiPropertyOptional({ example: 60000 })
+  @IsOptional()
+  @IsNumber()
+  originalPrice?: number;
 }
