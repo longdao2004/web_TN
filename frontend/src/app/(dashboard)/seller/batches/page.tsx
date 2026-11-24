@@ -32,6 +32,7 @@ export default function SellerBatchesPage() {
     expiryDate: "",
     quantity: "",
     price: "",
+    originalPrice: "",
   });
 
   // 1. Hàm tải dữ liệu
@@ -128,6 +129,10 @@ export default function SellerBatchesPage() {
   // 3. Mở Modal Sửa
   const handleOpenEditModal = (batch: any) => {
     setEditingBatch(batch);
+    const baseOriginalPrice = batch.originalPrice
+      ? batch.originalPrice.toString()
+      : batch.price?.toString() || "";
+      
     setEditFormData({
       harvestDate: batch.harvestDate
         ? new Date(batch.harvestDate).toISOString().split("T")[0]
@@ -137,6 +142,7 @@ export default function SellerBatchesPage() {
         : "",
       quantity: batch.quantity?.toString() || "",
       price: batch.price?.toString() || "",
+      originalPrice: baseOriginalPrice,
     });
     setIsEditModalOpen(true);
   };
@@ -155,11 +161,23 @@ export default function SellerBatchesPage() {
 
     try {
       setIsSubmitting(true);
+
+      const newPrice = Number(editFormData.price);
+      const originalPriceNum = editFormData.originalPrice
+        ? Number(editFormData.originalPrice)
+        : null;
+      // Nếu giá bán mới thấp hơn giá gốc niêm yết -> Kích hoạt trạng thái Giảm giá / Ưu đãi
+      let sendOriginalPrice: number | null = null;
+      if (originalPriceNum && originalPriceNum > newPrice) {
+        sendOriginalPrice = originalPriceNum;
+      }
+
       await batchService.updateBatch(editingBatch.id, {
         harvestDate: new Date(editFormData.harvestDate).toISOString(),
         expiryDate: new Date(editFormData.expiryDate).toISOString(),
         quantity: Number(editFormData.quantity),
-        price: Number(editFormData.price),
+        price: newPrice,
+        originalPrice: sendOriginalPrice,
       });
       alert("Cập nhật lô hàng thành công!");
       setIsEditModalOpen(false);
@@ -292,6 +310,11 @@ export default function SellerBatchesPage() {
                       </td>
                       <td className="p-4 font-semibold text-gray-800">
                         {batch.price.toLocaleString("vi-VN")}đ
+                        {batch.originalPrice && batch.originalPrice > batch.price && (
+                          <span className="block text-xs text-red-500 font-normal line-through">
+                            {batch.originalPrice.toLocaleString("vi-VN")}đ
+                          </span>
+                        )}
                       </td>
                       <td className="p-4 font-medium text-gray-800">
                         {batch.quantity}
@@ -505,16 +528,46 @@ export default function SellerBatchesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Giá bán (VNĐ) <span className="text-red-500">*</span>
+                    Giá gốc niêm yết (VNĐ)
                   </label>
+                  <p className="text-xs text-gray-400 mb-2">Giá bán chính thức khi nông sản xuất vườn / lên kệ</p>
                   <input
                     type="number"
-                    name="price"
-                    value={editFormData.price}
+                    name="originalPrice"
+                    value={editFormData.originalPrice}
                     onChange={handleEditChange}
+                    placeholder="VD: 50000"
                     className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl outline-none"
                   />
                 </div>
+              </div>
+
+               {/* Giá bán thực tế / Giá xả hàng */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Giá bán thực tế (VNĐ) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={editFormData.price}
+                  onChange={handleEditChange}
+                  placeholder="Nhập giá bán (Hạ giá nếu muốn xả hàng cận date)..."
+                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                />
+                {Number(editFormData.originalPrice) > Number(editFormData.price) && Number(editFormData.price) > 0 && (
+                  <p className="text-xs text-emerald-700 font-medium mt-2 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                    🔥 <strong>Kích hoạt xả hàng ưu đãi:</strong> Giảm{" "}
+                    <strong>
+                      {Math.round(
+                        ((Number(editFormData.originalPrice) - Number(editFormData.price)) /
+                          Number(editFormData.originalPrice)) *
+                          100
+                      )}%
+                    </strong>{" "}
+                    —  Sản phẩm này sẽ tự động xuất hiện trong mục <strong>&quot;Đang ưu đãi&quot;</strong> ở Trang chủ!
+                  </p>
+                )}
               </div>
             </div>
 

@@ -28,7 +28,6 @@ const INITIAL_PRODUCT_DATA = {
   origin: "", // Xuất xứ / Vùng trồng (VD: Lục Ngạn, Bắc Giang)
   unit: "kg",
   price: "",
-  originalPrice: "", // Giá gốc niêm yết (nếu có ưu đãi giảm giá)
   quantity: "",
   harvestDate: "",
   expiryDate: "",
@@ -159,18 +158,7 @@ export default function CreateProductPage() {
       payload.append("description", formData.description.trim());
       payload.append("origin", formData.origin.trim() || "Việt Nam");
       payload.append("unit", formData.unit || "kg");
-      // Chuẩn hóa giá thông minh: Số nhỏ hơn luôn là giá bán thực tế, số lớn hơn là giá gốc
-      const p = Number(formData.price);
-      const op = formData.originalPrice ? Number(formData.originalPrice) : null;
-      if (op && op > 0 && p > 0 && p !== op) {
-        payload.append("price", Math.min(p, op).toString());
-        payload.append("originalPrice", Math.max(p, op).toString());
-      } else {
-        payload.append("price", formData.price);
-        if (formData.originalPrice) {
-          payload.append("originalPrice", formData.originalPrice);
-        }
-      }
+      payload.append("price", formData.price);
       payload.append("quantity", formData.quantity);
       payload.append("harvestDate", new Date(formData.harvestDate).toISOString());
       payload.append("expiryDate", new Date(formData.expiryDate).toISOString());
@@ -484,9 +472,9 @@ export default function CreateProductPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Giá bán thực tế (VNĐ) <span className="text-red-500">*</span>
+                  Giá bán niêm yết (VNĐ) <span className="text-red-500">*</span>
                 </label>
-                <p className="text-xs text-gray-400 mb-2">Số tiền khách hàng phải thanh toán khi mua hàng</p>
+                <p className="text-xs text-gray-400 mb-2">Giá bán chính thức khi nông sản xuất vườn / lên kệ</p>
                 <input
                   type="number"
                   name="price"
@@ -495,32 +483,9 @@ export default function CreateProductPage() {
                   value={formData.price}
                   onChange={handleProductChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  placeholder="VD: 94000"
+                  placeholder="VD: 50000"
                   className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Giá gốc niêm yết (VNĐ) <span className="text-gray-400 text-xs font-normal">(Tùy chọn)</span>
-                </label>
-                <p className="text-xs text-gray-400 mb-2">Giá ban đầu trước khi giảm (hiển thị gạch ngang ngoài cửa hàng)</p>
-                <input
-                  type="number"
-                  name="originalPrice"
-                  min="1000"
-                  step="500"
-                  value={formData.originalPrice}
-                  onChange={handleProductChange}
-                  onWheel={(e) => e.currentTarget.blur()}
-                  placeholder="VD: 100000 (Để trống nếu bán giá thường)"
-                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
-                />
-                {Number(formData.originalPrice) > 0 && Number(formData.price) > 0 && Number(formData.originalPrice) !== Number(formData.price) && (
-                  <p className="text-xs text-emerald-600 font-medium mt-1.5 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                    ✓ <strong>Ưu đãi:</strong> Bán <strong>{Math.min(Number(formData.price), Number(formData.originalPrice)).toLocaleString()}đ</strong> (Gốc gạch ngang {Math.max(Number(formData.price), Number(formData.originalPrice)).toLocaleString()}đ - Giảm {Math.round(((Math.max(Number(formData.price), Number(formData.originalPrice)) - Math.min(Number(formData.price), Number(formData.originalPrice))) / Math.max(Number(formData.price), Number(formData.originalPrice))) * 100)}%)
-                  </p>
-                )}
               </div>
 
               <div>

@@ -34,14 +34,20 @@ export const productService = {
     const data = await res.json();
     const result = data.map((item: any) => {
       // 🟢 Sắp xếp lấy lô mới nhất cho từng sản phẩm ngoài danh sách
-      const sorted = (item.batches || []).slice().sort((a: any, b: any) => 
+    const sorted = (item.batches || []).slice().sort((a: any, b: any) => 
         new Date(b.createdAt || b.harvestDate || 0).getTime() - new Date(a.createdAt || a.harvestDate || 0).getTime()
       );
-      const latest = sorted[0];
-
+      
+      const activeBatches = (item.batches || []).filter((b: any) => 
+        new Date(b.expiryDate).getTime() > Date.now()
+      );
+      const discountedBatch = activeBatches.find((b: any) => 
+        b.originalPrice && b.originalPrice > b.price
+      );
+      // Nếu có lô đang giảm giá ưu tiên lấy lô đó, nếu không lấy lô mới nhất
+      const latest = discountedBatch || sorted[0];
       const rawPrice = latest?.price || 0;
       const rawOriginalPrice = latest?.originalPrice || null;
-
       const actualPrice = rawPrice;
       let originalPrice: number | undefined = undefined;
       let isDiscounted = false;
@@ -76,7 +82,7 @@ export const productService = {
         ],
         isNewBatch: isNewBatch, // Cờ nhận diện đợt hàng mới để hiện huy hiệu
         isExpired: item.batches?.length > 0 && !(item.batches?.some((b: any) => new Date(b.expiryDate).getTime() > Date.now())),
-        stock: item.batches?.filter((b: any) => new Date(b.expiryDate).getTime() > Date.now()).reduce((acc: number, b: any) => acc + b.quantity, 0) || 0,
+        stock: item.batches?.reduce((acc: number, b: any) => acc + (b.quantity || 0), 0) || 0,
         batches: item.batches || [],
         certificates: item.certificates || [],
         storeId: item.storeId || item.store?.id || '',
@@ -186,7 +192,7 @@ export const productService = {
       province: item.origin || 'Chưa cập nhật',
       category: item.category?.name || '',
       isExpired: item.batches?.length > 0 && !(item.batches?.some((b: any) => new Date(b.expiryDate).getTime() > Date.now())),
-      stock: item.batches?.filter((b: any) => new Date(b.expiryDate).getTime() > Date.now()).reduce((acc: number, b: any) => acc + b.quantity, 0) || 0,
+      stock: item.batches?.reduce((acc: number, b: any) => acc + (b.quantity || 0), 0) || 0,
       isOrganic: true,
       isFeatured: false,
       isNew: true,

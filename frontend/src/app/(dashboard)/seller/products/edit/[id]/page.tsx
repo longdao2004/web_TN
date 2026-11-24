@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, UploadCloud, Save } from "lucide-react";
+import { ArrowLeft, UploadCloud, Save, Layers } from "lucide-react";
 import { storeService } from "@/services/store.service";
 import { categoryService } from "@/services/category.service";
 import { productService } from "@/services/product.service";
@@ -12,16 +12,13 @@ export default function EditProductPage() {
   const params = useParams();
   const id = params.id as string;
 
+  // State chỉ quản lý các thông tin thuộc về Sản phẩm (đã bỏ HSD, Ngày thu hoạch, Tồn kho, Giá KM)
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     origin: "",
     unit: "kg",
     price: "",
-    originalPrice: "",
-    quantity: "",
-    harvestDate: "",
-    expiryDate: "",
     categoryId: "",
     specification: "",
     storageCondition: "",
@@ -43,35 +40,25 @@ export default function EditProductPage() {
         const cats = await categoryService.getAllCategories();
         setCategories(cats);
 
-        const resProduct = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/products/${id}`);
+        const resProduct = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/products/${id}`
+        );
         const product = await resProduct.json();
-        
-        // Sắp xếp lấy lô mới nhất để hiển thị dữ liệu
-        const sortedBatches = (product.batches || []).slice().sort((a: any, b: any) => 
-          new Date(b.createdAt || b.harvestDate || 0).getTime() - new Date(a.createdAt || a.harvestDate || 0).getTime()
+
+        // Lấy thông tin lô mới nhất để đọc giá niêm yết, quy cách và bảo quản hiện tại
+        const sortedBatches = (product.batches || []).slice().sort(
+          (a: any, b: any) =>
+            new Date(b.createdAt || b.harvestDate || 0).getTime() -
+            new Date(a.createdAt || a.harvestDate || 0).getTime()
         );
         const latestBatch = sortedBatches[0];
-
-        const rawP = latestBatch?.price || 0;
-        const rawO = latestBatch?.originalPrice || null;
-        let initPrice = rawP;
-        let initOriginalPrice = "";
-        if (rawO && rawO > 0 && rawO !== rawP) {
-          // Chuẩn hóa: Số nhỏ hơn là giá bán thực tế, số lớn hơn là giá gốc
-          initPrice = Math.min(rawP, rawO);
-          initOriginalPrice = Math.max(rawP, rawO).toString();
-        }
 
         setFormData({
           name: product.name || "",
           description: product.description || "",
           origin: product.origin || "",
           unit: product.unit || "kg",
-          price: initPrice.toString(),
-          originalPrice: initOriginalPrice,
-          quantity: (latestBatch?.quantity || 0).toString(),
-          harvestDate: latestBatch?.harvestDate ? new Date(latestBatch.harvestDate).toISOString().split("T")[0] : "",
-          expiryDate: latestBatch?.expiryDate ? new Date(latestBatch.expiryDate).toISOString().split("T")[0] : "",
+          price: (latestBatch?.price || 0).toString(),
           categoryId: product.categoryId || (cats.length > 0 ? cats[0].id : ""),
           specification: latestBatch?.specification || "",
           storageCondition: latestBatch?.storageCondition || "",
@@ -80,7 +67,6 @@ export default function EditProductPage() {
         if (product.imageUrl) {
           setImagePreview(product.imageUrl);
         }
-
       } catch (error) {
         console.error("Lỗi khởi tạo form:", error);
       } finally {
@@ -106,7 +92,7 @@ export default function EditProductPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.price || !formData.quantity || !formData.categoryId) {
+    if (!formData.name.trim() || !formData.price || !formData.categoryId) {
       alert("Vui lòng điền đầy đủ các trường bắt buộc (*)");
       return;
     }
@@ -114,30 +100,15 @@ export default function EditProductPage() {
     try {
       setIsSaving(true);
       const apiData = new FormData();
-      apiData.append("name", formData.name);
-      apiData.append("description", formData.description);
-      apiData.append("origin", formData.origin);
+      apiData.append("name", formData.name.trim());
+      apiData.append("description", formData.description.trim());
+      apiData.append("origin", formData.origin.trim());
       apiData.append("unit", formData.unit);
-
-      // Chuẩn hóa thông minh trước khi gửi: số nhỏ hơn là giá bán thực tế, số lớn hơn là giá gốc
-      const p = Number(formData.price);
-      const op = formData.originalPrice ? Number(formData.originalPrice) : null;
-      if (op && op > 0 && p > 0 && p !== op) {
-        apiData.append("price", Math.min(p, op).toString());
-        apiData.append("originalPrice", Math.max(p, op).toString());
-      } else {
-        apiData.append("price", formData.price);
-        apiData.append("originalPrice", formData.originalPrice || "");
-      }
-
-      apiData.append("quantity", formData.quantity);
-      apiData.append("stock", formData.quantity);
-      if (formData.harvestDate) apiData.append("harvestDate", new Date(formData.harvestDate).toISOString());
-      if (formData.expiryDate) apiData.append("expiryDate", new Date(formData.expiryDate).toISOString());
+      apiData.append("price", formData.price); // Cập nhật mức giá niêm yết chuẩn
       apiData.append("categoryId", formData.categoryId);
       apiData.append("storeId", storeId);
-      apiData.append("specification", formData.specification);
-      apiData.append("storageCondition", formData.storageCondition);
+      apiData.append("specification", formData.specification.trim());
+      apiData.append("storageCondition", formData.storageCondition.trim());
 
       if (imageFile) {
         apiData.append("images", imageFile);
@@ -159,6 +130,7 @@ export default function EditProductPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      {/* Header */}
       <div className="mb-6 flex items-center gap-4">
         <Link
           href="/seller/products"
@@ -168,7 +140,7 @@ export default function EditProductPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Cập nhật Sản phẩm</h1>
-          <p className="text-gray-500 mt-1">Thay đổi thông tin sản phẩm trên cửa hàng</p>
+          <p className="text-gray-500 mt-1">Thay đổi thông tin giới thiệu nông sản trên gian hàng</p>
         </div>
       </div>
 
@@ -242,6 +214,7 @@ export default function EditProductPage() {
                   value={formData.origin}
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
+                  placeholder="VD: Bắc Giang, Đà Lạt..."
                 />
               </div>
             </div>
@@ -249,105 +222,56 @@ export default function EditProductPage() {
 
           <hr className="border-gray-100" />
 
-          {/* 3. BÁN HÀNG & TỒN KHO */}
+          {/* 3. GIÁ BÁN NIÊM YẾT & ĐƠN VỊ TÍNH */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">3. Bán hàng & Tồn kho</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">3. Giá bán Niêm yết & Đơn vị</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Giá bán thực tế (VNĐ) <span className="text-red-500">*</span>
+                  Giá bán niêm yết (VNĐ) <span className="text-red-500">*</span>
                 </label>
-                <p className="text-xs text-gray-400 mb-2">Số tiền khách hàng phải thanh toán khi mua hàng</p>
+                <p className="text-xs text-gray-400 mb-2">Giá bán chính thức của nông sản khi xuất vườn / lên kệ</p>
                 <input
                   type="number"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
                   onWheel={(e) => e.currentTarget.blur()}
-                  placeholder="VD: 94000"
+                  placeholder="VD: 50000"
                   className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Giá gốc niêm yết (VNĐ) <span className="text-gray-400 text-xs font-normal">(Tùy chọn)</span>
+                  Đơn vị tính <span className="text-red-500">*</span>
                 </label>
-                <p className="text-xs text-gray-400 mb-2">Giá ban đầu trước khi giảm (hiển thị gạch ngang ngoài cửa hàng)</p>
-                <input
-                  type="number"
-                  name="originalPrice"
-                  value={formData.originalPrice}
-                  onChange={handleChange}
-                  onWheel={(e) => e.currentTarget.blur()}
-                  placeholder="VD: 100000 (Để trống nếu bán giá thường)"
-                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
-                />
-                {Number(formData.originalPrice) > 0 && Number(formData.price) > 0 && Number(formData.originalPrice) !== Number(formData.price) && (
-                  <p className="text-xs text-emerald-600 font-medium mt-1.5 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                    ✓ <strong>Ưu đãi:</strong> Bán <strong>{Math.min(Number(formData.price), Number(formData.originalPrice)).toLocaleString()}đ</strong> (Gốc gạch ngang {Math.max(Number(formData.price), Number(formData.originalPrice)).toLocaleString()}đ - Giảm {Math.round(((Math.max(Number(formData.price), Number(formData.originalPrice)) - Math.min(Number(formData.price), Number(formData.originalPrice))) / Math.max(Number(formData.price), Number(formData.originalPrice))) * 100)}%)
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Đơn vị tính</label>
+                <p className="text-xs text-gray-400 mb-2">Đơn vị đo lường khi giao dịch</p>
                 <select
                   name="unit"
                   value={formData.unit}
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
                 >
-                  <option value="kg">Kg</option>
-                  <option value="g">Gram</option>
+                  <option value="kg">Kilogram (kg)</option>
                   <option value="hộp">Hộp</option>
                   <option value="bó">Bó</option>
+                  <option value="mớ">Mớ</option>
                   <option value="quả">Quả</option>
                   <option value="thùng">Thùng</option>
                   <option value="lít">Lít</option>
+                  <option value="túi">Túi</option>
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng tồn kho *</label>
-                <input
-                  type="number"
-                  name="quantity"
-                  value={formData.quantity}
-                  onChange={handleChange}
-                  onWheel={(e) => e.currentTarget.blur()}
-                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
-                />
               </div>
             </div>
           </div>
 
           <hr className="border-gray-100" />
 
-          {/* 4. LÔ HÀNG, QUY CÁCH & BẢO QUẢN (MỚI BỔ SUNG ĐẦY ĐỦ) */}
+          {/* 4. QUY CÁCH ĐÓNG GÓI & BẢO QUẢN */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">4. Thông tin Lô hàng & Bảo quản</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">4. Quy cách đóng gói & Bảo quản</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ngày thu hoạch</label>
-                <input
-                  type="date"
-                  name="harvestDate"
-                  value={formData.harvestDate}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Hạn sử dụng</label>
-                <input
-                  type="date"
-                  name="expiryDate"
-                  value={formData.expiryDate}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition"
-                />
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Quy cách đóng gói</label>
                 <input
@@ -372,8 +296,26 @@ export default function EditProductPage() {
               </div>
             </div>
           </div>
+
+          {/* 5. GỢI Ý ĐIỀU HƯỚNG QUẢN LÝ LÔ HÀNG THÔNG MINH */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3">
+            <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl shrink-0">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-emerald-900">Quản lý Lô hàng & Tồn kho</h4>
+              <p className="text-xs text-emerald-700 mt-1 leading-relaxed">
+                Số lượng tồn kho, ngày thu hoạch, hạn sử dụng và ưu đãi xả hàng được quản lý độc lập theo từng đợt nhập. Để cập nhật hạn sử dụng hoặc hạ giá xả hàng cận date, vui lòng truy cập{" "}
+                <Link href="/seller/batches" className="font-bold underline hover:text-emerald-950 inline-flex items-center">
+                  Quản lý Lô hàng →
+                </Link>
+              </p>
+            </div>
+          </div>
+
         </div>
 
+        {/* Nút lưu */}
         <div className="bg-gray-50 p-6 border-t border-gray-100 flex justify-end">
           <button
             onClick={handleSave}

@@ -37,6 +37,7 @@ export const batchService = {
       expiryDate?: string;
       quantity?: number;
       price?: number;
+      originalPrice?: number | null;
     },
   ) => {
     const res = await fetch(`${API_URL}/product-batches/${id}`, {
