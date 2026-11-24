@@ -14,6 +14,7 @@ import {
 } from "@/components/order-success";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { orderService } from "@/services/order.service";
+import { formatOrderCode } from "@/utils/order";
 
 // Tạm thời định nghĩa TimelineSteps ảo để map status thật vào
 const getTimelineSteps = (status: string) => {
@@ -77,7 +78,7 @@ export const OrderSuccessClient = () => {
         const mappedOrder = {
           id: data.id,
           // TẠO MÃ ĐƠN HÀNG: Cắt phần đầu UUID (8 ký tự trước dấu '-') và viết in hoa
-          code: data.id.split("-")[0].toUpperCase(),
+          code: formatOrderCode(data.id, data.createdAt),
           createdAt: new Date(data.createdAt).toLocaleDateString("vi-VN"), // Chuyển đổi ngày đặt hàng
           totalAmount: data.totalAmount, // <-- Fix lỗi: Component gọi totalAmount thay vì total
 

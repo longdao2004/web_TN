@@ -4,6 +4,7 @@ import { Plus, X, Edit, Trash2 } from "lucide-react";
 import { storeService } from "@/services/store.service";
 import { productService } from "@/services/product.service";
 import { batchService } from "@/services/batch.service";
+import { formatBatchCode } from "@/utils/order";
 
 export default function SellerBatchesPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -58,7 +59,7 @@ export default function SellerBatchesPage() {
       allBatches.sort(
         (a, b) =>
           new Date(b.createdAt || b.harvestDate).getTime() -
-          new Date(a.createdAt || a.harvestDate).getTime()
+          new Date(a.createdAt || a.harvestDate).getTime(),
       );
       setBatches(allBatches);
 
@@ -175,7 +176,7 @@ export default function SellerBatchesPage() {
   const handleDeleteBatch = async (batchId: string, productName: string) => {
     if (
       !confirm(
-        `Bạn có chắc chắn muốn xóa lô hàng của sản phẩm "${productName}" không?`
+        `Bạn có chắc chắn muốn xóa lô hàng của sản phẩm "${productName}" không?`,
       )
     ) {
       return;
@@ -195,7 +196,7 @@ export default function SellerBatchesPage() {
     const today = new Date();
     const expDate = new Date(expiry);
     const daysLeft = Math.floor(
-      (expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      (expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     if (stock <= 0)
@@ -236,81 +237,97 @@ export default function SellerBatchesPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left whitespace-nowrap">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="p-4 font-semibold text-gray-600">Sản phẩm</th>
-              <th className="p-4 font-semibold text-gray-600">Ngày thu hoạch</th>
-              <th className="p-4 font-semibold text-gray-600">Hạn sử dụng</th>
-              <th className="p-4 font-semibold text-gray-600">Giá bán</th>
-              <th className="p-4 font-semibold text-gray-600">Tồn kho</th>
-              <th className="p-4 font-semibold text-gray-600">Trạng thái</th>
-              <th className="p-4 font-semibold text-gray-600 text-center">
-                Thao tác
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {batches.length === 0 ? (
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <td colSpan={7} className="p-6 text-center text-gray-500">
-                  Chưa có lô hàng nào.
-                </td>
+                <th className="p-4 font-semibold text-gray-600">Sản phẩm</th>
+                <th className="p-4 font-semibold text-gray-600">
+                  Ngày thu hoạch
+                </th>
+                <th className="p-4 font-semibold text-gray-600">Hạn sử dụng</th>
+                <th className="p-4 font-semibold text-gray-600">Giá bán</th>
+                <th className="p-4 font-semibold text-gray-600">Tồn kho</th>
+                <th className="p-4 font-semibold text-gray-600">Trạng thái</th>
+                <th className="p-4 font-semibold text-gray-600 text-center">
+                  Thao tác
+                </th>
               </tr>
-            ) : (
-              batches.map((batch) => {
-                const status = getStatusStyle(batch.quantity, batch.expiryDate);
-                return (
-                  <tr
-                    key={batch.id}
-                    className="border-b border-gray-50 hover:bg-gray-50/50 transition"
-                  >
-                    <td className="p-4 font-medium text-emerald-600">
-                      {batch.productName}
-                    </td>
-                    <td className="p-4 text-gray-600">
-                      {new Date(batch.harvestDate).toLocaleDateString("vi-VN")}
-                    </td>
-                    <td className="p-4 text-gray-600">
-                      {new Date(batch.expiryDate).toLocaleDateString("vi-VN")}
-                    </td>
-                    <td className="p-4 font-semibold text-gray-800">
-                      {batch.price.toLocaleString("vi-VN")}đ
-                    </td>
-                    <td className="p-4 font-medium text-gray-800">
-                      {batch.quantity}
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}
-                      >
-                        {status.text}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleOpenEditModal(batch)}
-                          className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
-                          title="Sửa lô hàng"
+            </thead>
+            <tbody>
+              {batches.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-6 text-center text-gray-500">
+                    Chưa có lô hàng nào.
+                  </td>
+                </tr>
+              ) : (
+                batches.map((batch) => {
+                  const status = getStatusStyle(
+                    batch.quantity,
+                    batch.expiryDate,
+                  );
+                  return (
+                    <tr
+                      key={batch.id}
+                      className="border-b border-gray-50 hover:bg-gray-50/50 transition"
+                    >
+                      <td className="p-4">
+                        <div className="font-semibold text-gray-900">
+                          {batch.productName}
+                        </div>
+                        <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/80 inline-block mt-1">
+                          {formatBatchCode(
+                            batch.productName,
+                            batch.harvestDate,
+                            batch.id,
+                          )}
+                        </span>
+                      </td>
+                      <td className="p-4 text-gray-600">
+                        {new Date(batch.harvestDate).toLocaleDateString(
+                          "vi-VN",
+                        )}
+                      </td>
+                      <td className="p-4 text-gray-600">
+                        {new Date(batch.expiryDate).toLocaleDateString("vi-VN")}
+                      </td>
+                      <td className="p-4 font-semibold text-gray-800">
+                        {batch.price.toLocaleString("vi-VN")}đ
+                      </td>
+                      <td className="p-4 font-medium text-gray-800">
+                        {batch.quantity}
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}
                         >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDeleteBatch(batch.id, batch.productName)
-                          }
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                          title="Xóa lô hàng"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
+                          {status.text}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleOpenEditModal(batch)}
+                            className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                            title="Sửa lô hàng"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDeleteBatch(batch.id, batch.productName)
+                            }
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                            title="Xóa lô hàng"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
           </table>
         </div>
       </div>

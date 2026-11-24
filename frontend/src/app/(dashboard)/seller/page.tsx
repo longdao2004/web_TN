@@ -18,6 +18,7 @@ import {
 import { statisticService } from "@/services/statistic.service";
 import { storeService } from "@/services/store.service";
 import { productService } from "@/services/product.service";
+import { formatOrderCode, formatBatchCode, formatProductCode } from "@/utils/order";
 
 /* ================================================================== */
 /* HẰNG SỐ CẤU HÌNH & BẢN ĐỒ DỮ LIỆU                                  */
@@ -33,11 +34,46 @@ const PERIODS = [
 
 // Các trạng thái đơn hàng: [key, nhãn, icon, class khung, class icon, class số]
 const FUNNEL = [
-  ["pending", "Chờ xác nhận", Clock, "bg-amber-50/60 border-amber-100", "text-amber-600", "text-amber-700"],
-  ["packing", "Đang đóng gói", Package, "bg-indigo-50/60 border-indigo-100", "text-indigo-600", "text-indigo-700"],
-  ["shipping", "Đang giao hàng", Truck, "bg-blue-50/60 border-blue-100", "text-blue-600", "text-blue-700"],
-  ["completed", "Giao thành công", CheckCircle, "bg-emerald-50/60 border-emerald-100", "text-emerald-600", "text-emerald-700"],
-  ["cancelled", "Đã hủy", XCircle, "bg-gray-50 border-gray-200/70", "text-gray-400", "text-gray-600"],
+  [
+    "pending",
+    "Chờ xác nhận",
+    Clock,
+    "bg-amber-50/60 border-amber-100",
+    "text-amber-600",
+    "text-amber-700",
+  ],
+  [
+    "packing",
+    "Đang đóng gói",
+    Package,
+    "bg-indigo-50/60 border-indigo-100",
+    "text-indigo-600",
+    "text-indigo-700",
+  ],
+  [
+    "shipping",
+    "Đang giao hàng",
+    Truck,
+    "bg-blue-50/60 border-blue-100",
+    "text-blue-600",
+    "text-blue-700",
+  ],
+  [
+    "completed",
+    "Giao thành công",
+    CheckCircle,
+    "bg-emerald-50/60 border-emerald-100",
+    "text-emerald-600",
+    "text-emerald-700",
+  ],
+  [
+    "cancelled",
+    "Đã hủy",
+    XCircle,
+    "bg-gray-50 border-gray-200/70",
+    "text-gray-400",
+    "text-gray-600",
+  ],
 ] as const;
 
 // Map trạng thái đơn hàng sang tiếng Việt khi xuất file CSV đối soát
@@ -80,7 +116,7 @@ function exportOrdersCSV(data: any) {
     ];
 
     const rows = orders.map((o: any) => [
-      `"${o.id}"`,
+      `"${formatOrderCode(o.id, o.createdAt)}"`,
       `"${new Date(o.createdAt).toLocaleString("vi-VN")}"`,
       `"${o.customerName}"`,
       `"${o.phone}"`,
@@ -91,14 +127,17 @@ function exportOrdersCSV(data: any) {
     ]);
 
     // \uFEFF = BOM giúp Microsoft Excel nhận diện đúng bảng mã UTF-8 tiếng Việt
-    const csv = "\uFEFF" + [headers, ...rows].map((r: any) => r.join(",")).join("\r\n");
+    const csv =
+      "\uFEFF" + [headers, ...rows].map((r: any) => r.join(",")).join("\r\n");
 
     const shop = (data?.storeName || "Nong_San").replace(/[^a-zA-Z0-9]/g, "_");
     const day = new Date().toISOString().split("T")[0];
 
     // Tạo link tải file ảo
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    link.href = URL.createObjectURL(
+      new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+    );
     link.download = `Bao_cao_don_hang_${shop}_${day}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
@@ -130,13 +169,19 @@ function exportProductsCSV(products: any[], storeName: string) {
 
     // Tính toán các chỉ số tổng quan ở đầu file báo cáo
     const totalSKU = products.length;
-    const activeCount = products.filter((p) => !p.isExpired && p.stock > 0).length;
-    const outOfStockCount = products.filter((p) => !p.isExpired && p.stock <= 0).length;
+    const activeCount = products.filter(
+      (p) => !p.isExpired && p.stock > 0,
+    ).length;
+    const outOfStockCount = products.filter(
+      (p) => !p.isExpired && p.stock <= 0,
+    ).length;
     const expiredCount = products.filter((p) => p.isExpired).length;
-    const certifiedCount = products.filter((p) => p.certificates?.length > 0).length;
+    const certifiedCount = products.filter(
+      (p) => p.certificates?.length > 0,
+    ).length;
     const totalInventoryValue = products.reduce(
       (sum: number, p: any) => sum + (p.stock || 0) * (p.price || 0),
-      0
+      0,
     );
 
     // Phần 1: Bảng tóm tắt tổng quan danh mục nông sản
@@ -150,8 +195,12 @@ function exportProductsCSV(products: any[], storeName: string) {
         escCSV(`Hết date toàn bộ: ${expiredCount}`),
       ],
       [
-        escCSV(`Sản phẩm có chứng nhận (VietGAP/OCOP): ${certifiedCount}/${totalSKU}`),
-        escCSV(`Tổng giá trị tồn kho khả dụng: ${totalInventoryValue.toLocaleString("vi-VN")} VNĐ`),
+        escCSV(
+          `Sản phẩm có chứng nhận (VietGAP/OCOP): ${certifiedCount}/${totalSKU}`,
+        ),
+        escCSV(
+          `Tổng giá trị tồn kho khả dụng: ${totalInventoryValue.toLocaleString("vi-VN")} VNĐ`,
+        ),
       ],
       [], // Dòng trống ngăn cách
     ];
@@ -196,7 +245,7 @@ function exportProductsCSV(products: any[], storeName: string) {
       const ratingText = `${p.rating || 5} sao (${p.reviewCount || 0} lượt)`;
 
       return [
-        escCSV(`SP-${p.id ? p.id.substring(0, 8).toUpperCase() : ""}`),
+        escCSV(formatProductCode(p.name, p.id)),
         escCSV(p.name),
         escCSV(p.category || "Chưa phân loại"),
         escCSV(p.unit || "kg"),
@@ -226,7 +275,10 @@ function exportProductsCSV(products: any[], storeName: string) {
     const cleanShop = storeName.replace(/[^a-zA-Z0-9]/g, "_");
     const fileDate = new Date().toISOString().split("T")[0];
     link.href = url;
-    link.setAttribute("download", `Bao_cao_san_pham_${cleanShop}_${fileDate}.csv`);
+    link.setAttribute(
+      "download",
+      `Bao_cao_san_pham_${cleanShop}_${fileDate}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -263,10 +315,12 @@ function exportBatchesCSV(batches: any[], storeName: string) {
       actionPlan = "Đã bán hết - Lưu lịch sử truy xuất";
     } else if (expDate.getTime() < today.getTime()) {
       riskLevel = "ĐÃ QUÁ HẠN SỬ DỤNG";
-      actionPlan = "Tiêu hủy ngay khỏi kho lạnh (Tránh lây nấm mốc) & Lập biên bản hao hụt";
+      actionPlan =
+        "Tiêu hủy ngay khỏi kho lạnh (Tránh lây nấm mốc) & Lập biên bản hao hụt";
     } else if (daysLeft <= 7) {
       riskLevel = "CẬN DATE (<= 7 NGÀY)";
-      actionPlan = "Chạy Flash Sale giảm giá 30%-50% / Ưu tiên xuất giao trước (FEFO)";
+      actionPlan =
+        "Chạy Flash Sale giảm giá 30%-50% / Ưu tiên xuất giao trước (FEFO)";
     }
 
     return {
@@ -276,7 +330,8 @@ function exportBatchesCSV(batches: any[], storeName: string) {
       price,
       totalValue,
       isExpired: stock > 0 && expDate.getTime() < today.getTime(),
-      isExpiringSoon: stock > 0 && expDate.getTime() >= today.getTime() && daysLeft <= 7,
+      isExpiringSoon:
+        stock > 0 && expDate.getTime() >= today.getTime() && daysLeft <= 7,
       riskLevel,
       actionPlan,
     };
@@ -285,19 +340,34 @@ function exportBatchesCSV(batches: any[], storeName: string) {
   try {
     const expiredList = enrichedBatches.filter((b) => b.isExpired);
     const expiringSoonList = enrichedBatches.filter((b) => b.isExpiringSoon);
-    const expiredLossValue = expiredList.reduce((sum: number, b: any) => sum + b.totalValue, 0);
-    const expiringRiskValue = expiringSoonList.reduce((sum: number, b: any) => sum + b.totalValue, 0);
+    const expiredLossValue = expiredList.reduce(
+      (sum: number, b: any) => sum + b.totalValue,
+      0,
+    );
+    const expiringRiskValue = expiringSoonList.reduce(
+      (sum: number, b: any) => sum + b.totalValue,
+      0,
+    );
 
     const summaryLines = [
       [escCSV("BÁO CÁO KIỂM KÊ TOÀN BỘ LÔ HÀNG & HẠN SỬ DỤNG (CHUẨN FEFO)")],
-      [escCSV(`Cửa hàng: ${storeName}`), escCSV(`Ngày lập báo cáo: ${today.toLocaleDateString("vi-VN")}`)],
       [
-        escCSV(`Lô đã quá hạn (Cần tiêu hủy): ${expiredList.length} lô`),
-        escCSV(`Thiệt hại ước tính: ${expiredLossValue.toLocaleString("vi-VN")} VNĐ`),
+        escCSV(`Cửa hàng: ${storeName}`),
+        escCSV(`Ngày lập báo cáo: ${today.toLocaleDateString("vi-VN")}`),
       ],
       [
-        escCSV(`Lô cận date <= 7 ngày (Cần xả hàng gấp): ${expiringSoonList.length} lô`),
-        escCSV(`Giá trị tiền kẹt cần cứu vãn: ${expiringRiskValue.toLocaleString("vi-VN")} VNĐ`),
+        escCSV(`Lô đã quá hạn (Cần tiêu hủy): ${expiredList.length} lô`),
+        escCSV(
+          `Thiệt hại ước tính: ${expiredLossValue.toLocaleString("vi-VN")} VNĐ`,
+        ),
+      ],
+      [
+        escCSV(
+          `Lô cận date <= 7 ngày (Cần xả hàng gấp): ${expiringSoonList.length} lô`,
+        ),
+        escCSV(
+          `Giá trị tiền kẹt cần cứu vãn: ${expiringRiskValue.toLocaleString("vi-VN")} VNĐ`,
+        ),
       ],
       [], // Dòng trống ngăn cách
     ];
@@ -317,11 +387,15 @@ function exportBatchesCSV(batches: any[], storeName: string) {
     ];
 
     const rows = enrichedBatches.map((b: any) => [
-      escCSV(`LO-${b.id ? b.id.substring(0, 8).toUpperCase() : ""}`),
+      escCSV(formatBatchCode(b.productName, b.harvestDate, b.id)),
       escCSV(b.productName),
       escCSV(new Date(b.harvestDate).toLocaleDateString("vi-VN")),
       escCSV(new Date(b.expiryDate).toLocaleDateString("vi-VN")),
-      escCSV(b.daysLeft < 0 ? `Quá hạn ${Math.abs(b.daysLeft)} ngày` : `Còn ${b.daysLeft} ngày`),
+      escCSV(
+        b.daysLeft < 0
+          ? `Quá hạn ${Math.abs(b.daysLeft)} ngày`
+          : `Còn ${b.daysLeft} ngày`,
+      ),
       b.stock,
       escCSV(b.unit),
       b.price,
@@ -345,7 +419,10 @@ function exportBatchesCSV(batches: any[], storeName: string) {
     const fileDate = today.toISOString().split("T")[0];
 
     link.href = url;
-    link.setAttribute("download", `Bao_cao_lo_hang_${cleanShop}_${fileDate}.csv`);
+    link.setAttribute(
+      "download",
+      `Bao_cao_lo_hang_${cleanShop}_${fileDate}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -361,16 +438,27 @@ function exportBatchesCSV(batches: any[], storeName: string) {
 /* ================================================================== */
 
 // Thẻ hiển thị chỉ số quan trọng (KPI Card)
-function StatCard({ label, value, sub, icon: Icon, iconCls = "", valueCls = "text-gray-900" }: any) {
+function StatCard({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  iconCls = "",
+  valueCls = "text-gray-900",
+}: any) {
   return (
     <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          {label}
+        </p>
         <p className={`text-2xl font-bold mt-1 ${valueCls}`}>{value}</p>
         <div className="text-xs text-gray-400 mt-1">{sub}</div>
       </div>
       {Icon && (
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconCls}`}>
+        <div
+          className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconCls}`}
+        >
           <Icon className="w-6 h-6" />
         </div>
       )}
@@ -379,16 +467,31 @@ function StatCard({ label, value, sub, icon: Icon, iconCls = "", valueCls = "tex
 }
 
 // Đường dẫn nhanh có icon mũi tên điều hướng
-function ArrowLink({ href, children, cls = "text-emerald-600 hover:text-emerald-700" }: any) {
+function ArrowLink({
+  href,
+  children,
+  cls = "text-emerald-600 hover:text-emerald-700",
+}: any) {
   return (
-    <Link href={href} className={`text-xs font-medium hover:underline inline-flex items-center gap-1 ${cls}`}>
+    <Link
+      href={href}
+      className={`text-xs font-medium hover:underline inline-flex items-center gap-1 ${cls}`}
+    >
       {children} <ArrowRight className="w-3 h-3" />
     </Link>
   );
 }
 
 // Khung chứa nội dung tiêu chuẩn (Section Card)
-function Section({ title, icon: Icon, iconCls = "", desc, link, right, children }: any) {
+function Section({
+  title,
+  icon: Icon,
+  iconCls = "",
+  desc,
+  link,
+  right,
+  children,
+}: any) {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
       <div className="flex items-start justify-between gap-2 mb-4">
@@ -471,7 +574,7 @@ export default function SellerDashboardPage() {
       allBatches.sort(
         (a, b) =>
           new Date(b.createdAt || b.harvestDate).getTime() -
-          new Date(a.createdAt || a.harvestDate).getTime()
+          new Date(a.createdAt || a.harvestDate).getTime(),
       );
 
       const shop = storeName || "Nong_San";
@@ -499,7 +602,9 @@ export default function SellerDashboardPage() {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[450px] text-gray-500">
         <div className="w-9 h-9 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-3" />
-        <p className="text-sm font-medium">Đang tổng hợp dữ liệu thống kê cửa hàng...</p>
+        <p className="text-sm font-medium">
+          Đang tổng hợp dữ liệu thống kê cửa hàng...
+        </p>
       </div>
     );
   }
@@ -519,7 +624,10 @@ export default function SellerDashboardPage() {
   } = data || {};
 
   // Doanh thu lớn nhất trong 7 ngày để tính chiều cao tỷ lệ % cho cột biểu đồ
-  const maxDayRevenue = Math.max(...revenueChart7Days.map((d: any) => d.revenue), 1);
+  const maxDayRevenue = Math.max(
+    ...revenueChart7Days.map((d: any) => d.revenue),
+    1,
+  );
 
   // Tổng hợp danh sách cảnh báo kho nông sản (quá hạn, cận date, tồn thấp)
   const alertList = [
@@ -552,7 +660,9 @@ export default function SellerDashboardPage() {
   // Kiểu dáng của nút chọn khoảng thời gian
   const periodBtn = (active: boolean) =>
     `px-3 py-1.5 rounded-lg font-medium transition-all ${
-      active ? "bg-white text-emerald-700 shadow-sm font-bold" : "text-gray-600 hover:text-gray-900"
+      active
+        ? "bg-white text-emerald-700 shadow-sm font-bold"
+        : "text-gray-600 hover:text-gray-900"
     }`;
 
   return (
@@ -563,13 +673,16 @@ export default function SellerDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-gray-900">Quản lý Thống kê & Phân tích</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Quản lý Thống kê & Phân tích
+            </h1>
             <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
               {storeName}
             </span>
           </div>
           <p className="text-gray-500 text-sm mt-0.5">
-            Báo cáo hiệu quả kinh doanh, tiến độ xử lý đơn hàng và cảnh báo kho nông sản
+            Báo cáo hiệu quả kinh doanh, tiến độ xử lý đơn hàng và cảnh báo kho
+            nông sản
           </p>
         </div>
 
@@ -577,7 +690,11 @@ export default function SellerDashboardPage() {
           {/* Bộ lọc khoảng thời gian thống kê */}
           <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl p-1 text-xs">
             {PERIODS.map(([value, label]) => (
-              <button key={value} onClick={() => setPeriod(value)} className={periodBtn(period === value)}>
+              <button
+                key={value}
+                onClick={() => setPeriod(value)}
+                className={periodBtn(period === value)}
+              >
                 {label}
               </button>
             ))}
@@ -605,7 +722,9 @@ export default function SellerDashboardPage() {
               title="Xuất toàn bộ danh mục sản phẩm, giá bán, tồn kho và chứng nhận OCOP/VietGAP"
             >
               <Package className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{isExportingProducts ? "Đang tải..." : "Xuất Sản phẩm"}</span>
+              <span>
+                {isExportingProducts ? "Đang tải..." : "Xuất Sản phẩm"}
+              </span>
             </button>
           </div>
         </div>
@@ -633,7 +752,11 @@ export default function SellerDashboardPage() {
           label="Đơn chờ duyệt"
           value={pendingOrders}
           valueCls="text-amber-600"
-          sub={<ArrowLink href="/seller/orders" cls="text-amber-600">Xử lý ngay</ArrowLink>}
+          sub={
+            <ArrowLink href="/seller/orders" cls="text-amber-600">
+              Xử lý ngay
+            </ArrowLink>
+          }
           icon={Clock}
           iconCls="bg-amber-50 text-amber-600"
         />
@@ -644,7 +767,9 @@ export default function SellerDashboardPage() {
           sub={
             <ArrowLink href="/seller/batches" cls="text-rose-600">
               {expiredBatchesCount > 0 ? `${expiredBatchesCount} hết hạn ` : ""}
-              {expiringBatchesCount > 0 ? `${expiringBatchesCount} cận date` : "Kho an toàn"}
+              {expiringBatchesCount > 0
+                ? `${expiringBatchesCount} cận date`
+                : "Kho an toàn"}
             </ArrowLink>
           }
           icon={AlertTriangle}
@@ -657,15 +782,25 @@ export default function SellerDashboardPage() {
       {/* ============================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Khối 1: Tiến độ xử lý đơn hàng theo phễu trạng thái */}
-        <Section title="Tiến độ Xử lý Đơn hàng" link={{ href: "/seller/orders", label: "Xem tất cả" }}>
+        <Section
+          title="Tiến độ Xử lý Đơn hàng"
+          link={{ href: "/seller/orders", label: "Xem tất cả" }}
+        >
           <div className="space-y-3">
             {FUNNEL.map(([key, label, Icon, wrapCls, iconCls, numCls]) => (
-              <div key={key} className={`flex items-center justify-between p-3 rounded-xl border ${wrapCls}`}>
+              <div
+                key={key}
+                className={`flex items-center justify-between p-3 rounded-xl border ${wrapCls}`}
+              >
                 <div className="flex items-center gap-3">
                   <Icon className={`w-5 h-5 ${iconCls}`} />
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {label}
+                  </span>
                 </div>
-                <span className={`text-base font-bold ${numCls}`}>{orderStatusFunnel[key] ?? 0} đơn</span>
+                <span className={`text-base font-bold ${numCls}`}>
+                  {orderStatusFunnel[key] ?? 0} đơn
+                </span>
               </div>
             ))}
           </div>
@@ -684,7 +819,9 @@ export default function SellerDashboardPage() {
                 title="Xuất danh sách kiểm kê kho, phân loại hạn dùng và cảnh báo hao hụt theo chuẩn FEFO"
               >
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                <span>{isExportingBatches ? "Đang tải..." : "Xuất Báo cáo Kho"}</span>
+                <span>
+                  {isExportingBatches ? "Đang tải..." : "Xuất Báo cáo Kho"}
+                </span>
               </button>
               <span className="text-gray-300">|</span>
               <ArrowLink href="/seller/batches">Quản lý Lô</ArrowLink>
@@ -696,19 +833,39 @@ export default function SellerDashboardPage() {
               // Trạng thái an toàn: không có lô hàng nào cần cảnh báo
               <div className="flex flex-col items-center justify-center py-8 text-center text-gray-400">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-2" />
-                <p className="text-sm font-medium text-gray-700">Kho hàng đang rất an toàn!</p>
+                <p className="text-sm font-medium text-gray-700">
+                  Kho hàng đang rất an toàn!
+                </p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   Không có lô hàng nào hết hạn, cận date hoặc sắp hết tồn kho.
                 </p>
               </div>
             ) : (
               alertList.map((item: any, idx: number) => (
-                <div key={idx} className={`p-3 border rounded-xl flex items-center justify-between ${item.cls}`}>
+                <div
+                  key={idx}
+                  className={`p-3 border rounded-xl flex items-center justify-between ${item.cls}`}
+                >
                   <div>
-                    <p className="text-sm font-bold text-gray-900">{item.productName}</p>
-                    <p className={`text-xs mt-0.5 ${item.textCls}`}>{item.text}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-gray-900">
+                        {item.productName}
+                      </p>
+                      <span className="text-[10px] font-mono font-bold text-rose-700 bg-white/80 px-1.5 py-0.2 rounded border border-rose-200">
+                        {formatBatchCode(
+                          item.productName,
+                          item.expiryDate,
+                          item.batchId,
+                        )}
+                      </span>
+                    </div>
+                    <p className={`text-xs mt-0.5 ${item.textCls}`}>
+                      {item.text}
+                    </p>
                   </div>
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${item.badgeCls}`}>
+                  <span
+                    className={`text-xs font-bold px-2.5 py-1 rounded-md ${item.badgeCls}`}
+                  >
                     {item.badge}
                   </span>
                 </div>
@@ -729,7 +886,9 @@ export default function SellerDashboardPage() {
         right={
           <div className="text-xs text-gray-500 font-medium">
             Cao nhất:{" "}
-            <span className="font-bold text-emerald-600">{maxDayRevenue > 1 ? fmt(maxDayRevenue) : "0đ"}</span>
+            <span className="font-bold text-emerald-600">
+              {maxDayRevenue > 1 ? fmt(maxDayRevenue) : "0đ"}
+            </span>
           </div>
         }
       >
@@ -740,16 +899,28 @@ export default function SellerDashboardPage() {
             {revenueChart7Days.map((item: any, idx: number) => {
               // Chiều cao cột theo %, tối thiểu 8% nếu có doanh thu, 4% nếu bằng 0
               const height =
-                item.revenue > 0 ? Math.max(Math.round((item.revenue / maxDayRevenue) * 100), 8) : 4;
+                item.revenue > 0
+                  ? Math.max(
+                      Math.round((item.revenue / maxDayRevenue) * 100),
+                      8,
+                    )
+                  : 4;
 
               return (
-                <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                <div
+                  key={idx}
+                  className="flex-1 flex flex-col items-center group relative h-full justify-end"
+                >
                   {/* Tooltip hiển thị đầy đủ ngày tháng, doanh thu nổi bật và mũi tên trỏ xuống cột */}
                   {/* Sử dụng filter drop-shadow-md để bóng ôm sát viền thực tế của cả hộp lẫn mũi tên */}
                   <div className="absolute -top-14 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20 flex flex-col items-center whitespace-nowrap filter drop-shadow-md">
                     <div className="bg-gray-900 text-white text-[11px] font-semibold py-1.5 px-3 rounded-lg flex flex-col items-center text-center">
-                      <p className="font-bold text-emerald-400">{item.date} ({item.dayName}): {fmt(item.revenue)}</p>
-                      <p className="text-[10px] text-gray-300 font-normal mt-0.5">{item.ordersCount} đơn thành công</p>
+                      <p className="font-bold text-emerald-400">
+                        {item.date} ({item.dayName}): {fmt(item.revenue)}
+                      </p>
+                      <p className="text-[10px] text-gray-300 font-normal mt-0.5">
+                        {item.ordersCount} đơn thành công
+                      </p>
                     </div>
                     {/* Mũi tên tam giác hướng xuống đầu cột, overlap -mt-px để liền khối hoàn hảo */}
                     <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-gray-900 -mt-px" />
@@ -780,7 +951,9 @@ export default function SellerDashboardPage() {
           <div className="flex items-center min-w-[500px] justify-between gap-2 sm:gap-6 pt-3">
             {revenueChart7Days.map((item: any, idx: number) => (
               <div key={idx} className="flex-1 text-center">
-                <p className="text-xs font-bold text-gray-700">{item.dayName}</p>
+                <p className="text-xs font-bold text-gray-700">
+                  {item.dayName}
+                </p>
                 <p className="text-[10px] text-gray-400">{item.date}</p>
               </div>
             ))}

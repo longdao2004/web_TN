@@ -12,6 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { orderService } from "@/services/order.service";
+import { formatOrderCode } from "@/utils/order";
 
 export default function SellerOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -88,108 +89,113 @@ export default function SellerOrdersPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left whitespace-nowrap">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="p-4 font-semibold text-gray-600">Mã Đơn</th>
-              <th className="p-4 font-semibold text-gray-600">Ngày đặt</th>
-              <th className="p-4 font-semibold text-gray-600">Khách hàng</th>
-              <th className="p-4 font-semibold text-gray-600">Tổng tiền</th>
-              <th className="p-4 font-semibold text-gray-600">Trạng thái</th>
-              <th className="p-4 font-semibold text-gray-600 text-center">
-                Thao tác
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.length === 0 ? (
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <td colSpan={6} className="p-6 text-center text-gray-500">
-                  Chưa có đơn hàng nào.
-                </td>
+                <th className="p-4 font-semibold text-gray-600">Mã Đơn</th>
+                <th className="p-4 font-semibold text-gray-600">Ngày đặt</th>
+                <th className="p-4 font-semibold text-gray-600">Khách hàng</th>
+                <th className="p-4 font-semibold text-gray-600">Tổng tiền</th>
+                <th className="p-4 font-semibold text-gray-600">Trạng thái</th>
+                <th className="p-4 font-semibold text-gray-600 text-center">
+                  Thao tác
+                </th>
               </tr>
-            ) : (
-              orders.map((order) => {
-                const statusObj = getStatusDisplay(order.status);
-                const orderAgeMs = Date.now() - new Date(order.createdAt).getTime();
-                const isPendingDelayed =
-                  order.status === "PENDING" && orderAgeMs > 24 * 60 * 60 * 1000;
-                const isPackingDelayed =
-                  order.status === "PACKING" && orderAgeMs > 48 * 60 * 60 * 1000;
+            </thead>
+            <tbody>
+              {orders.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-6 text-center text-gray-500">
+                    Chưa có đơn hàng nào.
+                  </td>
+                </tr>
+              ) : (
+                orders.map((order) => {
+                  const statusObj = getStatusDisplay(order.status);
+                  const orderAgeMs =
+                    Date.now() - new Date(order.createdAt).getTime();
+                  const isPendingDelayed =
+                    order.status === "PENDING" &&
+                    orderAgeMs > 24 * 60 * 60 * 1000;
+                  const isPackingDelayed =
+                    order.status === "PACKING" &&
+                    orderAgeMs > 48 * 60 * 60 * 1000;
 
-                return (
-                  <tr
-                    key={order.id}
-                    className="border-b border-gray-50 hover:bg-gray-50/50 transition"
-                  >
-                    <td className="p-4 font-medium text-gray-800">
-                      <div className="flex flex-col gap-1 items-start">
-                        {/* TẠO MÃ ĐƠN HÀNG: Cắt 8 ký tự đầu của UUID làm mã đơn hàng hiển thị */}
-                        <span>{order.id.slice(0, 8).toUpperCase()}</span>
-                        {isPendingDelayed && (
-                          <span
-                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200 animate-pulse"
-                            title="Đơn hàng chờ xác nhận quá 24h!"
-                          >
-                            ⏰ Chậm xác nhận (&gt;24h)
+                  return (
+                    <tr
+                      key={order.id}
+                      className="border-b border-gray-50 hover:bg-gray-50/50 transition"
+                    >
+                      <td className="p-4 font-medium text-gray-800">
+                        <div className="flex flex-col gap-1 items-start">
+                          {/* TẠO MÃ ĐƠN HÀNG: Cắt 8 ký tự đầu của UUID làm mã đơn hàng hiển thị */}
+                          <span className="font-semibold">
+                            {formatOrderCode(order.id, order.createdAt)}
                           </span>
-                        )}
-                        {isPackingDelayed && (
-                          <span
-                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200"
-                            title="Đơn hàng đóng gói quá 48h chưa bàn giao vận chuyển!"
-                          >
-                            ⚠️ Chậm gửi hàng (&gt;48h)
-                          </span>
-                        )}
-                        {order.adminRemind &&
-                          (order.status === "PENDING" ||
-                            order.status === "PACKING") && (
+                          {isPendingDelayed && (
                             <span
-                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 animate-pulse"
-                              title={order.adminRemind}
+                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200 animate-pulse"
+                              title="Đơn hàng chờ xác nhận quá 24h!"
                             >
-                              📢 Admin nhắc xử lý gấp
+                              ⏰ Chậm xác nhận (&gt;24h)
                             </span>
                           )}
-                      </div>
-                    </td>
-                    <td className="p-4 text-gray-500">
-                      {new Date(order.createdAt).toLocaleString("vi-VN")}
-                    </td>
-                    <td className="p-4 text-gray-800 font-medium">
-                      {order.user?.fullName || "Khách Ẩn danh"}
-                    </td>
-                    <td className="p-4 font-bold text-emerald-600">
-                      {(
-                        order.items?.reduce(
-                          // Khai báo kiểu (sum: number, item: any) để tránh lỗi TypeScript noImplicitAny
-                          (sum: number, item: any) =>
-                            sum + item.quantity * item.priceAtPurchase,
-                          0,
-                        ) || 0
-                      ).toLocaleString("vi-VN")}
-                      đ
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${statusObj.color}`}
-                      >
-                        {statusObj.text}
-                      </span>
-                    </td>
-                    <td className="p-4 flex items-center justify-center">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium transition"
-                      >
-                        <Eye className="w-4 h-4" /> Chi tiết
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
+                          {isPackingDelayed && (
+                            <span
+                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200"
+                              title="Đơn hàng đóng gói quá 48h chưa bàn giao vận chuyển!"
+                            >
+                              ⚠️ Chậm gửi hàng (&gt;48h)
+                            </span>
+                          )}
+                          {order.adminRemind &&
+                            (order.status === "PENDING" ||
+                              order.status === "PACKING") && (
+                              <span
+                                className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 animate-pulse"
+                                title={order.adminRemind}
+                              >
+                                📢 Admin nhắc xử lý gấp
+                              </span>
+                            )}
+                        </div>
+                      </td>
+                      <td className="p-4 text-gray-500">
+                        {new Date(order.createdAt).toLocaleString("vi-VN")}
+                      </td>
+                      <td className="p-4 text-gray-800 font-medium">
+                        {order.user?.fullName || "Khách Ẩn danh"}
+                      </td>
+                      <td className="p-4 font-bold text-emerald-600">
+                        {(
+                          order.items?.reduce(
+                            // Khai báo kiểu (sum: number, item: any) để tránh lỗi TypeScript noImplicitAny
+                            (sum: number, item: any) =>
+                              sum + item.quantity * item.priceAtPurchase,
+                            0,
+                          ) || 0
+                        ).toLocaleString("vi-VN")}
+                        đ
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${statusObj.color}`}
+                        >
+                          {statusObj.text}
+                        </span>
+                      </td>
+                      <td className="p-4 flex items-center justify-center">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium transition"
+                        >
+                          <Eye className="w-4 h-4" /> Chi tiết
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
           </table>
         </div>
       </div>
@@ -206,7 +212,7 @@ export default function SellerOrdersPage() {
                 <p className="text-sm text-gray-500 mt-1">
                   Mã đơn:{" "}
                   <span className="font-semibold text-emerald-600">
-                    {selectedOrder.id}
+                    {formatOrderCode(selectedOrder.id, selectedOrder.createdAt)}
                   </span>
                 </p>
               </div>
@@ -231,7 +237,9 @@ export default function SellerOrdersPage() {
                 </p>
                 <p className="text-sm text-gray-700 flex items-center gap-2">
                   <Phone className="w-4 h-4 text-gray-400" />{" "}
-                  {selectedOrder.phone || selectedOrder.user?.phone || "Chưa cung cấp"}
+                  {selectedOrder.phone ||
+                    selectedOrder.user?.phone ||
+                    "Chưa cung cấp"}
                 </p>
                 <p className="text-sm text-gray-700 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-gray-400" />{" "}
@@ -265,7 +273,9 @@ export default function SellerOrdersPage() {
                         : ""}
                   </p>
                   <p className="text-sm text-rose-700 font-medium">
-                    Lý do: {selectedOrder.cancelReason || "Đã hoàn trả tồn kho về cửa hàng."}
+                    Lý do:{" "}
+                    {selectedOrder.cancelReason ||
+                      "Đã hoàn trả tồn kho về cửa hàng."}
                   </p>
                 </div>
               )}

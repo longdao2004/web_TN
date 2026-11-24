@@ -25,6 +25,7 @@ import {
 import { orderService } from "@/services/order.service";
 import { toast } from "sonner";
 import { TimelineStep } from "@/types/order";
+import { formatOrderCode } from "@/utils/order";
 
 // [Thực tế] Hàm sinh Timeline các bước dựa trên trạng thái đơn hàng thật trong Database
 const generateOrderTimeline = (status: string): TimelineStep[] => {
@@ -85,7 +86,7 @@ export default function OrderTrackingPage() {
         setOrder({
           id: foundOrder.id,
           // TẠO MÃ ĐƠN HÀNG: Cắt phần đầu UUID, in hoa và thêm tiền tố 'AGRI-' (Ví dụ: AGRI-A1B2C3D4)
-          code: `AGRI-${foundOrder.id.split("-")[0].toUpperCase()}`,
+          code: formatOrderCode(foundOrder.id, foundOrder.createdAt),
           status: foundOrder.status,
           createdAt: new Intl.DateTimeFormat("vi-VN", {
             day: "2-digit",
@@ -115,7 +116,7 @@ export default function OrderTrackingPage() {
             name: foundOrder.user?.fullName || "Khách hàng",
             phone: foundOrder.user?.phone || "Không có",
             address: foundOrder.shippingAddress || "Chưa cung cấp",
-            trackingNumber: `AGRI-${foundOrder.id.split("-")[0].toUpperCase()}`,
+            trackingNumber: formatOrderCode(foundOrder.id, foundOrder.createdAt),
           },
           paymentMethod:
             foundOrder.payment?.provider === "VNPAY" || foundOrder.paymentMethod === "VNPAY"

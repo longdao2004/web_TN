@@ -6,6 +6,7 @@ import { Package, Clock, CheckCircle2, XCircle, Truck, Eye } from "lucide-react"
 import { orderService } from "@/services/order.service";
 import { toast } from "sonner";
 import Image from "next/image";
+import { formatOrderCode } from "@/utils/order";
 
 type OrderItem = {
   productId: string;
@@ -104,7 +105,7 @@ export default function OrderHistoryPage() {
                 <p className="text-sm text-gray-500 mb-1">Mã đơn hàng</p>
                 {/* TẠO MÃ ĐƠN HÀNG: Cắt phần đầu UUID trước dấu '-' và viết in hoa */}
                 <p className="font-semibold text-gray-900 text-sm flex items-center gap-2 flex-wrap">
-                  <span>#{order.id.split("-")[0].toUpperCase()}</span>
+                  <span>{formatOrderCode(order.id, order.createdAt)}</span>
                   {order.store?.name && (
                     <span className="font-medium text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                       {order.store.name}

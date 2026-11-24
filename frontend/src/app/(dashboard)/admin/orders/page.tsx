@@ -23,6 +23,7 @@ import {
   Bell,
 } from "lucide-react";
 import { orderService } from "@/services/order.service";
+import { formatOrderCode } from "@/utils/order";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -325,7 +326,7 @@ export default function AdminOrdersPage() {
                       <td className="p-4">
                         <div className="flex flex-col gap-1 items-start">
                           <span className="font-mono text-xs font-bold text-gray-800 bg-gray-100 px-2.5 py-1 rounded-md">
-                            #{order.id.slice(0, 8).toUpperCase()}
+                            {formatOrderCode(order.id, order.createdAt)}
                           </span>
 
                           {/* Cảnh báo: Shop chậm xác nhận quá 24h */}
@@ -452,7 +453,7 @@ export default function AdminOrdersPage() {
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-bold text-gray-900">Chi tiết Đơn hàng</h2>
                   <span className="font-mono text-xs font-bold text-gray-600 bg-white px-2 py-0.5 rounded border border-gray-200">
-                    #{selectedOrder.id.slice(0, 8).toUpperCase()}
+                    {formatOrderCode(selectedOrder.id, selectedOrder.createdAt)}
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-0.5">

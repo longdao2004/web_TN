@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { storeService } from "@/services/store.service";
 import { productService } from "@/services/product.service";
+import { formatProductCode } from "@/utils/order";
 
 export default function SellerProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -11,7 +12,11 @@ export default function SellerProductsPage() {
 
   // Hàm xử lý xóa sản phẩm
   const handleDelete = async (id: string, name: string) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa sản phẩm '${name}' không? Hành động này không thể hoàn tác!`)) {
+    if (
+      confirm(
+        `Bạn có chắc chắn muốn xóa sản phẩm '${name}' không? Hành động này không thể hoàn tác!`,
+      )
+    ) {
       try {
         await productService.deleteProduct(id);
         alert("Đã xóa sản phẩm thành công!");
@@ -66,30 +71,43 @@ export default function SellerProductsPage() {
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 <th className="p-4 font-semibold text-gray-600">Mã SP</th>
-                <th className="p-4 font-semibold text-gray-600">Tên Sản phẩm</th>
+                <th className="p-4 font-semibold text-gray-600">
+                  Tên Sản phẩm
+                </th>
                 <th className="p-4 font-semibold text-gray-600">Danh mục</th>
                 <th className="p-4 font-semibold text-gray-600">Giá bán</th>
                 <th className="p-4 font-semibold text-gray-600">Tồn kho</th>
                 <th className="p-4 font-semibold text-gray-600">Trạng thái</th>
-                <th className="p-4 font-semibold text-gray-600 text-center">Thao tác</th>
+                <th className="p-4 font-semibold text-gray-600 text-center">
+                  Thao tác
+                </th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="border-b border-gray-50 hover:bg-emerald-50/30 transition">
-                  {/* TẠO MÃ SẢN PHẨM: Lấy 8 ký tự đầu của UUID làm mã SP hiển thị trên bảng */}
-                  <td className="p-4 text-gray-500 font-mono text-xs">
-                    {product.id ? product.id.substring(0, 8).toUpperCase() : ""}
+                <tr
+                  key={product.id}
+                  className="border-b border-gray-50 hover:bg-emerald-50/30 transition"
+                >
+                  <td className="p-4">
+                    <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/80">
+                      {formatProductCode(product.name, product.id)}
+                    </span>
                   </td>
-                  <td className="p-4 font-medium text-gray-900">{product.name}</td>
+                  <td className="p-4 font-medium text-gray-900">
+                    {product.name}
+                  </td>
                   <td className="p-4 text-gray-600">{product.category}</td>
                   <td className="p-4">
-                    <div className="font-semibold text-emerald-600">{product.price.toLocaleString()}đ</div>
-                    {product.originalPrice && product.originalPrice > product.price && (
-                      <div className="text-xs text-gray-400 line-through font-normal">
-                        {product.originalPrice.toLocaleString()}đ
-                      </div>
-                    )}
+                    <div className="font-semibold text-emerald-600">
+                      {product.price.toLocaleString()}đ
+                    </div>
+                    {product.originalPrice &&
+                      product.originalPrice > product.price && (
+                        <div className="text-xs text-gray-400 line-through font-normal">
+                          {product.originalPrice.toLocaleString()}đ
+                        </div>
+                      )}
                   </td>
                   <td className="p-4 text-gray-600">{product.stock}</td>
                   <td className="p-4">
@@ -98,11 +116,15 @@ export default function SellerProductsPage() {
                         product.isExpired
                           ? "bg-red-100 text-red-700"
                           : product.stock > 0
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-amber-100 text-amber-700"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-amber-100 text-amber-700"
                       }`}
                     >
-                      {product.isExpired ? "Hết hạn SD" : product.stock > 0 ? "Đang bán" : "Hết hàng"}
+                      {product.isExpired
+                        ? "Hết hạn SD"
+                        : product.stock > 0
+                          ? "Đang bán"
+                          : "Hết hàng"}
                     </span>
                   </td>
                   {/* CĂN GIỮA ĐỒNG BỘ CỘT THAO TÁC */}
