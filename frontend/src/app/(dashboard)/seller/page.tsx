@@ -19,6 +19,12 @@ import { statisticService } from "@/services/statistic.service";
 import { storeService } from "@/services/store.service";
 import { productService } from "@/services/product.service";
 import { formatOrderCode, formatBatchCode, formatProductCode } from "@/utils/order";
+import { ExportDropdown } from "@/components/common/ExportDropdown";
+import {
+  exportWarehouseDocx,
+  exportOrdersDocx,
+  exportProductsDocx,
+} from "@/utils/docxExport";
 
 /* ================================================================== */
 /* HẰNG SỐ CẤU HÌNH & BẢN ĐỒ DỮ LIỆU                                  */
@@ -350,7 +356,7 @@ function exportBatchesCSV(batches: any[], storeName: string) {
     );
 
     const summaryLines = [
-      [escCSV("BÁO CÁO KIỂM KÊ TOÀN BỘ LÔ HÀNG & HẠN SỬ DỤNG (CHUẨN FEFO)")],
+      [escCSV("BÁO CÁO KIỂM KÊ TOÀN BỘ LÔ HÀNG & HẠN SỬ DỤNG")],
       [
         escCSV(`Cửa hàng: ${storeName}`),
         escCSV(`Ngày lập báo cáo: ${today.toLocaleDateString("vi-VN")}`),
@@ -587,6 +593,93 @@ export default function SellerDashboardPage() {
     }
   };
 
+  // 3. Xử lý xuất file Word: Đơn hàng
+  const handleExportOrdersWord = async () => {
+    try {
+      const orders = data?.recentOrdersForExport || [];
+      if (orders.length === 0) return alert("Không có đơn hàng nào trong kỳ này!");
+      const shop = data?.storeName || "Cửa hàng nông sản";
+      await exportOrdersDocx(orders, shop);
+    } catch (e: any) {
+      console.error("Lỗi xuất Word đơn hàng:", e);
+      alert("Lỗi xuất Word: " + e.message);
+    }
+  };
+
+  // 4. Xử lý xuất file Word: Danh mục sản phẩm & Tồn kho
+  const handleExportProductsWord = async () => {
+    try {
+      setIsExportingProducts(true);
+      const prods = await loadStoreProducts();
+      const shop = data?.storeName || "Cửa hàng nông sản";
+      await exportProductsDocx(prods, shop);
+    } catch (e: any) {
+      console.error("Lỗi xuất Word sản phẩm:", e);
+      alert("Lỗi xuất Word: " + e.message);
+    } finally {
+      setIsExportingProducts(false);
+    }
+  };
+
+  // 5. Xử lý xuất file Word: Báo cáo kiểm kê kho & Lô hàng (Chuẩn FEFO)
+  const handleExportBatchesWord = async () => {
+    try {
+      setIsExportingBatches(true);
+      const prods = await loadStoreProducts();
+
+      const enrichedBatches: any[] = [];
+      const today = new Date();
+      prods.forEach((p: any) => {
+        (p.batches || []).forEach((b: any) => {
+          const expDate = new Date(b.expiryDate);
+          const diffMs = expDate.getTime() - today.getTime();
+          const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+          const stock = b.quantity || 0;
+          const isExp = stock > 0 && expDate.getTime() < today.getTime();
+          const isExpSoon =
+            stock > 0 && expDate.getTime() >= today.getTime() && daysLeft <= 7;
+
+          let riskLevel = "AN TOÀN";
+          if (stock <= 0) riskLevel = "HẾT TỒN KHO";
+          else if (isExp) riskLevel = "ĐÃ HẾT HẠN";
+          else if (isExpSoon) riskLevel = "SẮP HẾT HẠN";
+
+          enrichedBatches.push({
+            productName: p.name,
+            batchCode: formatBatchCode(p.name, b.harvestDate, b.id),
+            expiryDate: b.expiryDate,
+            stock,
+            unit: p.unit || "kg",
+            price: b.price || 0,
+            isExpired: isExp,
+            isExpiringSoon: isExpSoon,
+            riskLevel,
+          });
+        });
+      });
+
+      const expiredLossValue = enrichedBatches
+        .filter((b) => b.isExpired)
+        .reduce((s, b) => s + b.stock * b.price, 0);
+      const expiringSoonCount = enrichedBatches.filter(
+        (b) => b.isExpiringSoon,
+      ).length;
+
+      const shop = data?.storeName || "Cửa hàng nông sản";
+      await exportWarehouseDocx(
+        enrichedBatches,
+        expiredLossValue,
+        expiringSoonCount,
+        shop,
+      );
+    } catch (e: any) {
+      console.error("Lỗi xuất Word lô hàng:", e);
+      alert("Lỗi xuất Word: " + e.message);
+    } finally {
+      setIsExportingBatches(false);
+    }
+  };
+
   // Nạp dữ liệu thống kê từ Backend theo khoảng thời gian đã chọn
   useEffect(() => {
     setIsLoading(true);
@@ -705,27 +798,24 @@ export default function SellerDashboardPage() {
           {/* ============================================================ */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Nút 1: Xuất Báo cáo Đơn hàng đối soát */}
-            <button
-              onClick={() => exportOrdersCSV(data)}
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all shadow-sm shadow-emerald-200 active:scale-95 cursor-pointer"
-              title="Xuất danh sách đơn hàng đối soát theo kỳ chọn sang file CSV (mở chuẩn tiếng Việt bằng Excel)"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Xuất Đơn hàng</span>
-            </button>
+            <ExportDropdown
+              label="Xuất Đơn hàng"
+              variant="emerald"
+              onExportCSV={() => exportOrdersCSV(data)}
+              onExportWord={handleExportOrdersWord}
+              title="Xuất danh sách đơn hàng đối soát theo kỳ chọn (hỗ trợ Excel và Word)"
+            />
 
             {/* Nút 2: Xuất Danh mục Sản phẩm & Tồn kho */}
-            <button
-              onClick={handleExportProducts}
-              disabled={isExportingProducts}
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-emerald-50 border border-emerald-600 text-emerald-700 text-xs font-semibold px-3.5 py-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-60"
-              title="Xuất toàn bộ danh mục sản phẩm, giá bán, tồn kho và chứng nhận OCOP/VietGAP"
-            >
-              <Package className="w-3.5 h-3.5 text-emerald-600" />
-              <span>
-                {isExportingProducts ? "Đang tải..." : "Xuất Sản phẩm"}
-              </span>
-            </button>
+            <ExportDropdown
+              label="Xuất Sản phẩm"
+              variant="outline"
+              icon={<Package className="w-3.5 h-3.5 text-emerald-600" />}
+              isLoading={isExportingProducts}
+              onExportCSV={handleExportProducts}
+              onExportWord={handleExportProductsWord}
+              title="Xuất toàn bộ danh mục sản phẩm, giá bán, tồn kho và chứng nhận (hỗ trợ Excel và Word)"
+            />
           </div>
         </div>
       </div>
@@ -812,17 +902,15 @@ export default function SellerDashboardPage() {
           right={
             <div className="flex items-center gap-2">
               {/* Nút Xuất Báo cáo Kiểm kê Lô hàng & Hao hụt Hạn dùng */}
-              <button
-                onClick={handleExportBatches}
-                disabled={isExportingBatches}
-                className="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-60"
-                title="Xuất danh sách kiểm kê kho, phân loại hạn dùng và cảnh báo hao hụt theo chuẩn FEFO"
-              >
-                <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                <span>
-                  {isExportingBatches ? "Đang tải..." : "Xuất Báo cáo Kho"}
-                </span>
-              </button>
+              <ExportDropdown
+                label="Xuất Báo cáo Kho"
+                variant="rose"
+                icon={<AlertTriangle className="w-3.5 h-3.5 text-rose-600" />}
+                isLoading={isExportingBatches}
+                onExportCSV={handleExportBatches}
+                onExportWord={handleExportBatchesWord}
+                title="Xuất biên bản kiểm kê kho và cảnh báo hao hụt theo chuẩn FEFO (hỗ trợ Excel và Word)"
+              />
               <span className="text-gray-300">|</span>
               <ArrowLink href="/seller/batches">Quản lý Lô</ArrowLink>
             </div>
