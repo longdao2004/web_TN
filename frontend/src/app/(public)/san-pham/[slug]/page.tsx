@@ -80,7 +80,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
               <div className="w-full h-px bg-gray-100 my-2"></div>
 
-              <BatchInformation batch={product.batch} />
+              <BatchInformation batch={product.batch} productName={product.name} />
 
               <div className="w-full h-px bg-gray-100 my-2"></div>
 

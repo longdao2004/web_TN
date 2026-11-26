@@ -1,12 +1,14 @@
 import React from "react";
 import { Calendar, PackageOpen, Thermometer, Sparkles, CheckCircle2, Clock } from "lucide-react";
 import { Batch } from "@/types/product-detail";
+import { formatBatchCode } from "@/utils/order";
 
 interface BatchInformationProps {
   batch: Batch;
+  productName?: string;
 }
 
-export const BatchInformation = ({ batch }: BatchInformationProps) => {
+export const BatchInformation = ({ batch, productName }: BatchInformationProps) => {
   // 1. Tính toán số ngày còn lại đến khi hết hạn
   const expiryTime = batch?.expiryDate ? new Date(batch.expiryDate).getTime() : 0;
   const now = Date.now();
@@ -32,8 +34,8 @@ export const BatchInformation = ({ batch }: BatchInformationProps) => {
           <h3 className="text-base font-bold text-gray-900">
             {isExpired ? "Thông tin lô hàng (Đã hết hạn)" : "Đợt thu hoạch mới nhất"}
           </h3>
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white text-gray-600 border border-gray-200 shadow-2xs">
-            Lô: #{batch.id ? batch.id.substring(0, 8).toUpperCase() : "N/A"}
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white text-emerald-800 border border-emerald-200 shadow-2xs font-mono">
+            {formatBatchCode(productName, batch?.harvestDate, batch?.id)}
           </span>
         </div>
 

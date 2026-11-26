@@ -2,6 +2,7 @@ import React from "react";
 import { Star } from "lucide-react";
 import { ProductDetail } from "@/types/product-detail";
 import { Badge } from "@/components/ui";
+import { formatProductCode } from "@/utils/order";
 
 interface ProductInfoProps {
   product: ProductDetail;
@@ -60,10 +61,11 @@ export const ProductInfo = ({ product }: ProductInfoProps) => {
 
         <div className="w-px h-4 bg-gray-300 hidden sm:block"></div>
 
+        {/* 🟢 ĐÃ SỬA: Dùng formatProductCode đồng bộ với Kênh người bán */}
         <div className="text-gray-500">
           Mã SP:{" "}
-          <span className="font-semibold text-gray-900">
-            {product.id.substring(0, 8).toUpperCase()}
+          <span className="font-semibold text-gray-900 font-mono">
+            {formatProductCode(product.name, product.id)}
           </span>
         </div>
       </div>

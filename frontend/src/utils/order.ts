@@ -24,10 +24,15 @@ export function formatOrderCode(orderId?: string, createdAt?: string | Date): st
 
 // mã lô sản phẩm (batch code) cho từng lô hàng
 export function formatBatchCode(productName?: string, harvestDate?: string | Date, batchId?: string): string {
-  // 1. Tạo tên viết tắt tự động từ tên tiếng Việt
+  // 1. Tạo tên viết tắt tự động từ tên tiếng Việt (loại bỏ nội dung trong ngoặc đơn/vuông)
   let shortName = "SP";
   if (productName) {
-    const normalized = productName
+    const cleaned = productName
+      .replace(/\s*[\(\[\{][^\)\]\}]*[\)\]\}]?/g, "")
+      .replace(/[^a-zA-Z0-9\sÀ-ỹà-ỹĐđ]/g, " ")
+      .trim();
+
+    const normalized = cleaned
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/đ/g, "d")
@@ -37,11 +42,19 @@ export function formatBatchCode(productName?: string, harvestDate?: string | Dat
     if (words.length === 1) {
       shortName = words[0].slice(0, 3).toUpperCase();
     } else {
-      shortName = words.map((w) => w[0]).join("").toUpperCase().slice(0, 4);
+      let code = "";
+      for (const word of words) {
+        if (/\d/.test(word)) {
+          code += word.toUpperCase();
+        } else {
+          code += word.charAt(0).toUpperCase();
+        }
+      }
+      shortName = (code || "SP").slice(0, 5);
     }
   }
 
-  // 2. Lấy ngày thu hoạch dạng YYMMDD (Năm-Tháng-Ngày)
+  // 2. Lấy ngày thu hoạch / nhập kho dạng YYMMDD (Năm-Tháng-Ngày)
   let datePart = "";
   try {
     const d = harvestDate ? new Date(harvestDate) : new Date();
@@ -64,14 +77,21 @@ export function formatProductCode(productName?: string, productId?: string): str
     return cleanId ? `SP-${cleanId.slice(0, 4)}` : "SP-SANPHAM";
   }
 
-  // 1. Chuẩn hóa tiếng Việt: Bỏ dấu tiếng Việt
-  const normalized = productName
+  // 1. Loại bỏ nội dung trong dấu ngoặc đơn (...) hoặc ngoặc vuông [...]
+  // Ví dụ: "Mì gạo (Chũ)" -> "Mì gạo", "Dâu tây (Đà Lạt)" -> "Dâu tây"
+  const cleaned = productName
+    .replace(/\s*[\(\[\{][^\)\]\}]*[\)\]\}]?/g, "")
+    .replace(/[^a-zA-Z0-9\sÀ-ỹà-ỹĐđ]/g, " ")
+    .trim();
+
+  // 2. Chuẩn hóa tiếng Việt: Bỏ dấu tiếng Việt
+  const normalized = cleaned
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/đ/g, "d")
     .replace(/Đ/g, "D");
 
-  // 2. Tách các từ và trích xuất chữ cái đầu / giữ lại cụm số (như ST25)
+  // 3. Tách các từ và trích xuất chữ cái đầu / giữ lại cụm số (như ST25)
   const words = normalized.trim().split(/\s+/).filter(Boolean);
 
   let shortCode = "";
@@ -85,7 +105,7 @@ export function formatProductCode(productName?: string, productId?: string): str
     }
   }
 
-  // Nếu tên chỉ có 1 từ ngắn (như "Cam"), lấy 3 ký tự đầu
+  // Nếu tên chỉ có 1 từ ngắn (như "Cam"), lấy 3-4 ký tự đầu
   if (words.length === 1) {
     shortCode = words[0].slice(0, 4).toUpperCase();
   }
